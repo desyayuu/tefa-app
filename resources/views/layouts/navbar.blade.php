@@ -6,11 +6,11 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
-                <li class="nav-item"><a class="nav-link" href="#beranda">Beranda</a></li>
-                <li class="nav-item"><a class="nav-link" href="#about">Layanan Kami</a></li>
-                <li class="nav-item"><a class="nav-link" href="projects">Portofolio</a></li>
-                <li class="nav-item"><a class="nav-link" href="#contact">Resgistrasi Dosen</a></li>
-                <li class="nav-item"><a class="nav-link" href="#contact">Masuk</a></li>
+                <li class="nav-item"><a class="nav-link {{ request()->is('/') ? 'active' : '' }}" href="{{ route('beranda') }}">Beranda</a></li>
+                <li class="nav-item"><a class="nav-link {{ request()->is('layanan-kami') ? 'active' : '' }}" href="{{ route('layanan-kami') }}">Layanan Kami</a></li>
+                <li class="nav-item"><a class="nav-link" href="portofolio">Portofolio</a></li>
+                <li class="nav-item"><a class="nav-link" href="#register">Resgistrasi Dosen</a></li>
+                <li class="nav-item"><a class="nav-link" href="#login">Masuk</a></li>
             </ul>
         </div>
     </div>

@@ -125,7 +125,7 @@
                     <div class="w-100 mt-3">
                         <div class="d-flex align-items-center">
                             <img src="{{ asset('images/landingpage/see-more.png') }}" alt="icon" width="20" style="margin-right: 4px;">
-                            <a href="#" class="text-decoration-none ms-2 see-more">Selengkapnya</a>
+                            <a href="{{ route('layanan-kami')}}#layanan-software" class="text-decoration-none ms-2 see-more">Selengkapnya</a>
                         </div>
                     </div>
                 </div>
@@ -141,7 +141,7 @@
                     <div class="w-100 mt-3">
                             <div class="d-flex align-items-center">
                                 <img src="{{ asset('images/landingpage/see-more.png') }}" alt="icon" width="20" style="margin-right: 4px;">
-                                <a href="#" class="text-decoration-none ms-2 see-more">Selengkapnya</a>
+                                <a href="{{ route('layanan-kami')}}#layanan-konsultan" class="text-decoration-none ms-2 see-more">Selengkapnya</a>
                             </div>
                     </div>
                 </div>
@@ -154,7 +154,7 @@
                     <div class="w-100 mt-3">
                         <div class="d-flex align-items-center">
                                 <img src="{{ asset('images/landingpage/see-more.png') }}" alt="icon" width="20" style="margin-right: 4px;">
-                                <a href="#" class="text-decoration-none ms-2 see-more">Selengkapnya</a>
+                                <a href="{{ route('layanan-kami')}}#layanan-jaringan" class="text-decoration-none ms-2 see-more">Selengkapnya</a>
                         </div>
                     </div>
                 </div>
@@ -168,7 +168,7 @@
                     <div class="w-100 mt-3">
                         <div class="d-flex align-items-center">
                             <img src="{{ asset('images/landingpage/see-more.png') }}" alt="icon" width="20" style="margin-right: 4px;">
-                            <a href="#" class="text-decoration-none ms-2 see-more">Selengkapnya</a>
+                            <a href="{{ route('layanan-kami')}}#layanan-iot" class="text-decoration-none ms-2 see-more">Selengkapnya</a>
                         </div>
                     </div>
                 </div>
@@ -182,7 +182,7 @@
                     <div class="w-100 mt-3">
                         <div class="d-flex align-items-center">
                             <img src="{{ asset('images/landingpage/see-more.png') }}" alt="icon" width="20" style="margin-right: 4px;">
-                            <a href="#" class="text-decoration-none ms-2 see-more">Selengkapnya</a>
+                            <a href="{{ route('layanan-kami')}}#layanan-pelatihan" class="text-decoration-none ms-2 see-more">Selengkapnya</a>
                         </div>
                     </div>
                 </div>

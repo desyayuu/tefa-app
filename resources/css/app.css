@@ -89,3 +89,63 @@ footer{
     background-color:#3C21F7;
 }
 
+.first-section-layanan{
+    text-align: center;
+    margin: 50px 0px 0px 0px;
+
+    .font-title{
+        font-size: x-large;
+        font-weight: bold ;
+        margin: 20px 20px 0px 20px; 
+    }
+
+    .font-description{
+        font-size: medium; 
+    }
+}
+
+.btn-service {
+    background-color: #3C21F7;
+    color: white;
+    transition: all 0.3s ease; 
+}
+
+.btn-service:hover {
+    background-color: #4a33f7; 
+    color: #fff;
+}
+
+.btn-service:active {
+    transform: scale(0.98);
+}
+
+.section-layanan{
+    height: max-content;
+    background-color: #D9D9D9;
+}
+
+.container-layanan1{
+    padding-top: 50px;
+    padding-bottom: 50px;
+}
+
+.img-layanan{
+    width: 100px;
+}
+
+.title-layanan{
+    font-weight: bold;
+    width: max-content;
+    display: inline-block;
+    font-size: xx-large;
+}
+
+.desc-layanan {
+    margin-top: 20px;
+    max-width: 810px;
+    text-align: justify;
+}
+
+html {
+    scroll-behavior: smooth;
+}

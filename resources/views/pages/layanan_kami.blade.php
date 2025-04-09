@@ -1,0 +1,104 @@
+@extends('layouts.app')
+
+@section('title', 'Layanan Kami')
+
+@section('content')
+    {{-- Navbar --}}
+    @include('layouts.navbar')
+
+    <section class="first-section-layanan text-black py-5">
+        <div class="container">
+            <div class="font-title">Layanan Kami</div>
+            <div class="font-description mt-2">
+                Telusuri layanan yang kami tawarkan untuk mewujudkan ide proyek Anda!
+            </div>
+            <div class="mt-3">
+                <a href="#layanan" class="btn btn-service">
+                    Telusuri Layanan
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section id="layanan" class="section-layanan py-5">
+        <div class="container container-layanan1">
+            <div class="d-flex flex-wrap flex-md-nowrap align-items-center" style="gap: 8rem;">
+                <div class="col-md-2">
+                    <img src="{{ asset('images/landingpage/section4-laptop.png') }}"  class="img-fluid rounded">
+                </div>
+                <div class="col-md-10">
+                    <div class="title-layanan">Pengembangan Software</div>
+                    <div class="text-muted desc-layanan">Kami menghadirkan solusi perangkat lunak yang inovatif dan sesuai kebutuhan bisnis Anda. Dari pembuatan website hingga aplikasi mobile, TEFA JTI Polinema siap membantu meningkatkan efisiensi dan produktivitas perusahaan Anda dengan teknologi terkini.</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="layanan-konsultan" class="py-5">
+        <div class="container container-layanan1">
+            <div class="d-flex flex-wrap flex-md-nowrap align-items-center">
+                <div class="col-md-10">
+                    <div class="title-layanan">Konsultan IT</div>
+                    <div class="text-muted desc-layanan">Butuh arahan strategis dalam transformasi digital? Tim ahli kami siap memberikan konsultasi dan solusi terbaik dalam perancangan serta implementasi teknologi untuk meningkatkan daya saing bisnis Anda. Kami siap membantu Anda! </div>
+                </div>
+                <div class="col-md-2">
+                    <img src="{{ asset('images/landingpage/section4-operator.png') }}"  class="img-fluid rounded">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="layanan-jaringan" class="section-layanan py-5">
+        <div class="container container-layanan1">
+            <div class="d-flex flex-wrap flex-md-nowrap align-items-center" style="gap: 8rem;">
+                <div class="col-md-2">
+                    <img src="{{ asset('images/landingpage/section4-world.png') }}"  class="img-fluid rounded">
+                </div>
+                <div class="col-md-10">
+                    <div class="title-layanan">Instalasi Jaringan</div>
+                    <div class="text-muted desc-layanan">Koneksi yang stabil dan aman adalah kunci kelancaran operasional bisnis Anda. Kami menyediakan layanan instalasi dan konfigurasi jaringan yang optimal, baik untuk skala kecil maupun besar. </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="layanan-iot" class="py-5">
+        <div class="container container-layanan1">
+            <div class="d-flex flex-wrap flex-md-nowrap align-items-center">
+                <div class="col-md-10">
+                    <div class="title-layanan">Instalasi IOT</div>
+                    <div class="text-muted desc-layanan">Tingkatkan efisiensi operasional dengan teknologi Internet of Things (IoT)! TEFA JTI Polinema menyediakan layanan instalasi dan konfigurasi perangkat IoT, membantu industri dalam pemantauan otomatis, kontrol jarak jauh, dan analisis data real-time untuk berbagai kebutuhan bisnis.</div>
+                </div>
+                <div class="col-md-2">
+                    <img src="{{ asset('images/landingpage/section4-iot.png') }}"  class="img-fluid rounded">
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section id="layanan-pelatihan" class="section-layanan py-5">
+        <div class="container container-layanan1">
+            <div class="d-flex flex-wrap flex-md-nowrap align-items-center" style="gap: 8rem;">
+                <div class="col-md-2">
+                    <img src="{{ asset('images/landingpage/section4-teaching.png') }}"  class="img-fluid rounded">
+                </div>
+                <div class="col-md-10">
+                    <div class="title-layanan">Pelatihan</div>
+                    <div class="text-muted desc-layanan">Kami tidak hanya mengembangkan teknologi, tetapi juga berbagi ilmu! TEFA JTI Polinema menawarkan pelatihan dan workshop dalam berbagai bidang IT. Dirancang untuk mahasiswa, profesional, maupun perusahaan yang ingin meningkatkan kompetensi digitalnya.</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+
+
+
+
+
+
+
+    {{-- Footer --}}
+    @include('layouts.footer')
+@endsection
