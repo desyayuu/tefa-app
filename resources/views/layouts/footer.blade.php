@@ -14,8 +14,8 @@
                     <div class="col-md-6">
                         <p class="fw-bold mb-4">Tentang Kami</p>
                         <div class="d-flex flex-column gap-2">
-                            <p class="mb-0">Layanan Kami</p>
-                            <p class="mb-0">Portofolio Proyek TEFA JTI</p>
+                            <a href="{{ url('/layanan-kami') }}" class="text-footer">Layanan Kami</a>
+                            <a href="{{ url('/portofolio') }}" class="text-footer">Portofolio Proyek TEFA JTI</a>
                         </div>
                     </div>
                 </div>
