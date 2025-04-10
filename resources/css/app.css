@@ -124,19 +124,12 @@ footer{
     background-color: #D9D9D9;
 }
 
-.container-layanan1{
-    padding-top: 50px;
-    padding-bottom: 50px;
-}
-
 .img-layanan{
-    width: 100px;
+    width: 200px
 }
 
 .title-layanan{
     font-weight: bold;
-    width: max-content;
-    display: inline-block;
     font-size: xx-large;
 }
 
@@ -171,4 +164,13 @@ html {
     background-color: #b8b2ff; 
     transform: translateY(0); 
     box-shadow: 0 2px 6px rgba(60, 33, 247, 0.3); 
+}
+
+.section-layanan img {
+    max-width: 100%;
+    height: auto;
+}
+
+.custom-gap {
+    column-gap: 1rem;
 }
