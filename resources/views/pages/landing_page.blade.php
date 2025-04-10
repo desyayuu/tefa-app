@@ -190,6 +190,13 @@
         </div>
     </section>
 
+    <!-- Section 5 -->
+    <section class="fifth-section py-5">
+        <h2 class="text-center mb-4">Gabung Bersama Kami</h2>
+        <h5>description</h5>
+
+    </section>
+
 
     {{-- Footer --}}
     @include('layouts.footer')

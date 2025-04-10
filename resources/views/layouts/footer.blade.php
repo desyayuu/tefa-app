@@ -2,9 +2,9 @@
     <div class="container">
         <div class="row mt-5 mb-5">
             <div class="col-12">
-                <div class="row">
+                <div class="row gy-4 flex-column flex-md-row">
                     <div class="col-md-6">
-                        <p class="fw-bold mb-5">Teaching Factory JTI POLINEMA</p>
+                        <p class="fw-bold mb-4">Teaching Factory JTI POLINEMA</p>
                         <p class="mb-1">Jurusan Teknologi Informatika Politeknik Negeri Malang</p>
                         <p class="mb-1">Jl. Soekarno-Hatta No. 9 Malang 65141</p>
                         <p class="mb-1">Po.Box 04 Malang</p>
@@ -12,9 +12,11 @@
                         <p class="mb-1">Faks : +62 (0341)-404420</p>
                     </div>
                     <div class="col-md-6">
-                        <p class="fw-bold mb-5">Tentang Kami</p>
-                        <p class="mb-1">Layanan Kami</p>
-                        <p class="mb-1">Portofolio Proyek TEFA JTI</p>
+                        <p class="fw-bold mb-4">Tentang Kami</p>
+                        <div class="d-flex flex-column gap-2">
+                            <p class="mb-0">Layanan Kami</p>
+                            <p class="mb-0">Portofolio Proyek TEFA JTI</p>
+                        </div>
                     </div>
                 </div>
             </div>
