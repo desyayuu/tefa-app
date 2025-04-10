@@ -9,8 +9,8 @@
                 <li class="nav-item"><a class="nav-link {{ request()->is('/') ? 'active' : '' }}" href="{{ route('beranda') }}">Beranda</a></li>
                 <li class="nav-item"><a class="nav-link {{ request()->is('layanan-kami') ? 'active' : '' }}" href="{{ route('layanan-kami') }}">Layanan Kami</a></li>
                 <li class="nav-item"><a class="nav-link" href="#portofolio">Portofolio</a></li>
-                <li class="nav-item"><a class="nav-link {{ request()->is('register') ? 'active' : '' }}" href="{{ route('register') }}" >Registrasi Dosen</a></li>
-                <li class="nav-item"><a class="nav-link" href="#login">Masuk</a></li>
+                <li class="nav-item"><a class="nav-link {{ request()->is('register') ? 'active' : '' }}" href="{{ route('register') }}">Registrasi Dosen</a></li>
+                <li class="nav-item"><a class="nav-link {{ request()->is('login') ? 'active' : '' }}" href="{{ route('login') }}">Masuk</a></li>
             </ul>
         </div>
     </div>
