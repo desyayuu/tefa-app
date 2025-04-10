@@ -190,12 +190,54 @@
         </div>
     </section>
 
-    <!-- Section 5 -->
+    <!-- Section 6 -->
     <section class="fifth-section py-5">
-        <h2 class="text-center mb-4">Gabung Bersama Kami</h2>
-        <h5>description</h5>
+    <div class="container">
+        <h2 class="text-center mb-4">Gabung Ide Proyek Bersama Kami !</h2>
+        <h5 class="text-center mb-5">
+            Tertarik bekerja sama dengan TEFA JTI Polinema? Beri tahu kami melalui form di bawah untuk diskusi mewujudkan ide proyek anda
+        </h5>
 
-    </section>
+        <form>
+            <div class="row">
+                <!-- Kolom Pertama -->
+                <div class="col-md-6 mb-4">
+                    <div class="mb-3">
+                        <label for="nama" class="form-label">Nama</label>
+                        <input type="text" class="form-control" id="nama" placeholder="Masukkan nama">
+                    </div>
+                    <div class="mb-3">
+                        <label for="perusahaan" class="form-label">Perusahaan</label>
+                        <input type="text" class="form-control" id="perusahaan" placeholder="Masukkan Perusahaan Anda">
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" placeholder="Masukkan Email Anda">
+                    </div>
+                    <div class="mb-3">
+                        <label for="telepon" class="form-label">Telepon</label>
+                        <input type="text" class="form-control" id="telepon" placeholder="Masukkan Telepon Anda">
+                    </div>
+                </div>
+
+
+                <div class="col-md-6 mb-4 d-flex flex-column justify-content-between h-100">
+                    <div class="mb-3">
+                        <label for="pesan" class="form-label">Pesan</label>
+                        <textarea class="form-control" id="pesan" rows="8" placeholder="Tulis pesan Anda di sini..."></textarea>
+                    </div>
+
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-kirim px-4">Kirim</button>
+                    </div>
+                </div>
+
+            </div>
+        </form>
+    </div>
+</section>
+
+
 
 
     {{-- Footer --}}
