@@ -4,7 +4,7 @@
 
 @section('content')
     {{-- Navbar --}}
-    @include('layouts.navbar')
+    @include('layouts.landing_page.navbar')
 
     <section class="first-section-layanan text-black py-5">
         <div class="container">
@@ -100,10 +100,6 @@
         </div>
     </section>
 
-
-
-
-
     {{-- Footer --}}
-    @include('layouts.footer')
+    @include('layouts.landing_page.footer')
 @endsection
