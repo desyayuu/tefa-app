@@ -12,6 +12,8 @@ class DosenController extends Controller
             ->where('user_id', session('user_id'))
             ->first();
             
-        return view('pages.Dosen.dashboard', compact('dosen'));
+        return view('pages.Dosen.dashboard', compact('dosen'), [
+            'titleSidebar' => 'Dashboard'
+        ]);
     }
 }

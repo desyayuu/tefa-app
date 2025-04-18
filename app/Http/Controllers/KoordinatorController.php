@@ -12,6 +12,8 @@ class KoordinatorController extends Controller
             ->where('user_id', session('user_id'))
             ->first();
             
-        return view('pages.Koordinator.dashboard', compact('koordinator'));
+        return view('pages.Koordinator.dashboard', compact('koordinator'), [
+            'titleSidebar' => 'Dashboard'
+        ]);
     }
 }

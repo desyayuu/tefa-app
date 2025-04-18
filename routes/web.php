@@ -2,12 +2,6 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\DosenController;
-use App\Http\Controllers\MahasiswaController;
-use App\Http\Controllers\KoordinatorController;
-use App\Http\Middleware\DosenMiddleware;
-use App\Http\Middleware\MahasiswaMiddleware;
-use App\Http\Middleware\KoordinatorMiddleware;
 
 
 //Landing Page

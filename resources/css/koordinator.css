@@ -1,0 +1,235 @@
+body {
+    font-family: 'Figtree', sans-serif;
+    background-color: #f8f9fa;
+    margin: 0;
+    padding: 0;
+}
+
+.main-layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+.sidebar {
+    width: 260px;
+    background: white;
+    box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    position: fixed;
+    height: 100vh;
+    overflow-y: auto;
+    z-index: 1030;
+}
+
+.sidebar .brand {
+    display: flex;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.sidebar .brand-text {
+    margin-left: 10px;
+}
+
+.sidebar .brand-text .title {
+    display: block;
+    font-weight: 600;
+    font-size: 16px;
+    color: #333;
+}
+
+.sidebar .brand-text .subtitle {
+    font-size: 12px;
+    color: #6c757d;
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar ul li {
+    margin-bottom: 5px;
+}
+
+
+.sidebar ul li a {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    color: #6c757d;
+    text-decoration: none;
+    transition: all 0.3s;
+}
+
+.sidebar ul li a:hover {
+    background-color: rgba(60, 33, 247, 0.05);
+    color: #3C21F7;
+}
+
+
+.sidebar ul li a:hover svg path,
+.sidebar ul li a.active svg path {
+    fill: #3C21F7;
+}
+
+
+.sidebar ul li a .icon {
+    margin-right: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+}
+
+.sidebar ul li a .menu-text {
+    font-size: 14px;
+}
+
+.sidebar .has-submenu {
+    position: relative;
+}
+
+.sidebar .submenu {
+    max-height: 0;
+    overflow: hidden;
+    padding-left: 45px;
+    transition: max-height 0.3s ease-out;
+}
+
+.sidebar .has-submenu:hover .submenu,
+.sidebar .has-submenu:focus-within .submenu {
+    max-height: 500px;
+}
+
+.sidebar .submenu li a {
+    padding: 8px 15px;
+    font-size: 13px;
+}
+
+.sidebar .has-sub-submenu {
+    position: relative;
+}
+
+.sidebar .sub-submenu-grid {
+    display: none;
+    padding-left: 15px;
+}
+
+.sidebar .has-sub-submenu:hover .sub-submenu-grid,
+.sidebar .has-sub-submenu:focus-within .sub-submenu-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 5px;
+    margin-top: 5px;
+}
+
+.sidebar .sub-submenu-grid div a {
+    padding: 6px 10px;
+    font-size: 12px;
+}
+
+
+.header {
+    height: 60px;
+    background-color: white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 260px;
+    z-index: 1020;
+}
+
+
+.main-content {
+    flex-grow: 1;
+    margin-left: 260px;
+    min-height: 100vh;
+}
+
+.content {
+    padding: 80px 20px 20px;
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        width: 70px;
+        overflow-x: hidden;
+    }
+    
+    .sidebar .brand-text, 
+    .sidebar .menu-text {
+        display: none;
+    }
+    
+    .sidebar ul li a {
+        justify-content: center;
+        padding: 12px;
+    }
+    
+    .sidebar ul li a .icon {
+        margin-right: 0;
+    }
+    
+    .sidebar .submenu,
+    .sidebar .sub-submenu-grid {
+        position: absolute;
+        left: 70px;
+        top: 0;
+        background: white;
+        box-shadow: 5px 0 10px rgba(0,0,0,0.1);
+        width: 180px;
+        padding: 10px;
+        z-index: 1040;
+        border-radius: 0 4px 4px 0;
+    }
+    
+    .main-content {
+        margin-left: 70px;
+    }
+    
+    .header {
+        left: 70px;
+    }
+}
+
+.sidebar ul li a.active {
+    background-color: rgba(60, 33, 247, 0.08);
+    color: #3C21F7;
+    font-weight: 600;
+}
+
+.menu-button {
+    background: none;
+    border: none;
+    color: inherit;
+    font-size: inherit;
+    text-align: left;
+    width: 100%;
+    padding: 10px 15px;
+    cursor: pointer;
+}
+
+.menu-button:hover {
+    background-color: #f0f0f0;
+}
+
+.title-sidebar{
+    color: #E56F8C;
+    font-weight: bold;
+}
+
+.sidebar .has-submenu > a .dropdown-icon {
+    transition: transform 0.3s ease;
+}
+
+.sidebar .has-submenu.open > a .dropdown-icon {
+    transform: rotate(180deg);
+}
+
+.dropdown-icon{
+    margin-left: 80px;
+}

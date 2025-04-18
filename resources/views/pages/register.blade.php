@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Register')
+@section('title', 'TEFA | Registrasi Dosen')
 
 @section('content')
     {{-- Navbar --}}
@@ -11,6 +11,12 @@
         <div class="container d-flex justify-content-center align-items-center">
             <div class="card shadow-lg p-4" style="width: 100%; max-width: 500px; border-radius: 20px;">
                 <h3 class="text-center mb-4">Register</h3>
+                
+                @if(session('success'))
+                    <div class="alert alert-success mb-3">
+                        {{ session('success') }}
+                    </div>
+                @endif
                 
                 @if(session('error'))
                     <div class="alert alert-danger mb-3">

@@ -24,7 +24,7 @@ class AuthController extends Controller
     // Tampilkan form register
     public function showRegisterForm()
     {
-        return view('pages.landing_page');
+        return view('pages.register');
     }
     
     // Proses login
@@ -71,13 +71,33 @@ class AuthController extends Controller
             'password' => 'required|min:6',
             'jenis_kelamin' => 'required|in:Laki-Laki,Perempuan',
             'tanggal_lahir' => 'required|date',
-            'telepon' => 'required|string',
-            'nidn' => 'required|string|unique:d_dosen,nidn',
+            'telepon' => 'required|numeric',
+            'nidn' => 'required|numeric|unique:d_dosen,nidn',
             'profile_img' => 'nullable|image|max:2048',
+        ], 
+        [
+            'nama.required' => 'Name field is required.',
+            'nama.max' => 'Name cannot exceed 255 characters.',
+            'email.required' => 'Email field is required.',
+            'email.email' => 'Please enter a valid email address.',
+            'email.unique' => 'This email is already registered.',
+            'password.required' => 'Password field is required.',
+            'password.min' => 'Password must be at least 6 characters.',
+            'jenis_kelamin.required' => 'Gender field is required.',
+            'jenis_kelamin.in' => 'Please select a valid gender option.',
+            'tanggal_lahir.required' => 'Date of birth is required.',
+            'tanggal_lahir.date' => 'Please enter a valid date.',
+            'telepon.required' => 'Phone number is required.',
+            'telepon.numeric' => 'Phone number must contain only digits.',
+            'nidn.required' => 'NIP/NIDN field is required.',
+            'nidn.numeric' => 'NIP/NIDN must contain only digits.',
+            'nidn.unique' => 'This NIP/NIDN is already registered.',
+            'profile_img.image' => 'The uploaded file must be an image.',
+            'profile_img.max' => 'The image size cannot exceed 2MB.',
         ]);
         
         if ($validator->fails()) {
-            return redirect()->back()
+            return redirect()->route('register-landing-page')
                 ->withErrors($validator)
                 ->withInput($request->except('password', 'password_confirmation'));
         }
@@ -94,10 +114,10 @@ class AuthController extends Controller
         
         try {
             $this->authService->registerDosen($data);
-            return redirect()->route('login')->with('success', 'Registrasi berhasil! Silakan login.');
+            return redirect()->route('login-landing-page')->with('success', 'Registrasi berhasil! Silakan login.');
         } catch (\Exception $e) {
-            return redirect()->back()
-                ->withErrors(['error' => 'Terjadi kesalahan saat registrasi. Silakan coba lagi.'])
+            return redirect()->route('register-landing-page') 
+                ->with('error', 'Terjadi kesalahan saat registrasi: ' . $e->getMessage())
                 ->withInput($request->except('password', 'password_confirmation'));
         }
     }

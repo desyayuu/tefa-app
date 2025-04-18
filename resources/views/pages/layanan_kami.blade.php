@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'TEFA JTI POLINEMA')
+@section('title', 'TEFA | Layanan Kami')
 
 @section('content')
     {{-- Navbar --}}

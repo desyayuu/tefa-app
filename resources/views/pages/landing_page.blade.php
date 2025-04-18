@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'TEFA JTI POLINEMA')
+@section('title', 'TEFA | Landing Page')
 
 @section('content')
 

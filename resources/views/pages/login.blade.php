@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Login')
+@section('title', 'TEFA | Login')
 
 @section('content')
     {{-- Navbar --}}
