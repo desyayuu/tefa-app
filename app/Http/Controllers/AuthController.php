@@ -18,7 +18,7 @@ class AuthController extends Controller
     // Tampilkan form login
     public function showLoginForm()
     {
-        return view('pages.landing_page');
+        return redirect()->route('beranda');
     }
     
     // Tampilkan form register
@@ -125,6 +125,7 @@ class AuthController extends Controller
     // Proses logout
     public function logout()
     {
+        
         $this->authService->logout();
         return redirect()->route('login');
     }

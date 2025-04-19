@@ -115,78 +115,22 @@
     <section class="container my-5">
         <h2 class="text-center mb-4">Layanan Kami</h2>
         <div class="row">
+        @foreach ($jenisProyek as $layanan)
             <div class="col-md-4 mb-4">
                 <div class="card shadow-sm p-4 h-100 d-flex flex-column justify-content-center align-items-center text-center">
-                    <img src="{{ asset('images/landingpage/section4-laptop.png') }}" alt="pengembangan-software" class="img-section4 mb-3">
-                    <h3 class="h5">Pengembangan Software</h3>
-                    <p>Kami menghadirkan solusi perangkat lunak yang inovatif dan sesuai kebutuhan bisnis Anda.</p>
+                    <img src="{{ asset('storage/jenis_proyek/' . $layanan->img_jenis_proyek) }}" alt="{{ $layanan->nama_jenis_proyek }}" class="img-section4 mb-3">
+                    <h3 class="h5">{{ $layanan->nama_jenis_proyek }}</h3>
+                    <p class="description-text">{{ $layanan->deskripsi_jenis_proyek }}</p>
 
-                    <!-- Baris tambahan -->
                     <div class="w-100 mt-3">
                         <div class="d-flex align-items-center">
                             <img src="{{ asset('images/landingpage/see-more.png') }}" alt="icon" width="20" style="margin-right: 4px;">
-                            <a href="{{ route('layanan-kami')}}#layanan-software" class="text-decoration-none ms-2 see-more">Selengkapnya</a>
+                            <a href="{{ url('/layanan-kami#layanan-' . $layanan->jenis_proyek_id) }}" class="text-decoration-none ms-2 see-more">Selengkapnya</a>
                         </div>
                     </div>
                 </div>
             </div>
-
-
-            <div class="col-md-4 mb-4">
-                <div class="card shadow-sm p-4 h-100 d-flex flex-column justify-content-center align-items-center text-center">
-                    <img img src="{{ asset('images/landingpage/section4-operator.png') }}" alt="konsultan" class="img-section4">
-                    <h3 class="h5">Konsultan IT</h3>
-                    <p>Butuh arahan strategis dalam transformasi digital? Kami siap memberikan konsultasi dan solusi terbaik</p>
-                
-                    <div class="w-100 mt-3">
-                            <div class="d-flex align-items-center">
-                                <img src="{{ asset('images/landingpage/see-more.png') }}" alt="icon" width="20" style="margin-right: 4px;">
-                                <a href="{{ route('layanan-kami')}}#layanan-konsultan" class="text-decoration-none ms-2 see-more">Selengkapnya</a>
-                            </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4 mb-4">
-                <div class="card shadow-sm p-4 h-100 d-flex flex-column justify-content-center align-items-center text-center">
-                    <img img src="{{ asset('images/landingpage/section4-world.png') }}" alt="jaringan" class="img-section4">
-                    <h3 class="h5">Instalasi Jaringan</h3>
-                    <p>Kami menyediakan layanan instalasi dan konfigurasi jaringan yang optimal, baik untuk skala kecil maupun besar. </p>
-                    <div class="w-100 mt-3">
-                        <div class="d-flex align-items-center">
-                                <img src="{{ asset('images/landingpage/see-more.png') }}" alt="icon" width="20" style="margin-right: 4px;">
-                                <a href="{{ route('layanan-kami')}}#layanan-jaringan" class="text-decoration-none ms-2 see-more">Selengkapnya</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4 mb-4">
-                <div class="card shadow-sm p-4 h-100 d-flex flex-column justify-content-center align-items-center text-center">
-                    <img img src="{{ asset('images/landingpage/section4-iot.png') }}" alt="iot" class="img-section4">
-                    <h3 class="h5">Instalasi IOT</h3>
-                    <p>TEFA JTI Polinema menyediakan layanan instalasi dan konfigurasi perangkat IoT untuk berbagai kebutuhan bisnis</p>
-                
-                    <div class="w-100 mt-3">
-                        <div class="d-flex align-items-center">
-                            <img src="{{ asset('images/landingpage/see-more.png') }}" alt="icon" width="20" style="margin-right: 4px;">
-                            <a href="{{ route('layanan-kami')}}#layanan-iot" class="text-decoration-none ms-2 see-more">Selengkapnya</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4 mb-4">
-                <div class="card shadow-sm p-4 h-100 d-flex flex-column justify-content-center align-items-center text-center">
-                    <img img src="{{ asset('images/landingpage/section4-teaching.png') }}" alt="pelatihan" class="img-section4">
-                    <h3 class="h5">Pelatihan</h3>
-                    <p>TEFA JTI Polinema menawarkan pelatihan dan workshop dalam berbagai bidang IT. </p>
-                
-                    <div class="w-100 mt-3">
-                        <div class="d-flex align-items-center">
-                            <img src="{{ asset('images/landingpage/see-more.png') }}" alt="icon" width="20" style="margin-right: 4px;">
-                            <a href="{{ route('layanan-kami')}}#layanan-pelatihan" class="text-decoration-none ms-2 see-more">Selengkapnya</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        @endforeach
         </div>
     </section>
 
