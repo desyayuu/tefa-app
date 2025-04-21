@@ -16,9 +16,12 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->string('password');
             $table->enum('role', ['Mahasiswa', 'Dosen', 'Koordinator']);
-            $table->dateTime('created_at');
+            $table->dateTime('created_at')->nullable();
+            $table->string('created_by', 36)->nullable();
             $table->dateTime('updated_at')->nullable();
+            $table->string('updated_by', 36)->nullable();
             $table->dateTime('deleted_at')->nullable();
+            $table->string('deleted_by', 36)->nullable();
         });
     }
 

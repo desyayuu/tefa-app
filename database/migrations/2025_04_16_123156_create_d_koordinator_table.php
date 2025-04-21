@@ -15,19 +15,17 @@ return new class extends Migration
             $table->string('koordinator_id', 36)->primary();
             $table->string('user_id', 36)->unique();
             $table->string('nama');
-            $table->string('email');
-            $table->string('password');
             $table->enum('jenis_kelamin', ['Laki-Laki', 'Perempuan']);
             $table->date('tanggal_lahir');
             $table->string('telepon');
             $table->string('profile_img')->nullable();
             $table->string('nidn');
-            $table->dateTime('created_at');
-            $table->integer('created_by')->nullable();
+            $table->dateTime('created_at')->nullable();
+            $table->string('created_by', 36)->nullable();
             $table->dateTime('updated_at')->nullable();
-            $table->integer('updated_by')->nullable();
+            $table->string('updated_by', 36)->nullable();
             $table->dateTime('deleted_at')->nullable();
-            $table->integer('deleted_by')->nullable();
+            $table->string('deleted_by', 36)->nullable();
             
             $table->foreign('user_id')->references('user_id')->on('d_user');
         });

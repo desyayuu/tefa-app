@@ -15,12 +15,12 @@ return new class extends Migration
             $table->string('bidang_keahlian_id', 36)->primary();
             $table->string('nama_bidang');
             $table->text('deskripsi')->nullable();
-            $table->dateTime('created_at');
-            $table->integer('created_by')->nullable();
+            $table->dateTime('created_at')->nullable();
+            $table->string('created_by', 36)->nullable();
             $table->dateTime('updated_at')->nullable();
-            $table->integer('updated_by')->nullable();
+            $table->string('updated_by', 36)->nullable();
             $table->dateTime('deleted_at')->nullable();
-            $table->integer('deleted_by')->nullable();
+            $table->string('deleted_by', 36)->nullable();
         });
 
         Schema::table('d_mahasiswa', function (Blueprint $table) {

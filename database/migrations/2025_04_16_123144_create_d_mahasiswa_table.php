@@ -14,26 +14,24 @@ return new class extends Migration
         Schema::create('d_mahasiswa', function (Blueprint $table) {
             $table->string('mahasiswa_id', 36)->primary();
             $table->string('user_id', 36)->unique();
-            $table->string('bidang_keahlian_id', 36);
+            $table->string('bidang_keahlian_id', 36)->nullable();
             $table->string('nama');
-            $table->string('email');
-            $table->string('password');
-            $table->enum('jenis_kelamin', ['Laki-Laki', 'Perempuan']);
-            $table->date('tanggal_lahir');
+            $table->enum('jenis_kelamin', ['Laki-Laki', 'Perempuan'])->nullable();
+            $table->date('tanggal_lahir')->nullable();
             $table->string('telepon');
             $table->string('profile_img')->nullable();
-            $table->string('nim');
+            $table->string('nim')->unique();
             $table->string('linkedin')->nullable();
             $table->string('github')->nullable();
             $table->string('doc_cv')->nullable();
             $table->string('doc_ktm')->nullable();
             $table->string('doc_ktp')->nullable();
-            $table->dateTime('created_at');
-            $table->integer('created_by')->nullable();
+            $table->dateTime('created_at')->nullable();
+            $table->string('created_by', 36)->nullable();
             $table->dateTime('updated_at')->nullable();
-            $table->integer('updated_by')->nullable();
+            $table->string('updated_by', 36)->nullable();
             $table->dateTime('deleted_at')->nullable();
-            $table->integer('deleted_by')->nullable();
+            $table->string('deleted_by', 36)->nullable();
             
             $table->foreign('user_id')->references('user_id')->on('d_user');
         });

@@ -34,15 +34,13 @@ class UserRepository
                 'dosen_id' => $dosenId,
                 'user_id' => $userId,
                 'nama' => $data['nama'],
-                'email' => $data['email'],
-                'password' => bcrypt($data['password']),
-                'jenis_kelamin' => $data['jenis_kelamin'] ?? null,
-                'tanggal_lahir' => $data['tanggal_lahir'] ?? null,
-                'telepon' => $data['telepon'] ?? null,
-                'profile_img' => $data['profile_img'] ?? null,
+                // 'jenis_kelamin' => $data['jenis_kelamin'] ?? null,
+                // 'tanggal_lahir' => $data['tanggal_lahir'] ?? null,
+                'telepon' => $data['telepon'],
+                // 'profile_img' => $data['profile_img'] ?? null,
                 'nidn' => $data['nidn'],
                 'created_at' => $now,
-                'created_by' => 0 // System
+                'created_by' => 0
             ]);
             
             DB::commit();

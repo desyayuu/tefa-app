@@ -44,7 +44,7 @@ class TestUserSeeder extends Seeder
             'profile_img' => null,
             'nidn' => '1234567890',
             'created_at' => $now,
-            'created_by' => 1
+            'created_by' => 0
         ]);
         
         // Buat User Mahasiswa
@@ -52,7 +52,7 @@ class TestUserSeeder extends Seeder
         $mahasiswaId = (string) Str::uuid();
         $bidangKeahlianId = (string) Str::uuid();
         
-        // Buat Bidang Keahlian terlebih dahulu jika belum ada
+        // Bidang Keahlian 
         DB::table('m_bidang_keahlian')->insert([
             'bidang_keahlian_id' => $bidangKeahlianId,
             'nama_bidang' => 'UI/UX Design',
@@ -91,7 +91,7 @@ class TestUserSeeder extends Seeder
             'created_by' => 1
         ]);
         
-        // Buat User Koordinator
+        // User Koordinator
         $koordinatorUserId = (string) Str::uuid();
         $koordinatorId = (string) Str::uuid();
         
