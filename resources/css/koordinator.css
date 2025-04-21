@@ -154,6 +154,19 @@ body {
     padding: 80px 20px 20px;
 }
 
+.content-table{
+    padding: 20px 20px 20px 20px;
+    margin: 70px 10px 10px 10px;
+    border-radius: 10px;
+    background-color: white;
+}
+
+.title-table{
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
 @media (max-width: 768px) {
     .sidebar {
         width: 70px;
@@ -232,4 +245,63 @@ body {
 
 .dropdown-icon{
     margin-left: 80px;
+}
+
+.table-data{
+    border-radius: 10px;
+    background-color: #3C21F7;
+}
+
+.form-control{
+    border-radius: 10px;
+    background-color: #E9ECEF;
+    border-color: #333;
+    border: none;
+}
+
+.btn-add{
+    background-color: #E2DEFF;
+    color: #3C21F7;
+    border-radius: 10px;
+    transition: all 0.3s ease; 
+    border: none;
+    font-size: 12px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.btn-hapus{
+    background-color: #E56F8C;
+    color: #ffffff;
+    border-radius: 10px;
+    transition: all 0.3s ease; 
+    border: none;
+    font-size: 12px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.btn-tutup{
+    background-color: #bebebe;
+    color: #f8f8f8;
+    border-radius: 10px;
+    transition: all 0.3s ease; 
+    border: none;
+    font-size: 12px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.form-search{
+    color: #333;
+    font-size: 12px;
+}
+
+.search-icon{
+    margin-bottom: 20px;
+}
+
+.label-form{
+    font-weight: lighter;
+    font-size: 16px;
 }

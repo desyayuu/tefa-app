@@ -16,12 +16,15 @@
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
+
     @vite(['resources/css/app.css', 'resources/css/koordinator.css', 'resources/js/app.js'])
+
 </head>
 
 <body class="bg-light">
     @yield('content')
 
+    @stack('scripts')
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
