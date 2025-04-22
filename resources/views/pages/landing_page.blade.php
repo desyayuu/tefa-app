@@ -5,7 +5,7 @@
 @section('content')
 
     {{-- Navbar --}}
-    @include('layouts.landing_page.navbar')
+    @include('layouts.navbar')
 
     {{-- Section 1--}}
     <section class="first-section text-black py-5">
@@ -182,6 +182,6 @@
     </section>
 
     {{-- Footer --}}
-    @include('layouts.landing_page.footer')
+    @include('layouts.footer')
 
 @endsection
