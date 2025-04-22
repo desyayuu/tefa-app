@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'TEFA JTI POLINEMA')
+@section('title', 'TEFA | Layanan Kami')
 
 @section('content')
     {{-- Navbar --}}
@@ -20,18 +20,28 @@
         </div>
     </section>
 
-    <section id="layanan" class="section-layanan py-5">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-12 col-md-4 order-1 order-md-1 text-center mb-3 mb-md-0">
-                    <img src="{{ asset('images/landingpage/section4-laptop.png') }}" class="img-fluid rounded img-layanan">
-                </div>
-                <div class="col-12 col-md-8 order-2 order-md-2 align-items-center ">
-                    <div class="title-layanan text-center text-md-start">Pengembangan Software</div>
-                    <div class="text-muted text-center text-md-start">
-                        Kami menghadirkan solusi perangkat lunak yang inovatif dan sesuai kebutuhan bisnis Anda. Dari pembuatan website hingga aplikasi mobile, TEFA JTI Polinema siap membantu meningkatkan efisiensi dan produktivitas perusahaan Anda dengan teknologi terkini.
+    @foreach($jenisProyek as $layanan)
+        @php
+            $sectionId = 'layanan-' . $layanan->jenis_proyek_id;
+        @endphp
+
+            @if($loop->iteration % 2 != 0)
+                <section id="{{ $sectionId }}" class="section-layanan py-5">
+            @else
+                <section id="{{ $sectionId }}" class="py-5">
+            @endif
+                <div class="container">
+                    <div class="row align-items-center">
+                        <div class="col-12 col-md-4 {{ $loop->even ? 'order-1 order-md-2' : 'order-1 order-md-1' }} text-center mb-3 mb-md-0">
+                            <img src="{{ asset('storage/jenis_proyek/' . $layanan->img_jenis_proyek) }}" class="img-fluid rounded img-layanan" alt="{{ $layanan->nama_jenis_proyek }}">
+                        </div>
+                        <div class="col-12 col-md-8 {{ $loop->even ? 'order-2 order-md-1' : 'order-2 order-md-2' }}">
+                            <div class="title-layanan text-center text-md-start">{{ $layanan->nama_jenis_proyek }}</div>
+                            <div class="text-muted text-center text-md-start">{{ $layanan->deskripsi_jenis_proyek }}</div>
+                        </div>
                     </div>
                 </div>
+<<<<<<< HEAD:resources/views/pages/landing_page/layanan_kami.blade.php
             </div>
         </div>
     </section>
@@ -99,6 +109,10 @@
             </div>
         </div>
     </section>
+=======
+            </section>
+    @endforeach
+>>>>>>> development:resources/views/pages/layanan_kami.blade.php
 
     {{-- Footer --}}
     @include('layouts.landing_page.footer')

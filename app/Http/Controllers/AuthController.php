@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\AuthService;
 use Illuminate\Http\Request;
+use App\Services\AuthService;
 use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
@@ -15,22 +15,24 @@ class AuthController extends Controller
         $this->authService = $authService;
     }
     
-    /**
-     * Show login form
-     */
-    public function showLogin()
+    // Tampilkan form login
+    public function showLoginForm()
     {
-        return view('pages.landing_page.login');
+        return redirect()->route('beranda');
     }
     
-    /**
-     * Process login
-     */
+    // Tampilkan form register
+    public function showRegisterForm()
+    {
+        return view('pages.register');
+    }
+    
+    // Proses login
     public function login(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'email' => 'required|email',
-            'password' => 'required',
+            'password' => 'required|min:6',
         ]);
         
         if ($validator->fails()) {
@@ -39,90 +41,92 @@ class AuthController extends Controller
                 ->withInput($request->except('password'));
         }
         
-        $userData = $this->authService->login(
-            $request->email,
-            $request->password
-        );
+        $credentials = $request->only('email', 'password');
         
-        if (!$userData) {
-            return redirect()->back()
-                ->withErrors(['email' => 'Email atau password salah'])
-                ->withInput($request->except('password'));
+        if ($this->authService->login($credentials)) {
+            // Redirect berdasarkan role
+            switch(session('role')) {
+                case 'Dosen':
+                    return redirect()->route('dosen.dashboard');
+                case 'Mahasiswa':
+                    return redirect()->route('mahasiswa.dashboard');
+                case 'Koordinator':
+                    return redirect()->route('koordinator.dashboard');
+                default:
+                    return redirect()->route('login-landing-page')->with('error', 'Role tidak valid.');
+            }
         }
         
-        // Save user data to session
-        $request->session()->put('user', $userData);
-        
-        // Redirect based on role
-        $highestRoleId = min(array_column($userData['roles'], 'role_id'));
-        
-        switch ($highestRoleId) {
-            case 1: // Koordinator TEFA
-                return redirect()->route('koordinator.dashboard');
-            case 2: // Project Leader
-            case 3: // Project Member
-                return redirect()->route('dosen.dashboard');
-            default: // Mahasiswa
-                return redirect()->route('mahasiswa.dashboard');
-        }
+        return redirect()->back()
+            ->withErrors(['email' => 'Email atau password salah.'])
+            ->withInput($request->except('password'));
     }
     
-    /**
-     * Show register form for dosen
-     */
-    public function showRegister()
-    {
-        return view('pages.landing_page.register');
-    }
-    
-    /**
-     * Process dosen registration
-     */
+    // Proses register
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'nama' => 'required|string|max:255',
-            'nip' => 'required|numeric',
-            'telepon' => 'required|numeric',
             'email' => 'required|email|unique:d_user,email',
-            'password' => 'required|min:6|confirmed',
+            'password' => 'required|min:6',
+            'jenis_kelamin' => 'required|in:Laki-Laki,Perempuan',
+            'tanggal_lahir' => 'required|date',
+            'telepon' => 'required|numeric',
+            'nidn' => 'required|numeric|unique:d_dosen,nidn',
+            'profile_img' => 'nullable|image|max:2048',
+        ], 
+        [
+            'nama.required' => 'Name field is required.',
+            'nama.max' => 'Name cannot exceed 255 characters.',
+            'email.required' => 'Email field is required.',
+            'email.email' => 'Please enter a valid email address.',
+            'email.unique' => 'This email is already registered.',
+            'password.required' => 'Password field is required.',
+            'password.min' => 'Password must be at least 6 characters.',
+            'jenis_kelamin.required' => 'Gender field is required.',
+            'jenis_kelamin.in' => 'Please select a valid gender option.',
+            'tanggal_lahir.required' => 'Date of birth is required.',
+            'tanggal_lahir.date' => 'Please enter a valid date.',
+            'telepon.required' => 'Phone number is required.',
+            'telepon.numeric' => 'Phone number must contain only digits.',
+            'nidn.required' => 'NIP/NIDN field is required.',
+            'nidn.numeric' => 'NIP/NIDN must contain only digits.',
+            'nidn.unique' => 'This NIP/NIDN is already registered.',
+            'profile_img.image' => 'The uploaded file must be an image.',
+            'profile_img.max' => 'The image size cannot exceed 2MB.',
         ]);
         
         if ($validator->fails()) {
-            return redirect()->back()
+            return redirect()->route('register-landing-page')
                 ->withErrors($validator)
                 ->withInput($request->except('password', 'password_confirmation'));
         }
         
-        $userData = [
-            'nama' => $request->nama,
-            'email' => $request->email,
-            'password' => $request->password,
-            'telepon' => $request->telepon,
-            'nip' => $request->nip,
-            'created_at' => now(),
-        ];
-        
-        $roleIds = [2, 3];
-        
-        $userId = $this->authService->register($userData, $roleIds);
-        
-        if (!$userId) {
-            return redirect()->back()
-                ->withErrors(['general' => 'Gagal melakukan registrasi. Silakan coba lagi.'])
-                ->withInput($request->except('password', 'password_confirmation'));
+        // Handle profile image upload
+        $profileImgPath = null;
+        if ($request->hasFile('profile_img')) {
+            $profileImgPath = $request->file('profile_img')->store('profile_images', 'public');
         }
         
-        return redirect()->route('login')
-            ->with('success', 'Registrasi berhasil. Silakan login.');
+        // Prepare data for registration
+        $data = $request->all();
+        $data['profile_img'] = $profileImgPath;
+        
+        try {
+            $this->authService->registerDosen($data);
+            return redirect()->route('login-landing-page')->with('success', 'Registrasi berhasil! Silakan login.');
+        } catch (\Exception $e) {
+            return redirect()->route('register-landing-page') 
+                ->with('error', 'Terjadi kesalahan saat registrasi: ' . $e->getMessage())
+                ->withInput($request->except('password', 'password_confirmation'));
+        }
     }
     
-    /**
-     * Logout
-     */
-    public function logout(Request $request)
+    // Proses logout
+    public function logout()
     {
-        $request->session()->forget('user');
-        return redirect()->route('beranda');
+        
+        $this->authService->logout();
+        return redirect()->route('login');
     }
 }

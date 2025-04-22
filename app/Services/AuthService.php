@@ -2,136 +2,73 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\DB;
+use App\Repositories\UserRepository;
 use Illuminate\Support\Facades\Hash;
-use Ramsey\Uuid\Uuid;
+use Illuminate\Support\Facades\Auth;
 
 class AuthService
 {
-    /**
-     * Register a new user
-     * 
-     * @param array $userData
-     * @param array $roleIds
-     * @return string|false
-     */
-    public function register(array $userData, array $roleIds = [3]) //default role dosen 
+    protected $userRepository;
+    
+    public function __construct(UserRepository $userRepository)
     {
-        DB::beginTransaction();
-        
-        try {
-            // Generate UUID for user
-            $userId = Uuid::uuid4()->toString();
-            $userData['user_id'] = $userId;
-            
-            // Hash password
-            $userData['password'] = Hash::make($userData['password']);
-            
-            // Set timestamps
-            $userData['created_at'] = now();
-            
-            // Insert user
-            DB::table('d_user')->insert($userData);
-            
-            // Insert user roles
-            foreach ($roleIds as $roleId) {
-                DB::table('d_user_role')->insert([
-                    'user_id' => $userId,
-                    'role_id' => $roleId,
-                ]);
-            }
-            
-            DB::commit();
-            return $userId;
-            
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return false;
-        }
+        $this->userRepository = $userRepository;
     }
     
-    /**
-     * Attempt to login a user
-     * 
-     * @param string $email
-     * @param string $password
-     * @return array|false
-     */
-    public function login(string $email, string $password)
+    // Service untuk register dosen
+    public function registerDosen($data)
     {
-        // Get user by email
-        $user = DB::table('d_user')
-            ->where('email', $email)
-            ->whereNull('deleted_at')
-            ->first();
+        return $this->userRepository->registerDosen($data);
+    }
+    
+    // Service untuk login untuk semua role
+    public function login($credentials)
+    {
+        $user = $this->userRepository->findUserByEmail($credentials['email']);
         
-        if (!$user || !Hash::check($password, $user->password)) {
+        if (!$user || !Hash::check($credentials['password'], $user->password)) {
             return false;
         }
         
-        // Get user roles
-        $roles = DB::table('r_role')
-            ->join('d_user_role', 'r_role.role_id', '=', 'd_user_role.role_id')
-            ->where('d_user_role.user_id', $user->user_id)
-            ->select('r_role.role_id', 'r_role.nama_role')
-            ->get();
+        // Ambil data detail berdasarkan role
+        $userData = null;
+        switch ($user->role) {
+            case 'Dosen':
+                $userData = $this->userRepository->getDosenByUserId($user->user_id);
+                $role_id = 'dosen_id';
+                break;
+            case 'Mahasiswa':
+                $userData = $this->userRepository->getMahasiswaByUserId($user->user_id);
+                $role_id = 'mahasiswa_id';
+                break;
+            case 'Koordinator':
+                $userData = $this->userRepository->getKoordinatorByUserId($user->user_id);
+                $role_id = 'koordinator_id';
+                break;
+            default:
+                return false;
+        }
         
-        // Prepare user data for session
-        $userData = [
+        if (!$userData) {
+            return false;
+        }
+        
+        // Set session data
+        session([
             'user_id' => $user->user_id,
-            'nama' => $user->nama,
+            $role_id => $userData->{$role_id},
             'email' => $user->email,
-            'roles' => $roles->toArray(),
-        ];
+            'nama' => $userData->nama,
+            'role' => $user->role,
+        ]);
         
-        return $userData;
+        return true;
     }
     
-    /**
-     * Get user by ID with roles
-     * 
-     * @param string $userId
-     * @return object|null
-     */
-    public function getUserWithRoles(string $userId)
+    // Service untuk logout
+    public function logout()
     {
-        $user = DB::table('d_user')
-            ->where('user_id', $userId)
-            ->whereNull('deleted_at')
-            ->first();
-            
-        if (!$user) {
-            return null;
-        }
-        
-        $roles = DB::table('r_role')
-            ->join('d_user_role', 'r_role.role_id', '=', 'd_user_role.role_id')
-            ->where('d_user_role.user_id', $userId)
-            ->select('r_role.role_id', 'r_role.nama_role')
-            ->get();
-            
-        $user->roles = $roles;
-        return $user;
-    }
-    
-    /**
-     * Check if user has specific role
-     * 
-     * @param string $userId
-     * @param int|array $roleIds
-     * @return bool
-     */
-    public function hasRole(string $userId, $roleIds)
-    {
-        if (!is_array($roleIds)) {
-            $roleIds = [$roleIds];
-        }
-        
-        $count = DB::table('d_user_role')
-            ->where('user_id', $userId)
-            ->whereIn('role_id', $roleIds)
-            ->count();
-            
-        return $count > 0;
+        session()->flush();
+        return true;
     }
 }

@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title')</title>
 
+    <!-- Favicon -->
+    <link rel="icon" href="{{ asset('/images/logo.png') }}" type="image/png">
+
+
     <!-- Tambahkan preconnect di sini -->
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
@@ -12,14 +16,15 @@
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    @vite(['resources/css/app.css', 'resources/css/koordinator.css', 'resources/js/app.js'])
+
 </head>
 
-
 <body class="bg-light">
-
     @yield('content')
 
+    @stack('scripts')
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
