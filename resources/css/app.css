@@ -232,3 +232,33 @@ html {
 .input-icon input {
     padding-left: 2rem;
 }
+
+/* Mengubah warna latar belakang kotak pagination */
+.pagination .page-link {
+    background-color: #fff; /* Warna latar belakang kotak */
+    color: #3C21F7; /* Warna teks di dalam kotak */
+}
+
+/* Mengubah warna latar belakang saat hover */
+.pagination .page-link:hover {
+    background-color: #b8b2ff; /* Warna latar belakang saat hover */
+    color: #fff; /* Warna teks saat hover */
+}
+
+/* Warna latar belakang untuk halaman aktif */
+.pagination .page-item.active .page-link {
+    background-color: #b8b2ff; /* Warna latar belakang halaman aktif */
+    color: #3C21F7; /* Warna teks halaman aktif */
+    border-color: #b8b2ff; /* Warna border halaman aktif */
+}
+
+/* Warna latar belakang untuk halaman non-aktif */
+.pagination .page-item.disabled .page-link {
+    background-color: #f8f9fa; /* Warna latar belakang untuk halaman non-aktif */
+    color: #6c757d; /* Warna teks untuk halaman non-aktif */
+    border-color: #ddd; /* Warna border untuk halaman non-aktif */
+}
+
+.pagination-links{
+    margin-top: 20px;
+}

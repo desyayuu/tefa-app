@@ -303,5 +303,11 @@ body {
 
 .label-form{
     font-weight: lighter;
-    font-size: 16px;
+    font-size: 14px;
+}
+
+.daftar-mitra-container{
+    font-size: 14px;
+    font-weight: normal;
+    margin-top: 30px;
 }

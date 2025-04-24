@@ -8,49 +8,6 @@ use Carbon\Carbon;
 
 class UserRepository
 {
-    // Fungsi register untuk dosen
-    public function registerDosen($data)
-    {
-        try {
-            DB::beginTransaction();
-            
-            // Generate UUID untuk user_id dan dosen_id
-            $userId = (string) Str::uuid();
-            $dosenId = (string) Str::uuid();
-            $now = Carbon::now();
-            
-            // Insert ke tabel d_user
-            DB::table('d_user')->insert([
-                'user_id' => $userId,
-                'email' => $data['email'],
-                'password' => bcrypt($data['password']),
-                'role' => 'Dosen',
-                'created_at' => $now,
-                'updated_at' => $now
-            ]);
-            
-            // Insert ke tabel d_dosen
-            DB::table('d_dosen')->insert([
-                'dosen_id' => $dosenId,
-                'user_id' => $userId,
-                'nama' => $data['nama'],
-                // 'jenis_kelamin' => $data['jenis_kelamin'] ?? null,
-                // 'tanggal_lahir' => $data['tanggal_lahir'] ?? null,
-                'telepon' => $data['telepon'],
-                // 'profile_img' => $data['profile_img'] ?? null,
-                'nidn' => $data['nidn'],
-                'created_at' => $now,
-                'created_by' => 0
-            ]);
-            
-            DB::commit();
-            return true;
-        } catch (\Exception $e) {
-            DB::rollBack();
-            throw $e;
-        }
-    }
-    
     // Fungsi login
     public function findUserByEmail($email)
     {
@@ -89,5 +46,50 @@ class UserRepository
             ->where('d_koordinator.user_id', $userId)
             ->whereNull('d_koordinator.deleted_at')
             ->first();
+    }
+
+    public function getProfesionalByUserId($userId)
+    {
+        return DB::table('d_profesional')
+            ->where('user_id', $userId)
+            ->whereNull('deleted_at')
+            ->first();
+    }
+
+    public function registerDosen($userData, $dosenData)
+    {
+        DB::beginTransaction();
+        try {
+            // Insert user data
+            DB::table('d_user')->insert($userData);
+            
+            // Insert dosen data
+            DB::table('d_dosen')->insert($dosenData);
+            
+            DB::commit();
+            return true;
+        } catch (Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
+    }
+
+    public function registerProfesional($userData, $profesionalData)
+    {
+        DB::beginTransaction();
+        
+        try {
+            // Insert user data
+            DB::table('d_user')->insert($userData);
+            
+            // Insert profesional data
+            DB::table('d_profesional')->insert($profesionalData);
+            
+            DB::commit();
+            return true;
+        } catch (Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
     }
 }

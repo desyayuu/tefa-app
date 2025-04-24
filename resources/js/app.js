@@ -1,4 +1,5 @@
 import './bootstrap';
+import './koordinator';
 
 document.addEventListener('DOMContentLoaded', function() {
     const currentPath = window.location.pathname;
@@ -20,4 +21,5 @@ document.querySelectorAll('.has-submenu > a').forEach(item => {
         parent.classList.toggle('open');
     });
 });
+
 

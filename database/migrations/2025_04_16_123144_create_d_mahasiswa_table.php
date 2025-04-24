@@ -15,11 +15,11 @@ return new class extends Migration
             $table->string('mahasiswa_id', 36)->primary();
             $table->string('user_id', 36)->unique();
             $table->string('bidang_keahlian_id', 36)->nullable();
-            $table->string('nama');
-            $table->enum('jenis_kelamin', ['Laki-Laki', 'Perempuan'])->nullable();
-            $table->date('tanggal_lahir')->nullable();
-            $table->string('telepon');
-            $table->string('profile_img')->nullable();
+            $table->string('nama_mahasiswa');
+            $table->enum('jenis_kelamin_mahasiswa', ['Laki-Laki', 'Perempuan'])->nullable();
+            $table->date('tanggal_lahir_mahasiswa')->nullable();
+            $table->string('telepon_mahasiswa')->nullable();
+            $table->string('profile_img_mahasiswa')->nullable();
             $table->string('nim')->unique();
             $table->string('linkedin')->nullable();
             $table->string('github')->nullable();

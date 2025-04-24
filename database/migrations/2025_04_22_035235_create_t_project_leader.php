@@ -11,20 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('m_bidang_keahlian', function (Blueprint $table) {
-            $table->string('bidang_keahlian_id', 36)->primary();
-            $table->string('nama_bidang_keahlian');
-            $table->text('deskripsi_bidang_keahlian')->nullable();
+        Schema::create('t_project_leader', function (Blueprint $table) {
+            $table->string('project_leader_id', 36)->primary();
+            $table->string('dosen_id', 36);
+            $table->string('proyek_id', 36);
             $table->dateTime('created_at')->nullable();
             $table->string('created_by', 36)->nullable();
             $table->dateTime('updated_at')->nullable();
             $table->string('updated_by', 36)->nullable();
             $table->dateTime('deleted_at')->nullable();
             $table->string('deleted_by', 36)->nullable();
-        });
 
-        Schema::table('d_mahasiswa', function (Blueprint $table) {
-            $table->foreign('bidang_keahlian_id')->references('bidang_keahlian_id')->on('m_bidang_keahlian');
+            $table->foreign('dosen_id')->references('dosen_id')->on('d_dosen');
+            $table->foreign('proyek_id')->references('proyek_id')->on('m_proyek');
         });
     }
 
@@ -33,6 +32,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('m_bidang_keahlian_');
+        Schema::dropIfExists('t_project_leader');
     }
 };

@@ -11,20 +11,22 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('m_bidang_keahlian', function (Blueprint $table) {
-            $table->string('bidang_keahlian_id', 36)->primary();
-            $table->string('nama_bidang');
-            $table->text('deskripsi')->nullable();
+        Schema::create('d_profesional', function (Blueprint $table) {
+            $table->string('profesional_id', 36)->primary();
+            $table->string('user_id', 36)->unique();
+            $table->string('nama_profesional');
+            $table->enum('jenis_kelamin_profesional', ['Laki-Laki', 'Perempuan'])->nullable();
+            $table->date('tanggal_lahir_profesional')->nullable();
+            $table->string('telepon_profesional')->nullable();
+            $table->string('profile_img_profesional')->nullable();
             $table->dateTime('created_at')->nullable();
             $table->string('created_by', 36)->nullable();
             $table->dateTime('updated_at')->nullable();
             $table->string('updated_by', 36)->nullable();
             $table->dateTime('deleted_at')->nullable();
             $table->string('deleted_by', 36)->nullable();
-        });
-
-        Schema::table('d_mahasiswa', function (Blueprint $table) {
-            $table->foreign('bidang_keahlian_id')->references('bidang_keahlian_id')->on('m_bidang_keahlian');
+            
+            $table->foreign('user_id')->references('user_id')->on('d_user');
         });
     }
 
@@ -33,6 +35,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('m_bidang_keahlian_');
+        Schema::dropIfExists('d_profesional');
     }
 };
