@@ -211,6 +211,38 @@
 
 
                     <!-- Modal konfirmasi delete -->
+                    <div class="modal fade" id="modalDelete{{ $u->user_id }}" tabindex="-1" aria-labelledby="deleteLabel{{ $u->user_id }}" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <form action="{{ route('koordinator.deleteUser', $u->user_id) }}" method="POST">
+                                    @csrf
+                                    @method('DELETE')
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="deleteLabel{{ $u->user_id }}">Konfirmasi</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        Apakah yakin ingin menghapus data 
+                                        <strong>
+                                                @if ($u->role == 'Dosen')
+                                                    {{ $u->nama_dosen }}
+                                                @elseif ($u->role == 'Mahasiswa')
+                                                    {{ $u->nama_mahasiswa }}
+                                                @elseif ($u->role == 'Profesional')
+                                                    {{ $u->nama_profesional }}
+                                                @elseif ($u->role == 'Koordinator')
+                                                    {{ $u->nama_koordinator }}
+                                                @endif
+                                        </strong>?
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-tutup" data-bs-dismiss="modal">Batal</button>
+                                        <button type="submit" class="btn btn-hapus">Hapus</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
 
 
                     @empty

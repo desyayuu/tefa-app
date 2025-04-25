@@ -26,5 +26,6 @@ Route::middleware([KoordinatorMiddleware::class])->prefix('koordinator')->group(
     //Data User
     Route::get('/data-user', [KoordinatorController::class, 'getDataUser'])->name('koordinator.dataUser');
     Route::put('/koordinator/user/{id}/update-status', [KoordinatorController::class, 'updateStatusUser'])->name('koordinator.updateStatusUser');
+    Route::delete('/koordinator/user/{id}', [KoordinatorController::class, 'deleteDataUser'])->name('koordinator.deleteUser');
 
 });

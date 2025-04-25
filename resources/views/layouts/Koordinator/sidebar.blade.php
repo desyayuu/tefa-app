@@ -66,6 +66,17 @@
             </ul>
         </li>
         <li>
+            <a href="{{ route('koordinator.dataUser') }}" class="{{ request()->routeIs('koordinator.dataUser') ? 'active' : '' }}">
+                <span class="icon">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M11.997 15.1743C7.684 15.1743 4 15.8543 4 18.5743C4 21.2953 7.661 21.9993 11.997 21.9993C16.31 21.9993 19.994 21.3203 19.994 18.5993C19.994 15.8783 16.334 15.1743 11.997 15.1743Z" fill="#878787"/>
+                        <path opacity="0.4" d="M11.9971 12.5835C14.9351 12.5835 17.2891 10.2285 17.2891 7.29151C17.2891 4.35451 14.9351 1.99951 11.9971 1.99951C9.06008 1.99951 6.70508 4.35451 6.70508 7.29151C6.70508 10.2285 9.06008 12.5835 11.9971 12.5835Z" fill="#878787"/>
+                    </svg>
+                </span>
+                <span class="menu-text">Data User</span>
+            </a>
+        </li>
+        <li>
             <a href="{{ route('koordinator.dataDosen') }}" class="{{ request()->routeIs('koordinator.dataDosen') ? 'active' : '' }}">
                 <span class="icon">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -77,6 +88,28 @@
             </a>
         </li>
         <li>
+            <a href="" >
+                <span class="icon">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M11.997 15.1743C7.684 15.1743 4 15.8543 4 18.5743C4 21.2953 7.661 21.9993 11.997 21.9993C16.31 21.9993 19.994 21.3203 19.994 18.5993C19.994 15.8783 16.334 15.1743 11.997 15.1743Z" fill="#878787"/>
+                        <path opacity="0.4" d="M11.9971 12.5835C14.9351 12.5835 17.2891 10.2285 17.2891 7.29151C17.2891 4.35451 14.9351 1.99951 11.9971 1.99951C9.06008 1.99951 6.70508 4.35451 6.70508 7.29151C6.70508 10.2285 9.06008 12.5835 11.9971 12.5835Z" fill="#878787"/>
+                    </svg>
+                </span>
+                <span class="menu-text">Data Profesional</span>
+            </a>
+        </li>
+        <li>
+            <a href="" >
+                <span class="icon">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M11.997 15.1743C7.684 15.1743 4 15.8543 4 18.5743C4 21.2953 7.661 21.9993 11.997 21.9993C16.31 21.9993 19.994 21.3203 19.994 18.5993C19.994 15.8783 16.334 15.1743 11.997 15.1743Z" fill="#878787"/>
+                        <path opacity="0.4" d="M11.9971 12.5835C14.9351 12.5835 17.2891 10.2285 17.2891 7.29151C17.2891 4.35451 14.9351 1.99951 11.9971 1.99951C9.06008 1.99951 6.70508 4.35451 6.70508 7.29151C6.70508 10.2285 9.06008 12.5835 11.9971 12.5835Z" fill="#878787"/>
+                    </svg>
+                </span>
+                <span class="menu-text">Data Mahasiswa</span>
+            </a>
+        </li>
+        <li>
             <a href="{{ route('koordinator.dataMitra') }}" class="{{ request()->routeIs('koordinator.dataMitra') ? 'active' : '' }}">
                 <span class="icon">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -85,17 +118,6 @@
                     </svg>
                 </span>
                 <span class="menu-text">Data Mitra</span>
-            </a>
-        </li>
-        <li>
-            <a href="{{ route('koordinator.dataUser') }}" class="{{ request()->routeIs('koordinator.dataUser') ? 'active' : '' }}">
-                <span class="icon">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M11.997 15.1743C7.684 15.1743 4 15.8543 4 18.5743C4 21.2953 7.661 21.9993 11.997 21.9993C16.31 21.9993 19.994 21.3203 19.994 18.5993C19.994 15.8783 16.334 15.1743 11.997 15.1743Z" fill="#878787"/>
-                        <path opacity="0.4" d="M11.9971 12.5835C14.9351 12.5835 17.2891 10.2285 17.2891 7.29151C17.2891 4.35451 14.9351 1.99951 11.9971 1.99951C9.06008 1.99951 6.70508 4.35451 6.70508 7.29151C6.70508 10.2285 9.06008 12.5835 11.9971 12.5835Z" fill="#878787"/>
-                    </svg>
-                </span>
-                <span class="menu-text">Data User</span>
             </a>
         </li>
         <li>
