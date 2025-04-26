@@ -184,8 +184,8 @@ class KoordinatorController extends Controller
     }
     
 
-    public function getDataMitra(Request $request)
-    {
+    //Mitra
+    public function getDataMitra(Request $request){
         $search = $request->input('search');
     
         $query = DB::table('d_mitra_proyek')
@@ -204,8 +204,7 @@ class KoordinatorController extends Controller
     }
     
     
-    public function storeDataMitra(Request $request)
-    {
+    public function storeDataMitra(Request $request){
         try{
             $request->validate([
                 'nama_mitra' => 'required|string|max:255',
@@ -406,6 +405,7 @@ class KoordinatorController extends Controller
         ]);
     }
 
+    //Proyek
     public function getDataProyek(Request $request){
 
         $jenisProyek = DB::table('m_jenis_proyek')->get();
@@ -504,8 +504,7 @@ class KoordinatorController extends Controller
     
 
     //Dosen 
-    public function getDataDosen(Request $request)
-    {
+    public function getDataDosen(Request $request){
         $search = $request->input('search');
         
         $query = DB::table('d_dosen')
@@ -518,7 +517,7 @@ class KoordinatorController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->where('d_dosen.nama', 'like', "%{$search}%")
                 ->orWhere('d_user.email', 'like', "%{$search}%")
-                ->orWhere('d_dosen.nidn', 'like', "%{$search}%");
+                ->orWhere('d_dosen.nidn_dosen', 'like', "%{$search}%");
             });
         }
     
@@ -527,6 +526,352 @@ class KoordinatorController extends Controller
         
         return view('pages.Koordinator.data_dosen', compact('dosen', 'search'), [
             'titleSidebar' => 'Data Dosen',
+        ]);
+    }
+
+    public function tambahDataDosen(Request $request) {
+        try {
+            \Log::info('Starting tambahDataDosen', [
+                'has_file' => $request->hasFile('profile_img_dosen'),
+                'single_mode' => $request->input('is_single') === '1',
+                'request_keys' => $request->keys()
+            ]);
+            
+            $isSingle = $request->input('is_single') === '1';
+            
+            if ($isSingle) {
+                // Validasi data single - make image optional
+                $request->validate([
+                    'nama_dosen' => 'required|string|max:255',
+                    'nidn_dosen' => 'required|string|unique:d_dosen,nidn_dosen',
+                    'email_dosen' => 'required|email|unique:d_user,email',
+                    'status' => 'required|in:Active,Rejected,Pending,Disabled',
+                    'profile_img_dosen' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Made optional
+                    'telepon_dosen' => 'nullable|string|max:20',
+                    'tanggal_lahir_dosen' => 'nullable|date',
+                    'jenis_kelamin_dosen' => 'nullable|in:Laki-Laki,Perempuan',
+                ], 
+                [
+                    'email_dosen.unique' => 'Email sudah terdaftar dalam sistem.',
+                    'nidn_dosen.unique' => 'NIDN sudah terdaftar dalam sistem.',
+                    'nama_dosen.required' => 'Nama dosen harus diisi.',
+                    'nidn_dosen.required' => 'NIDN harus diisi.',
+                    'email_dosen.required' => 'Email harus diisi.',
+                    'status.required' => 'Status harus diisi.',
+                    'email_dosen.email' => 'Format email tidak valid.',
+                    'profile_img_dosen.image' => 'File harus berupa gambar.',
+                    'profile_img_dosen.mimes' => 'Format gambar tidak valid. Hanya jpeg, png, jpg, gif yang diperbolehkan.',
+                    'profile_img_dosen.max' => 'Ukuran gambar terlalu besar. Maksimal 2MB.',
+                ]);
+    
+                // Cek duplikat NIDN dan email
+                $nidnExists = DB::table('d_dosen')->where('nidn_dosen', $request->input('nidn_dosen'))->exists();
+                $emailExists = DB::table('d_user')->where('email', $request->input('email_dosen'))->exists();
+                
+                if ($nidnExists) {
+                    return back()->withInput()->withErrors(['nidn_dosen' => 'NIDN sudah ada di daftar data dosen.']);
+                } else if ($emailExists) {
+                    return back()->withInput()->withErrors(['email_dosen' => 'Email sudah ada di daftar data dosen.']);
+                }
+                
+                // Generate UUID
+                $userId = Str::uuid();
+                $dosenId = Str::uuid();
+                
+                // Begin transaction
+                DB::beginTransaction();
+                
+                try {
+                    // Insert user data
+                    DB::table('d_user')->insert([
+                        'user_id' => $userId,
+                        'email' => $request->input('email_dosen'),
+                        'password' => bcrypt($request->input('password') ?: $request->input('nidn_dosen')),
+                        'role' => 'Dosen',
+                        'status' => $request->input('status', 'Active'),
+                        'created_at' => now(),
+                        'created_by' => session('user_id'),
+                    ]);
+                    
+                    // Persiapkan data dosen
+                    $dosenData = [
+                        'dosen_id' => $dosenId,
+                        'user_id' => $userId,
+                        'nama_dosen' => $request->input('nama_dosen'),
+                        'nidn_dosen' => $request->input('nidn_dosen'),
+                        'tanggal_lahir_dosen' => $request->filled('tanggal_lahir_dosen') ? $request->input('tanggal_lahir_dosen') : null,
+                        'jenis_kelamin_dosen' => $request->input('jenis_kelamin_dosen'),
+                        'telepon_dosen' => $request->input('telepon_dosen'),
+                        'created_at' => now(),
+                        'created_by' => session('user_id'),
+                    ];
+                    
+                    // Handle profile image upload - THE IMPORTANT PART
+                    if ($request->hasFile('profile_img_dosen')) {
+                        $file = $request->file('profile_img_dosen');
+                        
+                        \Log::info('File upload attempt', [
+                            'original_name' => $file->getClientOriginalName(),
+                            'mime_type' => $file->getClientMimeType(),
+                            'size' => $file->getSize(),
+                            'error' => $file->getError(),
+                            'is_valid' => $file->isValid()
+                        ]);
+                        
+                        if ($file->isValid()) {
+                            // Create directory if it doesn't exist
+                            $uploadPath = public_path('uploads/profile_dosen');
+                            if (!is_dir($uploadPath)) {
+                                mkdir($uploadPath, 0777, true);
+                            }
+                            
+                            // Generate unique filename
+                            $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                            
+                            try {
+                                // Use move method (more reliable than move_uploaded_file)
+                                if ($file->move($uploadPath, $filename)) {
+                                    // Store relative path in database
+                                    $dosenData['profile_img_dosen'] = 'uploads/profile_dosen/' . $filename;
+                                    
+                                    \Log::info('File successfully uploaded', [
+                                        'path' => $dosenData['profile_img_dosen'],
+                                        'full_path' => $uploadPath . '/' . $filename
+                                    ]);
+                                } else {
+                                    throw new \Exception("Failed to move uploaded file");
+                                }
+                            } catch (\Exception $e) {
+                                \Log::error('File upload exception', [
+                                    'error' => $e->getMessage(),
+                                    'trace' => $e->getTraceAsString()
+                                ]);
+                                throw $e;
+                            }
+                        } else {
+                            \Log::error('File is not valid', ['error_code' => $file->getError()]);
+                            throw new \Exception("Uploaded file is not valid");
+                        }
+                    } else {
+                        \Log::info('No file in request for single mode', [
+                            'has_file' => $request->hasFile('profile_img_dosen'),
+                            'request_keys' => $request->keys()
+                        ]);
+                    }
+                    
+                    // Insert dosen data
+                    DB::table('d_dosen')->insert($dosenData);
+                    
+                    DB::commit();
+                    return redirect()->route('koordinator.dataDosen')->with('success', 'Data dosen berhasil ditambahkan.');
+                } catch (\Exception $e) {
+                    DB::rollBack();
+                    \Log::error('Error adding dosen data', [
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString()
+                    ]);
+                    return redirect()->route('koordinator.dataDosen')->with('error', 'Gagal menambahkan data: ' . $e->getMessage());
+                }
+            } else {
+                // Mode multiple
+                $dosenData = json_decode($request->input('dosen_data'), true);
+                
+                \Log::info('Multiple mode data', [
+                    'dosenData' => $dosenData,
+                    'files' => $request->files->all() 
+                ]);
+                
+                if (empty($dosenData)) {
+                    return redirect()->route('koordinator.dataDosen')->with('error', 'Tidak ada data dosen untuk ditambahkan.');
+                }
+                
+                DB::beginTransaction();
+                
+                try {
+                    $insertedCount = 0;
+                    $errors = [];
+                    
+                    foreach ($dosenData as $index => $dosen) {
+                        // Validate required fields
+                        if (empty($dosen['nama_dosen']) || empty($dosen['nidn_dosen']) || empty($dosen['email_dosen'])) {
+                            array_push($errors, 'Data dosen tidak lengkap: ' . ($dosen['nama_dosen'] ?? 'Unnamed'));
+                            continue;
+                        }
+                        
+                        $nidnExists = DB::table('d_dosen')->where('nidn_dosen', $dosen['nidn_dosen'])->exists();
+                        $emailExists = DB::table('d_user')->where('email', $dosen['email_dosen'])->exists();
+                        
+                        if ($nidnExists) {
+                            array_push($errors, 'NIDN ' . $dosen['nidn_dosen'] . ' sudah terdaftar.');
+                            continue;
+                        }
+                        
+                        if ($emailExists) {
+                            array_push($errors, 'Email ' . $dosen['email_dosen'] . ' sudah terdaftar.');
+                            continue;
+                        }
+                        
+                        $userId = Str::uuid();
+                        $dosenId = Str::uuid();
+                        
+                        // Insert user data
+                        DB::table('d_user')->insert([
+                            'user_id' => $userId,
+                            'email' => $dosen['email_dosen'],
+                            'password' => bcrypt($dosen['password'] ?: $dosen['nidn_dosen']),
+                            'role' => 'Dosen',
+                            'status' => $dosen['status'] ?? 'Active',
+                            'created_at' => now(),
+                            'created_by' => session('user_id'),
+                        ]);
+                        
+                        $jenisKelamin = null;
+                        if (!empty($dosen['jenis_kelamin_dosen'])) {
+                            if ($dosen['jenis_kelamin_dosen'] === 'Laki-laki') {
+                                $jenisKelamin = 'Laki-Laki';
+                            } else if ($dosen['jenis_kelamin_dosen'] === 'Perempuan') {
+                                $jenisKelamin = 'Perempuan';
+                            } else {
+                                $jenisKelamin = $dosen['jenis_kelamin_dosen'];
+                            }
+                        }
+                        
+                        // Prepare dosen record
+                        $dosenRecord = [
+                            'dosen_id' => $dosenId,
+                            'user_id' => $userId,
+                            'nama_dosen' => $dosen['nama_dosen'],
+                            'nidn_dosen' => $dosen['nidn_dosen'],
+                            'tanggal_lahir_dosen' => !empty($dosen['tanggal_lahir_dosen']) ? $dosen['tanggal_lahir_dosen'] : null,
+                            'jenis_kelamin_dosen' => $jenisKelamin,
+                            'telepon_dosen' => $dosen['telepon_dosen'] ?? null,
+                            'created_at' => now(),
+                            'created_by' => session('user_id'),
+                        ];
+                        
+                        // Check if this entry has a file
+                        $fileKey = "profile_img_dosen_{$index}";
+                        \Log::info("Checking for file {$fileKey}", [
+                            'has_file' => $request->hasFile($fileKey),
+                            'all_files' => array_keys($request->files->all())
+                        ]);
+                        
+                        if ($request->hasFile($fileKey)) {
+                            $file = $request->file($fileKey);
+                            
+                            \Log::info("Processing file for index {$index}", [
+                                'file_key' => $fileKey,
+                                'file_name' => $file->getClientOriginalName(),
+                                'file_size' => $file->getSize()
+                            ]);
+                            
+                            if ($file->isValid()) {
+                                // Create directory if it doesn't exist
+                                $uploadPath = public_path('uploads/profile_dosen');
+                                if (!is_dir($uploadPath)) {
+                                    mkdir($uploadPath, 0777, true);
+                                }
+                                
+                                // Generate unique filename
+                                $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                                
+                                // Move the file
+                                if ($file->move($uploadPath, $filename)) {
+                                    // Set the file path in the record
+                                    $dosenRecord['profile_img_dosen'] = 'uploads/profile_dosen/' . $filename;
+                                    
+                                    \Log::info('File upload success for multiple mode', [
+                                        'index' => $index,
+                                        'path' => $dosenRecord['profile_img_dosen']
+                                    ]);
+                                } else {
+                                    \Log::error('Failed to move file for multiple mode', [
+                                        'index' => $index,
+                                        'file' => $file->getClientOriginalName()
+                                    ]);
+                                }
+                            } else {
+                                \Log::error('Invalid file for multiple mode', [
+                                    'index' => $index,
+                                    'error' => $file->getError()
+                                ]);
+                            }
+                        } else if (isset($dosen['has_profile_img']) && $dosen['has_profile_img']) {
+                            \Log::warning("File flag set but no file found for index {$index}", [
+                                'file_key' => $fileKey
+                            ]);
+                        }
+                        
+                        // Insert the dosen record
+                        DB::table('d_dosen')->insert($dosenRecord);
+                        
+                        $insertedCount++;
+                    }
+                    
+                    DB::commit();
+                    
+                    if (count($errors) > 0) {
+                        $errorMessage = implode('<br>', $errors);
+                        return redirect()->route('koordinator.dataDosen')
+                            ->with('warning', "$insertedCount data dosen berhasil ditambahkan.<br>Beberapa error terjadi:<br>$errorMessage");
+                    }
+                    
+                    return redirect()->route('koordinator.dataDosen')
+                        ->with('success', "$insertedCount data dosen berhasil ditambahkan.");
+                } catch (\Exception $e) {
+                    DB::rollBack();
+                    \Log::error('Error adding multiple dosen data', [
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString()
+                    ]);
+                    return redirect()->route('koordinator.dataDosen')
+                        ->with('error', 'Gagal menambahkan data dosen: ' . $e->getMessage());
+                }
+            }
+        } catch (\Exception $e) {
+            \Log::error('Exception in tambahDataDosen', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return redirect()->route('koordinator.dataDosen')
+                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+
+    public function checkEmailNidnExists(Request $request)
+    {
+        // Log input untuk debugging
+        \Log::info('Check email/nidn request:', $request->all());
+        
+        $email = $request->input('email_dosen');
+        $nidn = $request->input('nidn_dosen');
+        
+        $emailExists = false;
+        $nidnExists = false;
+        
+        if ($email) {
+            $emailExists = DB::table('d_user')
+                ->where('email', $email)
+                ->exists();
+        }
+        
+        if ($nidn) {
+            $nidnExists = DB::table('d_dosen')
+                ->where('nidn_dosen', $nidn)
+                ->exists();
+        }
+        
+        // Log hasil untuk debugging
+        \Log::info('Check result:', [
+            'email' => $email,
+            'nidn' => $nidn,
+            'emailExists' => $emailExists,
+            'nidnExists' => $nidnExists
+        ]);
+        
+        return response()->json([
+            'emailExists' => $emailExists,
+            'nidnExists' => $nidnExists
         ]);
     }
 }

@@ -22,6 +22,8 @@ Route::middleware([KoordinatorMiddleware::class])->prefix('koordinator')->group(
 
     //Data Dosen
     Route::get('/data-dosen', [KoordinatorController::class, 'getDataDosen'])->name('koordinator.dataDosen');
+    Route::post('/data-dosen', [KoordinatorController::class, 'tambahDataDosen'])->name('koordinator.tambahDataDosen');
+    Route::post('/check-email-nidn-exists', [KoordinatorController::class, 'checkEmailNidnExists'])->name('koordinator.checkEmailNidnExists');
 
     //Data User
     Route::get('/data-user', [KoordinatorController::class, 'getDataUser'])->name('koordinator.dataUser');

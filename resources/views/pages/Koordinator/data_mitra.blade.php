@@ -285,5 +285,5 @@
 
 @section('scripts')
 
-    <script src="{{ asset('js/koordinator.js') }}"></script>
+    <script src="{{ asset('js/Koordiantor/data_mitra.js') }}"></script>
 @endsection

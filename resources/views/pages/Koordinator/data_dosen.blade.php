@@ -11,38 +11,7 @@
         @include('layouts.Koordinator.header')
 
         <div class="content-table">
-            <!-- Handling Error and Success -->
-            @if(session('success'))
-            <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
-                {{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-            @endif
-
-            @if(session('error'))
-            <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
-                {{ session('error') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-            @endif
-
-            @if(session('warning'))
-            <div class="alert alert-warning alert-dismissible fade show mt-3" role="alert">
-                {{ session('warning') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-            @endif
-
-            @if($errors->any())
-            <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
-                <ul class="mb-0">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-            @endif
+            @include('components.handling_error')
             
             <div class="title-table d-flex justify-content-between align-items-center mb-3">
                 <h4 class="m-0">Data Dosen</h4>
@@ -66,89 +35,128 @@
                     </a>
                     @endif
                     
-                    <!-- Modal Tambah Data Dosen -->
-                    <div class="modal fade" id="exampleModalToggle" aria-hidden="true" aria-labelledby="exampleModalToggleLabel" tabindex="-1">
-                        <div class="modal-dialog modal-dialog-centered">
+                    <!-- Modal Tambah Data Dosen (Single dan Multiple) -->
+                    <div class="modal fade" id="modalTambahDosen" aria-hidden="true" aria-labelledby="modalTambahDosenLabel" tabindex="-1">
+                        <div class="modal-dialog modal-lg modal-dialog-centered">
                             <div class="modal-content">
-                                <form action="" method="POST" enctype="multipart/form-data">
+                                <form action="{{route ('koordinator.tambahDataDosen') }}" method="POST" id="formTambahDosen" enctype="multipart/form-data">
                                     @csrf
                                     <div class="modal-header">
-                                        <h1 class="modal-title fs-5" id="exampleModalToggleLabel">Tambah Data Dosen</h1>
+                                        <h1 class="modal-title fs-5" id="modalTambahDosenLabel">Tambah Data Dosen</h1>
                                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                     </div>
-                                    <div class="modal-body">
-                                        <div class="row">
+                                    <div class="modal-body label-form">
+                                        <div class="row mb-3">
                                             <!-- Nama Dosen -->
-                                            <div class="mb-3 col-md-6">
-                                                <label for="nama_dosen" class="form-label label-form">Nama Dosen</label>
-                                                <input type="text" class="form-control" id="nama_dosen" name="nama_dosen" required>
+                                            <div class="mb-2 col-md-6">
+                                                <label for="nama_dosen" class="form-label">Nama Dosen</label>
+                                                <input type="text" class="form-control" id="nama_dosen" name="nama_dosen">
+                                                <div class="invalid-feedback" id="nama_dosen_error"></div>
                                             </div>
                                             <!-- NIDN -->
-                                            <div class="mb-3 col-md-6">
-                                                <label for="nidn" class="form-label label-form">NIDN</label>
-                                                <input type="text" class="form-control" id="nidn" name="nidn" required>
+                                            <div class="mb-2 col-md-6">
+                                                <label for="nidn_dosen" class="form-label">NIDN/NIP</label>
+                                                <input type="text" class="form-control" id="nidn_dosen" name="nidn_dosen">
+                                                <div class="invalid-feedback" id="nidn_error"></div>
                                             </div>
-                                        </div>
-                                        <div class="row">
-                                            <!-- Tanggal Lahir -->
-                                            <div class="mb-3 col-md-6">
-                                                <label for="tanggal_lahir" class="form-label label-form">Tanggal Lahir</label>
-                                                <input type="date" class="form-control" id="tanggal_lahir" name="tanggal_lahir" required>
-                                            </div>
-                                            <!-- Jenis Kelamin -->
-                                            <div class="mb-3 col-md-6">
-                                                <label for="jenis_kelamin" class="form-label label-form">Jenis Kelamin</label>
-                                                <select class="form-select" id="jenis_kelamin" name="jenis_kelamin" required>
-                                                    <option value="" disabled selected>Pilih Jenis Kelamin</option>
-                                                    <option value="Laki-laki">Laki-laki</option>
-                                                    <option value="Perempuan">Perempuan</option>
+                                            <!-- Status Akun -->
+                                            <div class="mb-2 col-md-4">
+                                                <label for="status" class="form-label">Status Akun</label>
+                                                <select class="form-select" id="status" name="status">
+                                                    <option value="Active" selected>Active</option>
+                                                    <option value="Pending">Pending</option>
+                                                    <option value="Rejected">Rejected</option>
+                                                    <option value="Disabled">Disabled</option>
                                                 </select>
-                                            </div>
-                                        </div>
-                                        <div class="row">
-                                            <!-- Telepon -->
-                                            <div class="mb-3 col-md-6">
-                                                <label for="telepon_dosen" class="form-label label-form">Telepon</label>
-                                                <input type="text" class="form-control" id="telepon_dosen" name="telepon_dosen" required>
+                                                <div class="invalid-feedback" id="status_error"></div>
                                             </div>
                                             <!-- Email -->
-                                            <div class="mb-3 col-md-6">
-                                                <label for="email_dosen" class="form-label label-form">Email</label>
-                                                <input type="email" class="form-control" id="email_dosen" name="email_dosen" required>
+                                            <div class="mb-2 col-md-4">
+                                                <label for="email_dosen" class="form-label">Email</label>
+                                                <input type="email" class="form-control" id="email_dosen" name="email_dosen">
+                                                <div class="invalid-feedback" id="email_dosen_error"></div>
                                             </div>
-                                        </div>
-                                        <div class="row">
-                                            <!-- Alamat -->
-                                            <div class="mb-3 col-md-6">
-                                                <label for="alamat_dosen" class="form-label label-form">Alamat</label>
-                                                <textarea class="form-control" id="alamat_dosen" name="alamat_dosen" rows="2" required></textarea>
+                                            <!-- Password -->
+                                            <div class="mb-2 col-md-4">
+                                                <label for="password" class="form-label">Password</label>
+                                                <input type="password" class="form-control" id="password" name="password" placeholder="Kosong = NIDN">
+                                                <div class="invalid-feedback" id="password_error"></div>
+                                            </div>
+                                            <!-- Tanggal Lahir -->
+                                            <div class="mb-2 col-md-4">
+                                                <label for="tanggal_lahir_dosen" class="form-label">Tanggal Lahir</label>
+                                                <input type="date" class="form-control" id="tanggal_lahir_dosen" name="tanggal_lahir_dosen">
+                                                <div class="invalid-feedback" id="tanggal_lahir_error"></div>
+                                            </div>
+                                            <!-- Jenis Kelamin -->
+                                            <div class="mb-2 col-md-4">
+                                                <label for="jenis_kelamin_dosen" class="form-label">Jenis Kelamin</label>
+                                                <select class="form-select" id="jenis_kelamin_dosen" name="jenis_kelamin_dosen">
+                                                    <option value="" selected>Pilih Jenis Kelamin</option>
+                                                    <option value="Laki-Laki">Laki-Laki</option>
+                                                    <option value="Perempuan">Perempuan</option>
+                                                </select>
+                                                <div class="invalid-feedback" id="jenis_kelamin_error"></div>
+                                            </div>
+                                            <!-- Telepon -->
+                                            <div class="mb-2 col-md-4">
+                                                <label for="telepon_dosen" class="form-label">Telepon</label>
+                                                <input type="text" class="form-control" id="telepon_dosen" name="telepon_dosen">
+                                                <div class="invalid-feedback" id="telepon_dosen_error"></div>
                                             </div>
                                             <!-- Foto Profil -->
-                                            <div class="mb-3 col-md-6">
-                                                <label for="profile_img" class="form-label label-form">Foto Profil</label>
-                                                <input type="file" class="form-control" id="profile_img" name="profile_img" accept="image/*">
+                                            <div class="mb-2 col-md-6">
+                                                <label for="profile_img_dosen" class="form-label">Foto Profil</label>
+                                                <input type="file" class="form-control" id="profile_img_dosen" name="profile_img_dosen" accept="image/*">
+                                                <div class="invalid-feedback" id="profile_img_dosen_error"></div>
+                                                <small class="text-muted">Format gambar: jpeg, png, jpg, gif. Maksimal 2MB.</small>
+                                            </div>
+                                            <div class="mt-2">
+                                                <div class="col-12 text-end">
+                                                    <button type="button" class="btn btn-add" id="btnTambahkanKeDaftar">Tambahkan ke Daftar</button>
+                                                </div>
                                             </div>
                                         </div>
-                                        <div class="row">
-                                            <!-- Password -->
-                                            <div class="mb-3 col-md-6">
-                                                <label for="password" class="form-label label-form">Password</label>
-                                                <input type="password" class="form-control" id="password" name="password" required>
+                                        
+                                        <!-- Error message for form submit -->
+                                        <div class="alert alert-danger d-none" id="form_error"></div>
+                                        
+                                        <div class="daftar-dosen-container mt-5">
+                                            <h5>Daftar Dosen yang Akan Ditambahkan</h5>
+                                            <div class="table-responsive">
+                                                <table class="table table-bordered table-striped">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Nama Dosen</th>
+                                                            <th>NIDN/NIP</th>
+                                                            <th>Email</th>
+                                                            <th>Status</th>
+                                                            <th>Aksi</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="daftarDosen">
+                                                        <tr id="emptyRow">
+                                                            <td colspan="5" class="text-center">Belum ada dosen yang ditambahkan ke daftar</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
                                             </div>
+                                            
+                                            <!-- Hidden input untuk menyimpan data multiple dosen -->
+                                            <input type="hidden" name="dosen_data" id="dosenJsonData" value="[]">
+                                            <input type="hidden" name="is_single" id="isSingle" value="1">
                                         </div>
                                     </div>
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-tutup" data-bs-dismiss="modal">Batal</button>
-                                        <button type="submit" class="btn btn-add">Tambah</button>
+                                        <button type="submit" class="btn btn-add" id="btnSimpan">Simpan Data</button>
                                     </div>
                                 </form>
                             </div>
                         </div>
                     </div>
 
-
-
-                    <button class="btn btn-add" data-bs-target="#exampleModalToggle" data-bs-toggle="modal">Tambah Data</button>
+                    <button class="btn btn-add" data-bs-target="#modalTambahDosen" data-bs-toggle="modal">Tambah Data</button>
                 </div>
             </div>
             
@@ -277,16 +285,5 @@
 @endsection
 
 @section('scripts')
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const alerts = document.querySelectorAll('.alert-dismissible');
-        
-        alerts.forEach(function(alert) {
-            setTimeout(function() {
-                const bsAlert = new bootstrap.Alert(alert);
-                bsAlert.close();
-            }, 3000); 
-        });
-    });
-</script>
+<script src="{{ asset('js/Koordiantor/data_dosen.js') }}"></script>
 @endsection
