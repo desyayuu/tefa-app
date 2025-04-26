@@ -189,7 +189,8 @@ class KoordinatorController extends Controller
         $search = $request->input('search');
     
         $query = DB::table('d_mitra_proyek')
-            ->select('mitra_proyek_id', 'nama_mitra', 'telepon_mitra', 'email_mitra', 'alamat_mitra');
+            ->select('mitra_proyek_id', 'nama_mitra', 'telepon_mitra', 'email_mitra', 'alamat_mitra')
+            ->whereNull('deleted_at');
     
         if ($search) {
             $query->where(function ($q) use ($search) {
@@ -197,7 +198,7 @@ class KoordinatorController extends Controller
                   ->orWhere('telepon_mitra', 'like', "%{$search}%");
             });
         }
-        $mitra = $query->paginate(3);
+        $mitra = $query->paginate(10);
         return view('pages.Koordinator.data_mitra', compact('mitra', 'search'), [
             'titleSidebar' => 'Data Mitra',
         ]);
@@ -368,28 +369,32 @@ class KoordinatorController extends Controller
 
     public function deleteDataMitra($id){
         try {
-            // Check if data exists
+            // Cek apakah data ada
             $mitra = DB::table('d_mitra_proyek')
                 ->where('mitra_proyek_id', $id)
+                ->whereNull('deleted_at') // pastikan data belum dihapus
                 ->first();
-                
+    
             if (!$mitra) {
                 return redirect()->route('koordinator.dataMitra')->with('error', 'Data mitra tidak ditemukan.');
             }
     
-            // Delete data
+            // Soft delete: update kolom deleted_at dan deleted_by
             DB::table('d_mitra_proyek')
                 ->where('mitra_proyek_id', $id)
-                ->delete();
+                ->update([
+                    'deleted_at' => now(),
+                    'deleted_by' => session('user_id')
+                ]);
     
             return redirect()->route('koordinator.dataMitra')
                 ->with('success', 'Data mitra "' . $mitra->nama_mitra . '" berhasil dihapus.');
         } catch (\Exception $e) {
-            // Handle database or other errors
             return redirect()->route('koordinator.dataMitra')
                 ->with('error', 'Gagal menghapus data mitra: ' . $e->getMessage());
         }
     }
+    
 
     public function searchDataMitra(Request $request){
         $query = $request->input('query');
