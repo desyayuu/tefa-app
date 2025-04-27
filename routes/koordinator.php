@@ -3,8 +3,10 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\KoordinatorController;
 use App\Http\Middleware\KoordinatorMiddleware;
+use App\Http\Controllers\DataProfesionalController;
 
 Route::middleware([KoordinatorMiddleware::class])->prefix('koordinator')->group(function () {
+    Route::get('/', [KoordinatorController::class, 'dashboard'])->name('koordinator.dashboard');
     Route::get('/dashboard', [KoordinatorController::class, 'dashboard'])->name('koordinator.dashboard');
 
     //Data Mitra
@@ -29,5 +31,13 @@ Route::middleware([KoordinatorMiddleware::class])->prefix('koordinator')->group(
     Route::get('/data-user', [KoordinatorController::class, 'getDataUser'])->name('koordinator.dataUser');
     Route::put('/koordinator/user/{id}/update-status', [KoordinatorController::class, 'updateStatusUser'])->name('koordinator.updateStatusUser');
     Route::delete('/koordinator/user/{id}', [KoordinatorController::class, 'deleteDataUser'])->name('koordinator.deleteUser');
+
+    // Display professionals
+    Route::get('/data-profesional', [KoordinatorController::class, 'getDataProfesional'])->name('koordinator.dataProfesional');
+
+    //Data Mahasiswa 
+    Route::get('/data-mahasiswa', [KoordinatorController::class, 'getDataMahasiswa'])->name('koordinator.dataMahasiswa');
+    
+
 
 });

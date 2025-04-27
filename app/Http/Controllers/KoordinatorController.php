@@ -183,7 +183,6 @@ class KoordinatorController extends Controller
         }
     }
     
-
     //Mitra
     public function getDataMitra(Request $request){
         $search = $request->input('search');
@@ -204,6 +203,84 @@ class KoordinatorController extends Controller
         ]);
     }
     
+    //Profesional 
+    public function getDataProfesional(Request $request){
+        $search = $request->input('search');
+        
+        $query = DB::table('d_profesional')
+        ->join('d_user', 'd_profesional.user_id', '=', 'd_user.user_id')
+        ->select(
+            'd_profesional.profesional_id', 'd_profesional.nama_profesional', 
+            'd_profesional.telepon_profesional', 'd_user.email', 'd_user.password', 'd_user.status',
+            'd_profesional.profile_img_profesional', 'd_profesional.jenis_kelamin_profesional', 'd_profesional.tanggal_lahir_profesional'
+        );
+    
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('d_profesional.nama_profesional', 'like', "%{$search}%")
+                ->orWhere('d_user.email', 'like', "%{$search}%");
+            });
+        }
+    
+        
+        $profesional = $query->paginate(3);
+        
+        return view('pages.Koordinator.data_profesional', compact('profesional', 'search'), [
+            'titleSidebar' => 'Data Profesional',
+        ]);
+
+    }
+
+    public function deleteDataProfesional($id){
+        try {
+            $profesional = DB::table('d_profesional')
+                ->where('profesional_id', $id)
+                ->whereNull('deleted_at') 
+                ->first();
+    
+            if (!$profesional) {
+                return redirect()->route('koordinator.dataProfesional')->with('error', 'Data Profesional tidak ditemukan');
+            }
+    
+            DB::table('d_profesional')
+                ->where('profesional_id', $id)
+                ->update([
+                    'deleted_at' => now(),
+                    'deleted_by' => session('user_id')
+                ]);
+    
+            return redirect()->route('koordinator.dataProfesional')
+                ->with('success', 'Data Profesional "' . $profesional->nama_profesional . '" berhasil dihapus.');
+        } catch (\Exception $e) {
+            return redirect()->route('koordinator.dataProfesional')
+                ->with('error', 'Gagal menghapus data profesional: ' . $e->getMessage());
+        }
+    }
+
+    public function getDataMahasiswa(Request $request){
+        $search = $request->input('search');
+        
+        $query = DB::table('d_mahasiswa')
+        ->join('d_user', 'd_mahasiswa.user_id', '=', 'd_user.user_id')
+        ->select('d_mahasiswa.mahasiswa_id', 'd_mahasiswa.nama_mahasiswa', 
+        'd_mahasiswa.telepon_mahasiswa', 'd_user.email', 'd_user.password', 'd_user.status',
+        'd_mahasiswa.profile_img_mahasiswa', 'd_mahasiswa.jenis_kelamin_mahasiswa', 'd_mahasiswa.tanggal_lahir_mahasiswa');
+    
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('d_mahasiswa.nama_mahasiswa', 'like', "%{$search}%")
+                ->orWhere('d_user.email', 'like', "%{$search}%");
+            });
+        }
+    
+        
+        $mahasiswa = $query->paginate(3);
+        
+        return view('pages.Koordinator.data_mahasiswa', compact('mahasiswa', 'search'), [
+            'titleSidebar' => 'Data Mahasiswa',
+        ]);
+
+    }
     
     public function storeDataMitra(Request $request){
         try{
@@ -843,8 +920,7 @@ class KoordinatorController extends Controller
         }
     }
 
-    public function checkEmailNidnExists(Request $request)
-    {
+    public function checkEmailNidnExists(Request $request){
         // Log input untuk debugging
         \Log::info('Check email/nidn request:', $request->all());
         
@@ -879,4 +955,6 @@ class KoordinatorController extends Controller
             'nidnExists' => $nidnExists
         ]);
     }
+
+    
 }
