@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\KoordinatorController;
 use App\Http\Middleware\KoordinatorMiddleware;
 use App\Http\Controllers\DataProfesionalController;
+use App\Http\Controllers\Koordinator\DataDosenController;
 
 Route::middleware([KoordinatorMiddleware::class])->prefix('koordinator')->group(function () {
     Route::get('/', [KoordinatorController::class, 'dashboard'])->name('koordinator.dashboard');
@@ -23,9 +24,11 @@ Route::middleware([KoordinatorMiddleware::class])->prefix('koordinator')->group(
     Route::get('/data-proyek/{id}', [KoordinatorController::class, 'getDataProyekById'])->name('proyek.detailDataProyek');
 
     //Data Dosen
-    Route::get('/data-dosen', [KoordinatorController::class, 'getDataDosen'])->name('koordinator.dataDosen');
-    Route::post('/data-dosen', [KoordinatorController::class, 'tambahDataDosen'])->name('koordinator.tambahDataDosen');
-    Route::post('/check-email-nidn-exists', [KoordinatorController::class, 'checkEmailNidnExists'])->name('koordinator.checkEmailNidnExists');
+    Route::get('/data-dosen', [DataDosenController::class, 'getDataDosen'])->name('koordinator.dataDosen');
+    Route::post('/data-dosen', [DataDosenController::class, 'tambahDataDosen'])->name('koordinator.tambahDataDosen');
+    Route::post('/check-email-nidn-exists', [DataDosenController::class, 'checkEmailNidnExists'])->name('koordinator.checkEmailNidnExists');
+    Route::put('/dosen/{id}', [DataDosenController::class, 'updateDataDosen'])->name('koordinator.updateDataDosen');
+    Route::delete('/dosen/{id}', [DataDosenController::class, 'deleteDataDosen'])->name('koordinator.deleteDataDosen');
 
     //Data User
     Route::get('/data-user', [KoordinatorController::class, 'getDataUser'])->name('koordinator.dataUser');
