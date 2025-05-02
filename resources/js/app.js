@@ -1,6 +1,7 @@
 import './bootstrap';
 import './Koordinator/data_mitra';
 import './Koordinator/data_dosen';
+import './Koordinator/data_profesional';
 
 document.addEventListener('DOMContentLoaded', function() {
     const currentPath = window.location.pathname;

@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\KoordinatorController;
 use App\Http\Middleware\KoordinatorMiddleware;
-use App\Http\Controllers\DataProfesionalController;
+use App\Http\Controllers\Koordinator\DataProfesionalController;
 use App\Http\Controllers\Koordinator\DataDosenController;
 
 Route::middleware([KoordinatorMiddleware::class])->prefix('koordinator')->group(function () {
@@ -36,8 +36,10 @@ Route::middleware([KoordinatorMiddleware::class])->prefix('koordinator')->group(
     Route::delete('/koordinator/user/{id}', [KoordinatorController::class, 'deleteDataUser'])->name('koordinator.deleteUser');
 
     // Display professionals
-    Route::get('/data-profesional', [KoordinatorController::class, 'getDataProfesional'])->name('koordinator.dataProfesional');
-
+    Route::get('/data-profesional', [DataProfesionalController::class, 'getDataProfesional'])->name('koordinator.dataProfesional');
+    Route::post('/data-profesional', [DataProfesionalController::class, 'tambahDataProfesional'])->name('koordinator.tambahDataProfesional');
+    Route::post('/check-email-profesional-exists', [DataProfesionalController::class, 'checkEmailProfesionalExists'])->name('koordinator.checkEmailProfesionalExists');
+    Route::put('/profesional/{id}', [DataProfesionalController::class, 'updateDataProfesional'])->name('koordinator.updateDataProfesional');
     //Data Mahasiswa 
     Route::get('/data-mahasiswa', [KoordinatorController::class, 'getDataMahasiswa'])->name('koordinator.dataMahasiswa');
     

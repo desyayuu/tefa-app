@@ -50,14 +50,16 @@
                                             <!-- Nama Dosen -->
                                             <div class="mb-2 col-md-6">
                                                 <label for="nama_dosen" class="form-label">Nama Dosen</label>
-                                                <input type="text" class="form-control" id="nama_dosen" name="nama_dosen">
+                                                <input type="text" class="form-control" id="nama_dosen" name="nama_dosen" >
                                                 <div class="invalid-feedback" id="nama_error"></div>
                                             </div>
                                             <!-- NIDN -->
                                             <div class="mb-2 col-md-6">
                                                 <label for="nidn_dosen" class="form-label">NIDN/NIP</label>
-                                                <input type="text" class="form-control" id="nidn_dosen" name="nidn_dosen">
+                                                <input type="text" class="form-control" id="nidn_dosen" name="nidn_dosen" 
+                                                    maxlength="10" pattern="[0-9]+" title="NIDN harus berupa angka dan maksimal 10 digit">
                                                 <div class="invalid-feedback" id="nidn_error"></div>
+                                                <small class="text-muted">NIDN harus berupa angka dan maksimal 10 digit</small>
                                             </div>
                                             <!-- Status Akun -->
                                             <div class="mb-2 col-md-4">
@@ -79,8 +81,9 @@
                                             <!-- Password -->
                                             <div class="mb-2 col-md-4">
                                                 <label for="password_dosen" class="form-label">Password</label>
-                                                <input type="password" class="form-control" id="password_dosen" name="password_dosen" placeholder="Kosongi jika tidak ingin mengubah password">
+                                                <input type="password" class="form-control" id="password_dosen" name="password_dosen">
                                                 <div class="invalid-feedback" id="password_error"></div>
+                                                <small class="text-muted">Password akan otomatis menggunakan NIDN jika field ini kosong</small>
                                             </div>
                                             <!-- Tanggal Lahir -->
                                             <div class="mb-2 col-md-4">
@@ -113,7 +116,7 @@
                                             </div>
                                             <div class="mt-2">
                                                 <div class="col-12 text-end">
-                                                    <button type="button" class="btn btn-add" id="btnTambahkanKeDaftar">Tambahkan ke Daftar</button>
+                                                    <button type="button" class="btn btn-add" id="btnTambahkanKeDaftarDosen">Tambahkan ke Daftar</button>
                                                 </div>
                                             </div>
                                         </div>
@@ -124,22 +127,23 @@
                                         <div class="daftar-dosen-container mt-5">
                                             <h5>Daftar Dosen yang Akan Ditambahkan</h5>
                                             <div class="table-responsive">
-                                                <table class="table table-bordered table-striped">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>Nama Dosen</th>
-                                                            <th>NIDN/NIP</th>
-                                                            <th>Email</th>
-                                                            <th>Status</th>
-                                                            <th>Aksi</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody id="daftarDosen">
-                                                        <tr id="emptyRow">
-                                                            <td colspan="5" class="text-center">Belum ada dosen yang ditambahkan ke daftar</td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
+                                            <table class="table table-bordered table-striped">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Nama Dosen</th>
+                                                        <th>NIDN/NIP</th>
+                                                        <th>Email</th>
+                                                        <th>Status</th>
+                                                        <th>Foto</th>
+                                                        <th>Aksi</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="daftarDosen">
+                                                    <tr id="emptyRow">
+                                                        <td colspan="6" class="text-center">Belum ada dosen yang ditambahkan ke daftar</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
                                             </div>
                                             
                                             <!-- Hidden input untuk menyimpan data multiple dosen -->
@@ -149,7 +153,7 @@
                                     </div>
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-tutup" data-bs-dismiss="modal">Batal</button>
-                                        <button type="submit" class="btn btn-add" id="btnSimpan">Simpan Data</button>
+                                        <button type="submit" class="btn btn-add" id="btnSimpanDosen">Simpan Data</button>
                                     </div>
                                 </form>
                             </div>
@@ -170,7 +174,6 @@
             <table class="table">
                 <thead>
                     <tr>
-                    <th scope="col">#</th>
                     <th scope="col">Nama Dosen</th>
                     <th scope="col">NIP/NIDN</th>
                     <th scope="col">Aksi</th>
@@ -179,7 +182,6 @@
                 <tbody>
                     @forelse ($dosen as $d)
                     <tr>
-                        <th scope="row">{{ $loop->iteration }}</th>
                         <td>{{ $d->nama_dosen}}</td>
                         <td>{{ $d->nidn_dosen}}</td>
                         <td>
@@ -203,7 +205,7 @@
                     <div class="modal fade" id="modalDosen{{ $d->dosen_id }}" tabindex="-1" aria-labelledby="dosenLabel{{ $d->dosen_id }}" aria-hidden="true">
                         <div class="modal-dialog modal-lg">
                             <div class="modal-content">
-                                <form action="{{ route('koordinator.updateDataDosen', $d->dosen_id) }}" method="POST" enctype="multipart/form-data">
+                                <form action="{{ route('koordinator.updateDataDosen', $d->dosen_id) }}" method="POST" enctype="multipart/form-data" id="form_edit_{{ $d->dosen_id }}">
                                     @csrf
                                     @method('PUT')
                                     <div class="modal-header">
@@ -211,70 +213,84 @@
                                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                     </div>
                                     <div class="modal-body label-form">
+                                        <!-- Alert untuk error saat submit -->
+                                        <div class="alert alert-danger d-none" id="edit_form_error_{{ $d->dosen_id }}"></div>
+                                        
                                         <div class="row mb-3">
                                             <!-- Nama Dosen -->
                                             <div class="mb-2 col-md-6">
                                                 <label for="nama_dosen_{{ $d->dosen_id }}" class="form-label">Nama Dosen</label>
                                                 <input type="text" class="form-control @error('nama_dosen') is-invalid @enderror" 
-                                                    id="nama_dosen_{{ $d->dosen_id }}" name="nama_dosen" value="{{ old('nama_dosen', $d->nama_dosen) }}">
-                                                @error('nama_dosen')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
-                                                @enderror
+                                                    id="nama_dosen_{{ $d->dosen_id }}" name="nama_dosen" 
+                                                    value="{{ old('nama_dosen', $d->nama_dosen) }}" required>
+                                                <div class="invalid-feedback" id="nama_error_{{ $d->dosen_id }}">
+                                                    @error('nama_dosen') {{ $message }} @else Nama dosen wajib diisi @enderror
+                                                </div>
                                             </div>
+                                            
                                             <!-- NIDN -->
                                             <div class="mb-2 col-md-6">
                                                 <label for="nidn_dosen_{{ $d->dosen_id }}" class="form-label">NIDN/NIP</label>
                                                 <input type="text" class="form-control @error('nidn_dosen') is-invalid @enderror" 
-                                                    id="nidn_dosen_{{ $d->dosen_id }}" name="nidn_dosen" value="{{ old('nidn_dosen', $d->nidn_dosen) }}">
-                                                @error('nidn_dosen')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
-                                                @enderror
+                                                    id="nidn_dosen_{{ $d->dosen_id }}" name="nidn_dosen" 
+                                                    value="{{ old('nidn_dosen', $d->nidn_dosen) }}" 
+                                                    maxlength="10" pattern="[0-9]{10}" 
+                                                    title="NIDN harus berupa angka dan tepat 10 digit" required>
+                                                <div class="invalid-feedback" id="nidn_error_{{ $d->dosen_id }}">
+                                                    @error('nidn_dosen') {{ $message }} @else NIDN harus berupa angka dan tepat 10 digit @enderror
+                                                </div>
+                                                <small class="text-muted">NIDN harus berupa angka dan tepat 10 digit</small>
                                             </div>
+                                            
                                             <!-- Status Akun -->
                                             <div class="mb-2 col-md-4">
                                                 <label for="status_akun_dosen_{{ $d->dosen_id }}" class="form-label">Status Akun</label>
                                                 <select class="form-select @error('status_akun_dosen') is-invalid @enderror" 
-                                                    id="status_akun_dosen_{{ $d->dosen_id }}" name="status_akun_dosen">
+                                                    id="status_akun_dosen_{{ $d->dosen_id }}" name="status_akun_dosen" required>
                                                     <option value="Active" {{ old('status_akun_dosen', $d->status) == 'Active' ? 'selected' : '' }}>Active</option>
                                                     <option value="Pending" {{ old('status_akun_dosen', $d->status) == 'Pending' ? 'selected' : '' }}>Pending</option>
                                                     <option value="Rejected" {{ old('status_akun_dosen', $d->status) == 'Rejected' ? 'selected' : '' }}>Rejected</option>
                                                     <option value="Disabled" {{ old('status_akun_dosen', $d->status) == 'Disabled' ? 'selected' : '' }}>Disabled</option>
                                                 </select>
-                                                @error('status_akun_dosen')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
-                                                @enderror
+                                                <div class="invalid-feedback" id="status_akun_error_{{ $d->dosen_id }}">
+                                                    @error('status_akun_dosen') {{ $message }} @else Status akun harus dipilih @enderror
+                                                </div>
                                             </div>
+                                            
                                             <!-- Email -->
                                             <div class="mb-2 col-md-4">
                                                 <label for="email_dosen_{{ $d->dosen_id }}" class="form-label">Email</label>
                                                 <input type="email" class="form-control @error('email_dosen') is-invalid @enderror" 
-                                                    id="email_dosen_{{ $d->dosen_id }}" name="email_dosen" value="{{ old('email_dosen', $d->email) }}"
-                                                    data-original="{{ $d->email }}">
-                                                @error('email_dosen')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
-                                                @enderror
+                                                    id="email_dosen_{{ $d->dosen_id }}" name="email_dosen" 
+                                                    value="{{ old('email_dosen', $d->email) }}" 
+                                                    data-original="{{ $d->email }}" required>
+                                                <div class="invalid-feedback" id="email_error_{{ $d->dosen_id }}">
+                                                    @error('email_dosen') {{ $message }} @else Format email tidak valid @enderror
+                                                </div>
                                             </div>
+                                            
                                             <!-- Password -->
                                             <div class="mb-2 col-md-4">
                                                 <label for="password_dosen_{{ $d->dosen_id }}" class="form-label">Password</label>
                                                 <input type="password" class="form-control @error('password_dosen') is-invalid @enderror" 
-                                                    id="password_dosen_{{ $d->dosen_id }}" name="password_dosen" 
-                                                    placeholder="Kosongi jika tidak ingin mengubah password">
-                                                @error('password_dosen')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
-                                                @enderror
+                                                    id="password_dosen_{{ $d->dosen_id }}" name="password_dosen">
+                                                <div class="invalid-feedback" id="password_error_{{ $d->dosen_id }}">
+                                                    @error('password_dosen') {{ $message }} @enderror
+                                                </div>
                                                 <small class="text-muted">Password akan diupdate otomatis jika NIDN diubah</small>
                                             </div>
+                                            
                                             <!-- Tanggal Lahir -->
                                             <div class="mb-2 col-md-4">
                                                 <label for="tanggal_lahir_dosen_{{ $d->dosen_id }}" class="form-label">Tanggal Lahir</label>
                                                 <input type="date" class="form-control @error('tanggal_lahir_dosen') is-invalid @enderror" 
                                                     id="tanggal_lahir_dosen_{{ $d->dosen_id }}" name="tanggal_lahir_dosen" 
                                                     value="{{ old('tanggal_lahir_dosen', $d->tanggal_lahir_dosen) }}">
-                                                @error('tanggal_lahir_dosen')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
-                                                @enderror
+                                                <div class="invalid-feedback" id="tanggal_lahir_error_{{ $d->dosen_id }}">
+                                                    @error('tanggal_lahir_dosen') {{ $message }} @enderror
+                                                </div>
                                             </div>
+                                            
                                             <!-- Jenis Kelamin -->
                                             <div class="mb-2 col-md-4">
                                                 <label for="jenis_kelamin_dosen_{{ $d->dosen_id }}" class="form-label">Jenis Kelamin</label>
@@ -284,20 +300,22 @@
                                                     <option value="Laki-Laki" {{ old('jenis_kelamin_dosen', $d->jenis_kelamin_dosen) == 'Laki-Laki' ? 'selected' : '' }}>Laki-Laki</option>
                                                     <option value="Perempuan" {{ old('jenis_kelamin_dosen', $d->jenis_kelamin_dosen) == 'Perempuan' ? 'selected' : '' }}>Perempuan</option>
                                                 </select>
-                                                @error('jenis_kelamin_dosen')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
-                                                @enderror
+                                                <div class="invalid-feedback" id="jenis_kelamin_error_{{ $d->dosen_id }}">
+                                                    @error('jenis_kelamin_dosen') {{ $message }} @enderror
+                                                </div>
                                             </div>
+                                            
                                             <!-- Telepon -->
                                             <div class="mb-2 col-md-4">
                                                 <label for="telepon_dosen_{{ $d->dosen_id }}" class="form-label">Telepon</label>
                                                 <input type="text" class="form-control @error('telepon_dosen') is-invalid @enderror" 
                                                     id="telepon_dosen_{{ $d->dosen_id }}" name="telepon_dosen" 
                                                     value="{{ old('telepon_dosen', $d->telepon_dosen) }}">
-                                                @error('telepon_dosen')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
-                                                @enderror
+                                                <div class="invalid-feedback" id="telepon_error_{{ $d->dosen_id }}">
+                                                    @error('telepon_dosen') {{ $message }} @enderror
+                                                </div>
                                             </div>
+                                            
                                             <!-- Foto Profil -->
                                             <div class="mb-2 col-md-6">
                                                 <label for="profile_img_dosen_{{ $d->dosen_id }}" class="form-label">Foto Profil</label>
@@ -308,15 +326,15 @@
                                                 @endif
                                                 <input type="file" class="form-control @error('profile_img_dosen') is-invalid @enderror" 
                                                     id="profile_img_dosen_{{ $d->dosen_id }}" name="profile_img_dosen" accept="image/*">
-                                                @error('profile_img_dosen')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
-                                                @enderror
+                                                <div class="invalid-feedback" id="profile_img_error_{{ $d->dosen_id }}">
+                                                    @error('profile_img_dosen') {{ $message }} @else Format gambar tidak valid. Gunakan jpeg, png, jpg, gif. Maksimal 2MB. @enderror
+                                                </div>
                                                 <small class="text-muted">Format gambar: jpeg, png, jpg, gif. Maksimal 2MB.</small>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="modal-footer">
-                                        <button type="button" class="btn btn-tutup" data-bs-dismiss="modal">Tutup</button>
+                                        <button type="button" class="btn btn-tutup" data-bs-dismiss="modal">Batalkan</button>
                                         <button type="submit" class="btn btn-add">Simpan Perubahan</button>
                                     </div>
                                 </form>

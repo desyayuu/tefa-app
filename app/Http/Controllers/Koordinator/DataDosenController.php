@@ -35,7 +35,7 @@ class DataDosenController extends Controller{
             });
         }
 
-        $dosen = $query->paginate(10); 
+        $dosen = $query->orderBy('user.created_at', 'desc')->paginate(10); 
         return view('pages.Koordinator.data_dosen', compact('dosen', 'search'), [
             'titleSidebar' => 'Data Dosen'
         ]);
@@ -62,6 +62,7 @@ class DataDosenController extends Controller{
                     'nama_dosen.required' => 'Nama dosen harus diisi.',
                     'nidn_dosen.required' => 'NIDN harus diisi.',
                     'email_dosen.required' => 'Email harus diisi.',
+                    'email_dosen.email' => 'Format email tidak valid.',
                     'status_akun_dosen.required' => 'Status harus diisi.',
                     'email_dosen.email' => 'Format email tidak valid.',
                     'profile_img_dosen.image' => 'File harus berupa gambar.',
@@ -86,18 +87,23 @@ class DataDosenController extends Controller{
                     DB::table('d_user')->insert([
                         'user_id' => $userId,
                         'email' => $request->input('email_dosen'),
-                        'password' => bcrypt($request->input('password_dosen') ?: 'password123'),
+                        'password' => bcrypt($request->input('password_dosen') ?: $request->input('nidn_dosen')),
                         'role' => 'Dosen',
                         'status' => $request->input('status_akun_dosen', 'Active'), 
                         'created_by' => session('user_id'),
                     ]);
+
+                    $tanggalLahir = null;
+                    if (!empty($dosen['tanggal_lahir_dosen'])) {
+                        $tanggalLahir = date('Y-m-d', strtotime($dosen['tanggal_lahir_dosen']));
+                    }
                     
                     $dosenData = [
                         'dosen_id' => $dosenId,
                         'user_id' => $userId,
                         'nama_dosen' => $request->input('nama_dosen'),
                         'nidn_dosen' => $request->input('nidn_dosen'),
-                        'tanggal_lahir_dosen' => $request->filled('tanggal_lahir_dosen') ? $request->input('tanggal_lahir_dosen') : null,
+                        'tanggal_lahir_dosen' => $tanggalLahir,
                         'jenis_kelamin_dosen' => $request->input('jenis_kelamin_dosen') ? $request->input('jenis_kelamin_dosen') : null,
                         'telepon_dosen' => $request->input('telepon_dosen') ? $request->input('telepon_dosen') : null,                        'status_akun_dosen' => $request->input('status_akun_dosen', 'Active'),
                         'created_at' => now(),
@@ -181,19 +187,24 @@ class DataDosenController extends Controller{
                         DB::table('d_user')->insert([
                             'user_id' => $userId,
                             'email' => $dosen['email_dosen'],
-                            'password' => bcrypt($dosen['password_dosen'] ?: 'password123'), // Default to password123
+                            'password' => bcrypt($dosen['password_dosen'] ?: $request->input('nidn_dosen')), 
                             'role' => 'Dosen',
-                            'status' => $dosen['status_akun_dosen'] ?? 'Active', // Fixed field name
+                            'status' => $dosen['status_akun_dosen'] ?? 'Active', 
                             'created_at' => now(),
                             'created_by' => session('user_id'),
                         ]);
+
+                        $tanggalLahir = null;
+                        if (!empty($dosen['tanggal_lahir_dosen'])) {
+                            $tanggalLahir = date('Y-m-d', strtotime($dosen['tanggal_lahir_dosen']));
+                        }
                         
                         $dosenRecord = [
                             'dosen_id' => $dosenId,
                             'user_id' => $userId,
                             'nama_dosen' => $dosen['nama_dosen'],
                             'nidn_dosen' => $dosen['nidn_dosen'],
-                            'tanggal_lahir_dosen' => $dosen['tanggal_lahir_dosen'] ?? null,
+                            'tanggal_lahir_dosen' => $tanggalLahir,
                             'jenis_kelamin_dosen' => $dosen['jenis_kelamin_dosen'] ?? null,
                             'telepon_dosen' => $dosen['telepon_dosen'] ?? null,
                             'created_at' => now(),
@@ -284,31 +295,50 @@ class DataDosenController extends Controller{
     }
 
     public function checkEmailNidnExists(Request $request){
-        // Log input untuk debugging
         \Log::info('Check email/nidn request:', $request->all());
         
         $email = $request->input('email_dosen');
         $nidn = $request->input('nidn_dosen');
+        $dosenId = $request->input('dosen_id');
         
         $emailExists = false;
         $nidnExists = false;
         
         if ($email) {
-            $emailExists = DB::table('d_user')
-                ->where('email', $email)
-                ->exists();
+            $query = DB::table('d_user')
+                ->where('email', $email);
+                
+            // Exclude current dosen when checking for duplicates
+            if ($dosenId) {
+                $dosen = DB::table('d_dosen')
+                    ->where('dosen_id', $dosenId)
+                    ->first();
+                    
+                if ($dosen) {
+                    $query->where('user_id', '!=', $dosen->user_id);
+                }
+            }
+            
+            $emailExists = $query->exists();
         }
         
         if ($nidn) {
-            $nidnExists = DB::table('d_dosen')
-                ->where('nidn_dosen', $nidn)
-                ->exists();
+            $query = DB::table('d_dosen')
+                ->where('nidn_dosen', $nidn);
+                
+            // Exclude current dosen when checking for duplicates
+            if ($dosenId) {
+                $query->where('dosen_id', '!=', $dosenId);
+            }
+            
+            $nidnExists = $query->exists();
         }
         
         // Log hasil untuk debugging
         \Log::info('Check result:', [
             'email' => $email,
             'nidn' => $nidn,
+            'dosenId' => $dosenId,
             'emailExists' => $emailExists,
             'nidnExists' => $nidnExists
         ]);
@@ -319,46 +349,8 @@ class DataDosenController extends Controller{
         ]);
     }
 
-    public function editDataDosen($id){
-        $dosen = DB::table('d_dosen as dosen')
-            ->join('d_user as user', 'dosen.user_id', '=', 'user.user_id')
-            ->select('dosen.*', 'user.*')
-            ->where('dosen.dosen_id', $id)
-            ->first();
-            
-        if (!$dosen) {
-            return redirect()->route('koordinator.dataDosen')
-                ->with('error', 'Data dosen tidak ditemukan.');
-        }
-        
-        return view('pages.Koordinator.edit_dosen', compact('dosen'), [
-            'titleSidebar' => 'Edit Data Dosen'
-        ]);
-    }
-
     public function updateDataDosen(Request $request, $id){
         try {
-            $request->validate([
-                'nama_dosen' => 'required|string|max:255',
-                'nidn_dosen' => 'required|string',
-                'email_dosen' => 'required|email',
-                'status_akun_dosen' => 'required|in:Active,Rejected,Pending,Disabled', 
-                'profile_img_dosen' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', 
-                'telepon_dosen' => 'nullable|string|max:20',
-                'tanggal_lahir_dosen' => 'nullable|date',
-                'jenis_kelamin_dosen' => 'nullable|in:Laki-Laki,Perempuan',
-            ], 
-            [
-                'email_dosen.email' => 'Format email tidak valid.',
-                'nama_dosen.required' => 'Nama dosen harus diisi.',
-                'nidn_dosen.required' => 'NIDN harus diisi.',
-                'email_dosen.required' => 'Email harus diisi.',
-                'status_akun_dosen.required' => 'Status harus diisi.',
-                'profile_img_dosen.image' => 'File harus berupa gambar.',
-                'profile_img_dosen.mimes' => 'Format gambar tidak valid. Hanya jpeg, png, jpg, gif yang diperbolehkan.',
-                'profile_img_dosen.max' => 'Ukuran gambar terlalu besar. Maksimal 2MB.',
-            ]);
-            
             // Get current dosen data
             $dosen = DB::table('d_dosen')
                 ->where('dosen_id', $id)
@@ -372,31 +364,59 @@ class DataDosenController extends Controller{
             $user = DB::table('d_user')
                 ->where('user_id', $dosen->user_id)
                 ->first();
-                
-            // Check if NIDN is being changed and if it's already taken
+    
+            // Buat aturan validasi custom
+            $rules = [
+                'nama_dosen' => 'required|string|max:255',
+                'nidn_dosen' => 'required|string|max:10|regex:/^\d{10}$/',
+                'email_dosen' => 'required|email',
+                'status_akun_dosen' => 'required|in:Active,Rejected,Pending,Disabled', 
+                'profile_img_dosen' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', 
+                'telepon_dosen' => 'nullable|string|max:20',
+                'tanggal_lahir_dosen' => 'nullable|date',
+                'jenis_kelamin_dosen' => 'nullable|in:Laki-Laki,Perempuan',
+            ];
+            
+            // Tambahkan aturan unique hanya jika nilai berubah
             if ($dosen->nidn_dosen != $request->input('nidn_dosen')) {
-                $nidnExists = DB::table('d_dosen')
-                    ->where('nidn_dosen', $request->input('nidn_dosen'))
-                    ->where('dosen_id', '!=', $id)
-                    ->exists();
-                    
-                if ($nidnExists) {
-                    return back()->withInput()->withErrors(['nidn_dosen' => 'NIDN sudah terdaftar dalam sistem.']);
-                }
+                $rules['nidn_dosen'] .= '|unique:d_dosen,nidn_dosen,' . $id . ',dosen_id';
             }
             
-            // Check if email is being changed and if it's already taken
             if ($user->email != $request->input('email_dosen')) {
-                $emailExists = DB::table('d_user')
-                    ->where('email', $request->input('email_dosen'))
-                    ->where('user_id', '!=', $dosen->user_id)
-                    ->exists();
-                    
-                if ($emailExists) {
-                    return back()->withInput()->withErrors(['email_dosen' => 'Email sudah terdaftar dalam sistem.']);
-                }
+                $rules['email_dosen'] .= '|unique:d_user,email,' . $dosen->user_id . ',user_id';
             }
             
+            // Custom pesan error
+            $messages = [
+                'nidn_dosen.regex' => 'NIDN harus berupa angka dan tepat 10 digit.',
+                'nidn_dosen.max' => 'NIDN maksimal 10 digit.',
+                'nidn_dosen.unique' => 'NIDN sudah terdaftar dalam sistem.',
+                'email_dosen.email' => 'Format email tidak valid.',
+                'email_dosen.unique' => 'Email sudah terdaftar dalam sistem.',
+                'nama_dosen.required' => 'Nama dosen harus diisi.',
+                'nidn_dosen.required' => 'NIDN harus diisi.',
+                'email_dosen.required' => 'Email harus diisi.',
+                'status_akun_dosen.required' => 'Status harus diisi.',
+                'profile_img_dosen.image' => 'File harus berupa gambar.',
+                'profile_img_dosen.mimes' => 'Format gambar tidak valid. Hanya jpeg, png, jpg, gif yang diperbolehkan.',
+                'profile_img_dosen.max' => 'Ukuran gambar terlalu besar. Maksimal 2MB.',
+            ];
+            
+            // Validasi dengan aturan kustom
+            $validator = \Validator::make($request->all(), $rules, $messages);
+            
+            if ($validator->fails()) {
+                // Penting: Kembalikan response dengan format JSON untuk AJAX
+                if ($request->ajax()) {
+                    return response()->json([
+                        'status' => 'error',
+                        'errors' => $validator->errors()
+                    ], 422);
+                }
+                return back()->withErrors($validator)->withInput();
+            }
+            
+            // Proses selanjutnya tetap sama
             DB::beginTransaction();
             
             try {
@@ -416,7 +436,6 @@ class DataDosenController extends Controller{
                 DB::table('d_user')
                     ->where('user_id', $dosen->user_id)
                     ->update($userData);
-                
                 
                 // Update dosen data
                 $dosenData = [
@@ -465,6 +484,13 @@ class DataDosenController extends Controller{
                 
                 DB::commit();
                 
+                if ($request->ajax()) {
+                    return response()->json([
+                        'status' => 'success',
+                        'message' => 'Data dosen berhasil diperbarui.'
+                    ]);
+                }
+                
                 return redirect()->route('koordinator.dataDosen')
                     ->with('success', 'Data dosen berhasil diperbarui.');
             } catch (\Exception $e) {
@@ -473,21 +499,32 @@ class DataDosenController extends Controller{
                     'error' => $e->getMessage(),
                     'trace' => $e->getTraceAsString()
                 ]);
-                return redirect()->route('koordinator.dataDosen')
-                    ->with('error', 'Gagal memperbarui data: ' . $e->getMessage());
+                
+                if ($request->ajax()) {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Gagal memperbarui data: ' . $e->getMessage()
+                    ], 500);
+                }
+                
+                return back()->withInput()->with('error', 'Gagal memperbarui data: ' . $e->getMessage());
             }
         } catch (\Exception $e) {
             \Log::error('Exception in updateDataDosen', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            return redirect()->route('koordinator.dataDosen')
-                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+            
+            if ($request->ajax()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                ], 500);
+            }
         }
     }
 
-    public function deleteDataDosen($id)
-    {
+    public function deleteDataDosen($id){
         try {
             $dosen = DB::table('d_dosen')
                 ->where('dosen_id', $id)

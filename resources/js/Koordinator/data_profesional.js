@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     autoCloseAlerts();
-    tambahDosen();
-    editDosen();
+    tambahProfesional();
+    editProfesional();
     setupModalCancelEvents();
 });
 
@@ -47,19 +47,15 @@ function isValidEmail(email) {
     return emailRegex.test(email);
 }
 
-// Validate NIDN format (10 digits)
-function isValidNidn(nidn) {
-    return /^\d{10}$/.test(nidn);
-}
 
 // Check if email exists in database
 function checkEmailExistsAsync(email) {
     return new Promise((resolve, reject) => {
         const formData = new FormData();
-        formData.append('email_dosen', email);
+        formData.append('email_profesional', email);
         formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
         
-        fetch('/koordinator/check-email-nidn-exists', {
+        fetch('/koordinator/check-email-profesional-exists', {
             method: 'POST',
             body: formData
         })
@@ -78,31 +74,6 @@ function checkEmailExistsAsync(email) {
     });
 }
 
-// Check if NIDN exists in database
-function checkNidnExistsAsync(nidn) {
-    return new Promise((resolve, reject) => {
-        const formData = new FormData();
-        formData.append('nidn_dosen', nidn);
-        formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
-        
-        fetch('/koordinator/check-email-nidn-exists', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(data => {
-            resolve(data.nidnExists);
-        })
-        .catch(error => {
-            reject(error);
-        });
-    });
-}
 
 // Clear empty date fields to prevent database errors
 function clearEmptyDateFields(form) {
@@ -123,11 +94,11 @@ function validateNama(namaInput) {
         namaInput.classList.add('is-invalid');
         const errorElement = namaInput.nextElementSibling;
         if (errorElement && errorElement.classList.contains('invalid-feedback')) {
-            errorElement.textContent = 'Nama dosen wajib diisi';
+            errorElement.textContent = 'Nama profesional wajib diisi';
         } else {
             const errorDiv = document.createElement('div');
             errorDiv.classList.add('invalid-feedback');
-            errorDiv.textContent = 'Nama dosen wajib diisi';
+            errorDiv.textContent = 'Nama profesional wajib diisi';
             namaInput.parentNode.appendChild(errorDiv);
         }
         return false;
@@ -139,48 +110,6 @@ function validateNama(namaInput) {
         }
         return true;
     }
-}
-
-// Validate NIDN format
-function validateNidnFormat(nidnInput) {
-    const nidnValue = nidnInput.value.trim();
-    
-    // Validasi NIDN tidak boleh kosong
-    if (!nidnValue) {
-        nidnInput.classList.add('is-invalid');
-        const errorElement = nidnInput.nextElementSibling;
-        if (errorElement && errorElement.classList.contains('invalid-feedback')) {
-            errorElement.textContent = 'NIDN/NIP wajib diisi';
-        } else {
-            const errorDiv = document.createElement('div');
-            errorDiv.classList.add('invalid-feedback');
-            errorDiv.textContent = 'NIDN/NIP wajib diisi';
-            nidnInput.parentNode.appendChild(errorDiv);
-        }
-        return false;
-    }
-    
-    // Validasi NIDN harus berupa angka dan tepat 10 digit
-    if (!/^\d{10}$/.test(nidnValue)) {
-        nidnInput.classList.add('is-invalid');
-        const errorElement = nidnInput.nextElementSibling;
-        if (errorElement && errorElement.classList.contains('invalid-feedback')) {
-            errorElement.textContent = 'NIDN harus berupa angka dan tepat 10 digit';
-        } else {
-            const errorDiv = document.createElement('div');
-            errorDiv.classList.add('invalid-feedback');
-            errorDiv.textContent = 'NIDN harus berupa angka dan tepat 10 digit';
-            nidnInput.parentNode.appendChild(errorDiv);
-        }
-        return false;
-    }
-    
-    nidnInput.classList.remove('is-invalid');
-    const errorElement = nidnInput.nextElementSibling;
-    if (errorElement && errorElement.classList.contains('invalid-feedback')) {
-        errorElement.textContent = '';
-    }
-    return true;
 }
 
 // Validate email format
@@ -225,91 +154,8 @@ function validateEmailFormat(emailInput) {
     return true;
 }
 
-// Validate NIDN with database check
-async function validateNidn(nidnInput, dosenId, originalNidn) {
-    const nidnValue = nidnInput.value.trim();
-    
-    // Skip validation if the value is unchanged
-    if (nidnValue === originalNidn) {
-        nidnInput.classList.remove('is-invalid');
-        const errorElement = nidnInput.nextElementSibling;
-        if (errorElement && errorElement.classList.contains('invalid-feedback')) {
-            errorElement.textContent = '';
-        }
-        return true;
-    }
-    
-    // Check NIDN format first
-    if (!validateNidnFormat(nidnInput)) {
-        return false;
-    }
-    
-    try {
-        const formData = new FormData();
-        formData.append('nidn_dosen', nidnValue);
-        formData.append('dosen_id', dosenId); // Tambahkan dosen_id ke request
-        formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
-        
-        // Add loading indicator
-        nidnInput.classList.add('is-loading');
-        
-        const response = await fetch('/koordinator/check-email-nidn-exists', {
-            method: 'POST',
-            body: formData
-        });
-        
-        // Remove loading indicator
-        nidnInput.classList.remove('is-loading');
-        
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        
-        const data = await response.json();
-        
-        if (data.nidnExists) {
-            nidnInput.classList.add('is-invalid');
-            const errorElement = nidnInput.nextElementSibling;
-            if (errorElement && errorElement.classList.contains('invalid-feedback')) {
-                errorElement.textContent = 'NIDN sudah terdaftar dalam sistem.';
-            } else {
-                const errorDiv = document.createElement('div');
-                errorDiv.classList.add('invalid-feedback');
-                errorDiv.textContent = 'NIDN sudah terdaftar dalam sistem.';
-                nidnInput.parentNode.appendChild(errorDiv);
-            }
-            return false;
-        } else {
-            nidnInput.classList.remove('is-invalid');
-            const errorElement = nidnInput.nextElementSibling;
-            if (errorElement && errorElement.classList.contains('invalid-feedback')) {
-                errorElement.textContent = '';
-            }
-            return true;
-        }
-    } catch (error) {
-        console.error('Error validating NIDN:', error);
-        
-        // Remove loading indicator if there was an error
-        nidnInput.classList.remove('is-loading');
-        
-        // Show error message
-        nidnInput.classList.add('is-invalid');
-        const errorElement = nidnInput.nextElementSibling;
-        if (errorElement && errorElement.classList.contains('invalid-feedback')) {
-            errorElement.textContent = 'Gagal memeriksa NIDN. Silakan coba lagi.';
-        } else {
-            const errorDiv = document.createElement('div');
-            errorDiv.classList.add('invalid-feedback');
-            errorDiv.textContent = 'Gagal memeriksa NIDN. Silakan coba lagi.';
-            nidnInput.parentNode.appendChild(errorDiv);
-        }
-        return false;
-    }
-}
-
 // Validate email with database check
-async function validateEmail(emailInput, dosenId, originalEmail) {
+async function validateEmail(emailInput, profesionalId, originalEmail) {
     const emailValue = emailInput.value.trim();
     
     // Skip validation if the value is unchanged
@@ -329,14 +175,14 @@ async function validateEmail(emailInput, dosenId, originalEmail) {
     
     try {
         const formData = new FormData();
-        formData.append('email_dosen', emailValue);
-        formData.append('dosen_id', dosenId); // Tambahkan dosen_id ke request
+        formData.append('email_profesional', emailValue);
+        formData.append('profesional_id', profesionalId); // Tambahkan profesional_id ke request
         formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
         
         // Add loading indicator
         emailInput.classList.add('is-loading');
         
-        const response = await fetch('/koordinator/check-email-nidn-exists', {
+        const response = await fetch('/koordinator/check-email-profesional-exists', {
             method: 'POST',
             body: formData
         });
@@ -391,34 +237,32 @@ async function validateEmail(emailInput, dosenId, originalEmail) {
     }
 }
 
-function tambahDosen() {
-    let dosenList = [];
+function tambahProfesional() {
+    let profesionalList = [];
 
     // DOM Elements
-    const btnTambahkanKeDaftarDosen= document.getElementById('btnTambahkanKeDaftarDosen'); 
-    const daftarDosen = document.getElementById('daftarDosen');
-    const dosenJsonData = document.getElementById('dosenJsonData');
+    const btnTambahkanKeDaftarProfesional= document.getElementById('btnTambahkanKeDaftarProfesional'); 
+    const daftarProfesional = document.getElementById('daftarProfesional');
+    const profesionalJsonData = document.getElementById('profesionalJsonData');
     const isSingle = document.getElementById('isSingle');
     const emptyRow = document.getElementById('emptyRow');
-    const formTambahDosen = document.getElementById('formTambahDosen');
-    const modalTambahDosen = document.getElementById('modalTambahDosen');
+    const formTambahProfesional = document.getElementById('formTambahProfesional');
+    const modalTambahProfesional = document.getElementById('modalTambahProfesional');
     const btnSimpan = document.getElementById('btnSimpan');
     const formError = document.getElementById('form_error');
 
     // Input fields
-    const namaDosen = document.getElementById('nama_dosen');
-    const nidnDosen = document.getElementById('nidn_dosen');
-    const statusDosen = document.getElementById('status_akun_dosen');
-    const emailDosen = document.getElementById('email_dosen');
-    const passwordDosen = document.getElementById('password_dosen');
-    const tanggalLahirDosen = document.getElementById('tanggal_lahir_dosen');
-    const jenisKelaminDosen = document.getElementById('jenis_kelamin_dosen');
-    const teleponDosen = document.getElementById('telepon_dosen');
-    const profileImgDosen = document.getElementById('profile_img_dosen');
+    const namaProfesional = document.getElementById('nama_profesional');
+    const statusProfesional = document.getElementById('status_akun_profesional');
+    const emailProfesional = document.getElementById('email_profesional');
+    const passwordProfesional = document.getElementById('password_profesional');
+    const tanggalLahirProfesional = document.getElementById('tanggal_lahir_profesional');
+    const jenisKelaminProfesional = document.getElementById('jenis_kelamin_profesional');
+    const teleponProfesional = document.getElementById('telepon_profesional');
+    const profileImgProfesional = document.getElementById('profile_img_profesional');
 
     // Error message elements 
     const namaError = document.getElementById('nama_error');
-    const nidnError = document.getElementById('nidn_error');
     const statusError = document.getElementById('status_akun_error');
     const emailError = document.getElementById('email_error');
     const passwordError = document.getElementById('password_error');
@@ -434,27 +278,27 @@ function tambahDosen() {
     setupFieldValidations();
 
     // Reset modal on close
-    if (modalTambahDosen) {
-        modalTambahDosen.addEventListener('hidden.bs.modal', resetModal);
+    if (modalTambahProfesional) {
+        modalTambahProfesional.addEventListener('hidden.bs.modal', resetModal);
     }
 
     // Button event listeners
-    if (btnTambahkanKeDaftarDosen) {
-        btnTambahkanKeDaftarDosen.addEventListener('click', handleAddToDaftarClick);
+    if (btnTambahkanKeDaftarProfesional) {
+        btnTambahkanKeDaftarProfesional.addEventListener('click', handleAddToDaftarClick);
     }
 
     // Form submission
-    if (formTambahDosen) {
-        formTambahDosen.addEventListener('submit', handleFormSubmit);
+    if (formTambahProfesional) {
+        formTambahProfesional.addEventListener('submit', handleFormSubmit);
     }
 
     // Password toggle setup
     function setupPasswordToggle() {
         const togglePassword = document.getElementById('togglePassword');
-        if (togglePassword && passwordDosen) {
+        if (togglePassword && passwordProfesional) {
             togglePassword.addEventListener('click', function() {
-                const type = passwordDosen.getAttribute('type') === 'password' ? 'text' : 'password';
-                passwordDosen.setAttribute('type', type);
+                const type = passwordProfesional.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordProfesional.setAttribute('type', type);
                 
                 const eyeIcon = document.getElementById('eye-icon');
                 if (eyeIcon) {
@@ -472,91 +316,83 @@ function tambahDosen() {
 
     // Set up field validations on blur
     function setupFieldValidations() {
-        if (namaDosen) {
-            namaDosen.addEventListener('blur', function() {
-                validateNama(namaDosen);
+        if (namaProfesional) {
+            namaProfesional.addEventListener('blur', function() {
+                validateNama(namaProfesional);
             });
         }
 
-        if (nidnDosen) {
-            nidnDosen.addEventListener('blur', function() {
-                validateNidnFormat(nidnDosen);
-            });
-        }
-        
-        if (emailDosen) {
-            emailDosen.addEventListener('blur', function() {
-                validateEmailFormat(emailDosen);
+        if (emailProfesional) {
+            emailProfesional.addEventListener('blur', function() {
+                validateEmailFormat(emailProfesional);
             });
         }
     }
 
-    // Add dosen to the list
-    function addDosenToList() {
-        // Generate a unique index for this dosen
-        const index = dosenList.length;
+    // Add profesional to the list
+    function addProfesionalToList() {
+        // Generate a unique index for this profesional
+        const index = profesionalList.length;
         
-        // Create the dosen object without the image first
-        const dosen = {
-            nama_dosen: namaDosen.value.trim(),
-            nidn_dosen: nidnDosen.value.trim(),
-            status_akun_dosen: statusDosen.value,
-            email_dosen: emailDosen.value.trim(),
-            password_dosen: passwordDosen.value || nidnDosen.value.trim(), // Use NIDN as default password
-            tanggal_lahir_dosen: tanggalLahirDosen.value,
-            jenis_kelamin_dosen: jenisKelaminDosen.value || null,
-            telepon_dosen: teleponDosen.value.trim(),
-            has_profile_img: profileImgDosen.files.length > 0,
-            profile_img_name: profileImgDosen.files.length > 0 ? profileImgDosen.files[0].name : ''
+        // Create the profesional object without the image first
+        const profesional = {
+            nama_profesional: namaProfesional.value.trim(),
+            status_akun_profesional: statusProfesional.value,
+            email_profesional: emailProfesional.value.trim(),
+            password_profesional: passwordProfesional.value || 'password123', 
+            tanggal_lahir_profesional: tanggalLahirProfesional.value,
+            jenis_kelamin_profesional: jenisKelaminProfesional.value || null,
+            telepon_profesional: teleponProfesional.value.trim(),
+            has_profile_img: profileImgProfesional.files.length > 0,
+            profile_img_name: profileImgProfesional.files.length > 0 ? profileImgProfesional.files[0].name : ''
         };
         
         // Add to the list
-        dosenList.push(dosen);
-        dosenJsonData.value = JSON.stringify(dosenList);
+        profesionalList.push(profesional);
+        profesionalJsonData.value = JSON.stringify(profesionalList);
         
         // Handle the image file if exists
-        if (profileImgDosen.files.length > 0) {
-            // Create a clone of the file input with a unique name for this dosen
+        if (profileImgProfesional.files.length > 0) {
+            // Create a clone of the file input with a unique name for this profesional
             const fileClone = document.createElement('input');
             fileClone.type = 'file';
-            fileClone.name = `profile_img_dosen_${index}`;
+            fileClone.name = `profile_img_profesional_${index}`;
             fileClone.classList.add('d-none'); // Hide it
-            fileClone.setAttribute('data-dosen-index', index);
+            fileClone.setAttribute('data-profesional-index', index);
             
             // Create a DataTransfer object to set the files
             const dataTransfer = new DataTransfer();
-            dataTransfer.items.add(profileImgDosen.files[0]);
+            dataTransfer.items.add(profileImgProfesional.files[0]);
             fileClone.files = dataTransfer.files;
             
             // Add to the form
-            formTambahDosen.appendChild(fileClone);
+            formTambahProfesional.appendChild(fileClone);
         }
         
         // Update the table
-        updateDosenTable();
+        updateProfesionalTable();
     }
 
-    // Update the dosen table display
-    function updateDosenTable() {
+    // Update the profesional table display
+    function updateProfesionalTable() {
         if (emptyRow) {
             emptyRow.remove();
         }
         
-        daftarDosen.innerHTML = '';
+        daftarProfesional.innerHTML = '';
         
-        dosenList.forEach((dosen, index) => {
+        profesionalList.forEach((profesional, index) => {
             const row = document.createElement('tr');
             
             // Display the photo info if available
-            const photoInfo = dosen.has_profile_img 
-                ? `<i class="bi bi-image text-success"></i> ${dosen.profile_img_name}`
+            const photoInfo = profesional.has_profile_img 
+                ? `<i class="bi bi-image text-success"></i> ${profesional.profile_img_name}`
                 : 'No image';
                 
             row.innerHTML = `
-                <td>${dosen.nama_dosen}</td>
-                <td>${dosen.nidn_dosen}</td>
-                <td>${dosen.email_dosen}</td>
-                <td>${dosen.status_akun_dosen}</td>
+                <td>${profesional.nama_profesional}</td>
+                <td>${profesional.email_profesional}</td>
+                <td>${profesional.status_akun_profesional}</td>
                 <td>${photoInfo}</td>
                 <td>
                     <button type="button" class="btn btn-sm btn-danger" data-index="${index}">Hapus</button>
@@ -569,52 +405,51 @@ function tambahDosen() {
                     const idx = parseInt(this.getAttribute('data-index'));
                     
                     // Also remove the file input if it exists
-                    const fileInput = formTambahDosen.querySelector(`input[name="profile_img_dosen_${idx}"]`);
+                    const fileInput = formTambahProfesional.querySelector(`input[name="profile_img_profesional_${idx}"]`);
                     if (fileInput) {
                         fileInput.remove();
                     }
                     
                     // Remove from the list
-                    dosenList.splice(idx, 1);
-                    dosenJsonData.value = JSON.stringify(dosenList);
+                    profesionalList.splice(idx, 1);
+                    profesionalJsonData.value = JSON.stringify(profesionalList);
                     
                     // Reindex remaining file inputs
-                    const fileInputs = formTambahDosen.querySelectorAll('input[data-dosen-index]');
+                    const fileInputs = formTambahProfesional.querySelectorAll('input[data-profesional-index]');
                     fileInputs.forEach(input => {
-                        const inputIndex = parseInt(input.getAttribute('data-dosen-index'));
+                        const inputIndex = parseInt(input.getAttribute('data-profesional-index'));
                         if (inputIndex > idx) {
-                            input.name = `profile_img_dosen_${inputIndex - 1}`;
-                            input.setAttribute('data-dosen-index', inputIndex - 1);
+                            input.name = `profile_img_profesional_${inputIndex - 1}`;
+                            input.setAttribute('data-profesional-index', inputIndex - 1);
                         }
                     });
                     
-                    updateDosenTable();
+                    updateProfesionalTable();
                     
-                    if (dosenList.length === 0) {
-                        daftarDosen.innerHTML = `
+                    if (profesionalList.length === 0) {
+                        daftarProfesional.innerHTML = `
                             <tr id="emptyRow">
-                                <td colspan="6" class="text-center">Belum ada dosen yang ditambahkan ke daftar</td>
+                                <td colspan="6" class="text-center">Belum ada profesional yang ditambahkan ke daftar</td>
                             </tr>
                         `;
                     }
                 });
             }
             
-            daftarDosen.appendChild(row);
+            daftarProfesional.appendChild(row);
         });
     }
 
     // Clear the form
     function clearForm() {
-        if (namaDosen) namaDosen.value = '';
-        if (nidnDosen) nidnDosen.value = '';
-        if (statusDosen) statusDosen.value = 'Active';
-        if (emailDosen) emailDosen.value = '';
-        if (passwordDosen) passwordDosen.value = '';
-        if (tanggalLahirDosen) tanggalLahirDosen.value = '';
-        if (jenisKelaminDosen) jenisKelaminDosen.value = '';
-        if (teleponDosen) teleponDosen.value = '';
-        if (profileImgDosen) profileImgDosen.value = '';
+        if (namaProfesional) namaProfesional.value = '';
+        if (statusProfesional) statusProfesional.value = 'Active';
+        if (emailProfesional) emailProfesional.value = '';
+        if (passwordProfesional) passwordProfesional.value = '';
+        if (tanggalLahirProfesional) tanggalLahirProfesional.value = '';
+        if (jenisKelaminProfesional) jenisKelaminProfesional.value = '';
+        if (teleponProfesional) teleponProfesional.value = '';
+        if (profileImgProfesional) profileImgProfesional.value = '';
         
         resetErrorMessages();
     }
@@ -626,8 +461,8 @@ function tambahDosen() {
             formError.textContent = '';
         }
         
-        if (formTambahDosen) {
-            const invalidInputs = formTambahDosen.querySelectorAll('.is-invalid');
+        if (formTambahProfesional) {
+            const invalidInputs = formTambahProfesional.querySelectorAll('.is-invalid');
             invalidInputs.forEach(input => {
                 input.classList.remove('is-invalid');
             });
@@ -635,7 +470,6 @@ function tambahDosen() {
         
         // Clear individual error messages
         if (namaError) namaError.textContent = '';
-        if (nidnError) nidnError.textContent = '';
         if (statusError) statusError.textContent = '';
         if (emailError) emailError.textContent = '';
         if (passwordError) passwordError.textContent = '';
@@ -649,104 +483,60 @@ function tambahDosen() {
     function resetModal() {
         clearForm();
         resetErrorMessages();
-        dosenList = [];
-        if (dosenJsonData) dosenJsonData.value = '[]';
+        profesionalList = [];
+        if (profesionalJsonData) profesionalJsonData.value = '[]';
         if (isSingle) isSingle.value = '1';
         
         // Remove all hidden file inputs
-        const fileInputs = formTambahDosen.querySelectorAll('input[data-dosen-index]');
+        const fileInputs = formTambahProfesional.querySelectorAll('input[data-profesional-index]');
         fileInputs.forEach(input => input.remove());
         
-        if (daftarDosen) {
-            daftarDosen.innerHTML = `
+        if (daftarProfesional) {
+            daftarProfesional.innerHTML = `
                 <tr id="emptyRow">
-                    <td colspan="6" class="text-center">Belum ada dosen yang ditambahkan ke daftar</td>
+                    <td colspan="6" class="text-center">Belum ada profesional yang ditambahkan ke daftar</td>
                 </tr>
             `;
         }
     }
 
-    // Validate form for adding new dosen
+    // Validate form for adding new profesional
     async function validateFormAsync() {
         let isValid = true;
         resetErrorMessages();
     
         // Validate Name
-        if (namaDosen && !namaDosen.value.trim()) {
-            namaDosen.classList.add('is-invalid');
-            if (namaError) namaError.textContent = "Nama dosen wajib diisi";
+        if (namaProfesional && !namaProfesional.value.trim()) {
+            namaProfesional.classList.add('is-invalid');
+            if (namaError) namaError.textContent = "Nama profesional wajib diisi";
             isValid = false;
-        }
-    
-        // Validate NIDN
-        if (nidnDosen && !nidnDosen.value.trim()) {
-            nidnDosen.classList.add('is-invalid');
-            if (nidnError) nidnError.textContent = "NIDN/NIP wajib diisi";
-            isValid = false;
-        } else if (nidnDosen) {
-            const nidnValue = nidnDosen.value.trim();
-    
-            // Validate NIDN format
-            if (!isValidNidn(nidnValue)) {
-                nidnDosen.classList.add('is-invalid');
-                if (nidnError) nidnError.textContent = "NIDN harus berupa angka dan tepat 10 digit";
-                isValid = false;
-            } else {
-                // Check for duplicates in the list
-                const nidnDuplicate = dosenList.some(dosen => dosen.nidn_dosen === nidnValue);
-                if (nidnDuplicate) {
-                    nidnDosen.classList.add('is-invalid');
-                    if (nidnError) nidnError.textContent = "NIDN/NIP sudah ada di daftar yang akan ditambahkan";
-                    isValid = false;
-                } else {
-                    // Check with database
-                    nidnDosen.classList.add('is-loading');
-                    try {
-                        const nidnExists = await checkNidnExistsAsync(nidnValue);
-                        nidnDosen.classList.remove('is-loading');
-                        if (nidnExists) {
-                            nidnDosen.classList.add('is-invalid');
-                            if (nidnError) nidnError.textContent = "NIDN/NIP sudah terdaftar di database";
-                            isValid = false;
-                        }
-                    } catch (error) {
-                        console.error('Error checking NIDN:', error);
-                        nidnDosen.classList.remove('is-loading');
-                        if (formError) {
-                            formError.textContent = "Terjadi kesalahan saat memeriksa NIDN. Silakan coba lagi.";
-                            formError.classList.remove('d-none');
-                        }
-                        isValid = false;
-                    }
-                }
-            }
         }
     
         // Validate Email
-        if (emailDosen && !emailDosen.value.trim()) {
-            emailDosen.classList.add('is-invalid');
+        if (emailProfesional && !emailProfesional.value.trim()) {
+            emailProfesional.classList.add('is-invalid');
             if (emailError) emailError.textContent = "Email wajib diisi";
             isValid = false;
-        } else if (emailDosen && !isValidEmail(emailDosen.value.trim())) {
-            emailDosen.classList.add('is-invalid');
+        } else if (emailProfesional && !isValidEmail(emailProfesional.value.trim())) {
+            emailProfesional.classList.add('is-invalid');
             if (emailError) emailError.textContent = "Format email tidak valid";
             isValid = false;
-        } else if (emailDosen) {
-            const emailValue = emailDosen.value.trim();
+        } else if (emailProfesional) {
+            const emailValue = emailProfesional.value.trim();
             // Check for duplicates in the list
-            const emailDuplicate = dosenList.some(dosen => dosen.email_dosen === emailValue);
+            const emailDuplicate = profesionalList.some(profesional => profesional.email_profesional === emailValue);
             if (emailDuplicate) {
-                emailDosen.classList.add('is-invalid');
+                emailProfesional.classList.add('is-invalid');
                 if (emailError) emailError.textContent = "Email sudah ada di daftar yang akan ditambahkan";
                 isValid = false;
             } else {
                 // Check with database
-                emailDosen.classList.add('is-loading');
+                emailProfesional.classList.add('is-loading');
                 try {
                     const emailExists = await checkEmailExistsAsync(emailValue);
-                    emailDosen.classList.remove('is-loading');
+                    emailProfesional.classList.remove('is-loading');
                     if (emailExists) {
-                        emailDosen.classList.add('is-invalid');
+                        emailProfesional.classList.add('is-invalid');
                         if (emailError) {
                             emailError.textContent = "Email sudah terdaftar di database";
                             emailError.style.display = 'block';
@@ -755,7 +545,7 @@ function tambahDosen() {
                     }
                 } catch (error) {
                     console.error('Error checking email:', error);
-                    emailDosen.classList.remove('is-loading');
+                    emailProfesional.classList.remove('is-loading');
                     if (formError) {
                         formError.textContent = "Terjadi kesalahan saat memeriksa email. Silakan coba lagi.";
                         formError.classList.remove('d-none');
@@ -766,17 +556,17 @@ function tambahDosen() {
         }
     
         // Validate Profile Image
-        if (profileImgDosen && profileImgDosen.files.length > 0) {
-            const file = profileImgDosen.files[0];
+        if (profileImgProfesional && profileImgProfesional.files.length > 0) {
+            const file = profileImgProfesional.files[0];
             const fileSize = file.size / 1024 / 1024;
             const validExtensions = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
     
             if (!validExtensions.includes(file.type)) {
-                profileImgDosen.classList.add('is-invalid');
+                profileImgProfesional.classList.add('is-invalid');
                 if (profileImgError) profileImgError.textContent = "Format file tidak valid. Gunakan jpeg, png, jpg, atau gif";
                 isValid = false;
             } else if (fileSize > 2) {
-                profileImgDosen.classList.add('is-invalid');
+                profileImgProfesional.classList.add('is-invalid');
                 if (profileImgError) profileImgError.textContent = "Ukuran file terlalu besar. Maksimal 2MB";
                 isValid = false;
             }
@@ -789,26 +579,26 @@ function tambahDosen() {
     async function handleAddToDaftarClick() {
         resetErrorMessages();
         
-        btnTambahkanKeDaftarDosen.disabled = true;
-        btnTambahkanKeDaftarDosen.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Memeriksa...';
+        btnTambahkanKeDaftarProfesional.disabled = true;
+        btnTambahkanKeDaftarProfesional.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Memeriksa...';
         
         try {
             const isValid = await validateFormAsync();
             
-            btnTambahkanKeDaftarDosen.disabled = false;
-            btnTambahkanKeDaftarDosen.innerHTML = 'Tambahkan ke Daftar';
+            btnTambahkanKeDaftarProfesional.disabled = false;
+            btnTambahkanKeDaftarProfesional.innerHTML = 'Tambahkan ke Daftar';
             
             if (!isValid) {
                 return;
             }
             
-            addDosenToList();
+            addProfesionalToList();
             clearForm();
             if (isSingle) isSingle.value = "0";
         } catch (error) {
             console.error('Validation error:', error);
-            btnTambahkanKeDaftarDosen.disabled = false;
-            btnTambahkanKeDaftarDosen.innerHTML = 'Tambahkan ke Daftar';
+            btnTambahkanKeDaftarProfesional.disabled = false;
+            btnTambahkanKeDaftarProfesional.innerHTML = 'Tambahkan ke Daftar';
             
             if (formError) {
                 formError.textContent = "Terjadi kesalahan saat validasi. Silakan coba lagi.";
@@ -821,21 +611,21 @@ function tambahDosen() {
     async function handleFormSubmit(e) {
         e.preventDefault();
         
-        // If there are dosen in the list, submit the form normally
-        if (dosenList.length > 0 || isSingle.value === "1") {
+        // If there are profesional in the list, submit the form normally
+        if (profesionalList.length > 0 || isSingle.value === "1") {
             // Show loading state
-            const submitBtn = formTambahDosen.querySelector('button[type="submit"]');
+            const submitBtn = formTambahProfesional.querySelector('button[type="submit"]');
             if (submitBtn) {
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Menyimpan...';
             }
             
             // Submit the form
-            formTambahDosen.submit();
+            formTambahProfesional.submit();
         } else {
             // Show error
             if (formError) {
-                formError.textContent = "Belum ada dosen yang ditambahkan ke daftar.";
+                formError.textContent = "Belum ada profesional yang ditambahkan ke daftar.";
                 formError.classList.remove('d-none');
             }
         }
@@ -845,7 +635,7 @@ function tambahDosen() {
     function handleValidationErrors(errors) {
         // Tampilkan error untuk setiap field
         for (const field in errors) {
-            const input = document.getElementById(`${field}_${dosenId}`);
+            const input = document.getElementById(`${field}_${profesionalId}`);
             if (input) {
                 input.classList.add('is-invalid');
                 
@@ -878,18 +668,18 @@ function tambahDosen() {
 }
 
 /**
- * Edit Dosen Functionality
+ * Edit Profesional Functionality
  */
-function editDosen() {
+function editProfesional() {
     // Get all edit forms on the page
     const editForms = document.querySelectorAll('form[id^="form_edit_"]');
     
     editForms.forEach(form => {
-        const dosenId = form.id.replace('form_edit_', '');
-        const formErrorContainer = document.getElementById(`edit_form_error_${dosenId}`);
+        const profesionalId = form.id.replace('form_edit_', '');
+        const formErrorContainer = document.getElementById(`edit_form_error_${profesionalId}`);
         
         // Store original values for fields when modal opens
-        const modalEl = document.getElementById(`modalDosen${dosenId}`);
+        const modalEl = document.getElementById(`modalProfesional${profesionalId}`);
         if (modalEl) {
             modalEl.addEventListener('show.bs.modal', function() {
                 console.log(`Modal ${modalEl.id} fully shown`);
@@ -908,9 +698,8 @@ function editDosen() {
         }
         
         // Set up field validations
-        const namaInput = document.getElementById(`nama_dosen_${dosenId}`);
-        const nidnInput = document.getElementById(`nidn_dosen_${dosenId}`);
-        const emailInput = document.getElementById(`email_dosen_${dosenId}`);
+        const namaInput = document.getElementById(`nama_profesional_${profesionalId}`);
+        const emailInput = document.getElementById(`email_profesional_${profesionalId}`);
         
         if (namaInput) {
             namaInput.addEventListener('blur', function() {
@@ -918,11 +707,6 @@ function editDosen() {
             });
         }
         
-        if (nidnInput) {
-            nidnInput.addEventListener('blur', function() {
-                validateNidnFormat(nidnInput);
-            });
-        }
         
         if (emailInput) {
             emailInput.addEventListener('blur', function() {
@@ -959,17 +743,6 @@ function editDosen() {
                 isValid = isValid && namaValid;
             }
             
-            // NIDN validation ONLY if changed
-            if (nidnInput && nidnInput.value !== nidnInput.getAttribute('data-original-value')) {
-                let nidnValid = validateNidnFormat(nidnInput);
-                
-                // Check database only if format is valid and value has changed
-                if (nidnValid) {
-                    nidnValid = await validateNidn(nidnInput, dosenId, nidnInput.getAttribute('data-original-value'));
-                }
-                
-                isValid = isValid && nidnValid;
-            }
             
             // Email validation ONLY if changed
             if (emailInput && emailInput.value !== emailInput.getAttribute('data-original-value')) {
@@ -977,7 +750,7 @@ function editDosen() {
                 
                 // Check database only if format is valid and value has changed
                 if (emailValid) {
-                    emailValid = await validateEmail(emailInput, dosenId, emailInput.getAttribute('data-original-value'));
+                    emailValid = await validateEmail(emailInput, profesionalId, emailInput.getAttribute('data-original-value'));
                 }
                 
                 isValid = isValid && emailValid;
@@ -1029,7 +802,7 @@ function editDosen() {
                 } else {
                     // Handle validation errors
                     if (result.errors) {
-                        handleValidationErrors(form, result.errors, dosenId);
+                        handleValidationErrors(form, result.errors, profesionalId);
                     } else {
                         // Show general error message
                         if (formErrorContainer) {
@@ -1080,9 +853,9 @@ function resetFormValidation(form) {
 /**
  * Handle validation errors from server
  */
-function handleValidationErrors(form, errors, dosenId) {
+function handleValidationErrors(form, errors, profesionalId) {
     for (const field in errors) {
-        const inputId = `${field}_${dosenId}`;
+        const inputId = `${field}_${profesionalId}`;
         const input = document.getElementById(inputId);
         if (input) {
             input.classList.add('is-invalid');
@@ -1101,7 +874,7 @@ function handleValidationErrors(form, errors, dosenId) {
     }
     
     // Show general error message
-    const formErrorContainer = document.getElementById(`edit_form_error_${dosenId}`);
+    const formErrorContainer = document.getElementById(`edit_form_error_${profesionalId}`);
     if (formErrorContainer) {
         formErrorContainer.textContent = "Terdapat kesalahan pada form. Mohon periksa kembali data yang dimasukkan.";
         formErrorContainer.classList.remove('d-none');
@@ -1119,10 +892,10 @@ function handleValidationErrors(form, errors, dosenId) {
  * Setup modal cancel events
  */
 function setupModalCancelEvents() {
-    const editModals = document.querySelectorAll('.modal[id^="modalDosen"]');
+    const editModals = document.querySelectorAll('.modal[id^="modalProfesional"]');
     
     editModals.forEach(modal => {
-        const dosenId = modal.id.replace('modalDosen', '');
+        const profesionalId = modal.id.replace('modalProfesional', '');
         const form = modal.querySelector('form');
         
         // Simpan nilai asli saat modal dibuka

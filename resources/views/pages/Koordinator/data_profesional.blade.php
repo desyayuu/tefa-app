@@ -40,7 +40,7 @@
                     <div class="modal fade" id="modalTambahDataProfesional" aria-hidden="true" aria-labelledby="modalTambahDataLabel" tabindex="-1">
                         <div class="modal-dialog modal-lg modal-dialog-centered">
                             <div class="modal-content">
-                                <form action="" method="POST" id="formTambahProfesional" enctype="multipart/form-data">
+                                <form action="{{ route('koordinator.tambahDataProfesional') }}" method="POST" id="formTambahProfesional" enctype="multipart/form-data">
                                     @csrf
                                     <div class="modal-header">
                                         <h1 class="modal-title fs-5" id="modalTambahProfesionalLabel">Tambah Data Profesional</h1>
@@ -52,7 +52,7 @@
                                             <div class="mb-2 col-md-4">
                                                 <label for="nama_profesional" class="form-label">Nama</label>
                                                 <input type="text" class="form-control" id="nama_profesional" name="nama_profesional">
-                                                <div class="invalid-feedback" id="nama_profesional_error"></div>
+                                                <div class="invalid-feedback" id="nama_error"></div>
                                             </div>
                                             <div class="mb-2 col-md-4">
                                                 <label for="jenis_kelamin_profesional" class="form-label">Jenis Kelamin</label>
@@ -71,23 +71,23 @@
                                         </div>
                                         <div class="row mb-3">
                                             <div class="mb-2 col-md-4">
-                                                <label for="status" class="form-label">Status Akun</label>
-                                                <select class="form-select" id="status" name="status">
+                                                <label for="status_akun_profesional" class="form-label">Status Akun</label>
+                                                <select class="form-select" id="status_akun_profesional" name="status_akun_profesional">
                                                     <option value="Active" selected>Active</option>
                                                     <option value="Pending">Pending</option>
                                                     <option value="Rejected">Rejected</option>
                                                     <option value="Disabled">Disabled</option>
                                                 </select>
-                                                <div class="invalid-feedback" id="status_error"></div>
+                                                <div class="invalid-feedback" id="status_akun_error"></div>
                                             </div>
                                             <div class="mb-2 col-md-4">
                                                 <label for="email_profesional" class="form-label">Email</label>
                                                 <input type="email" class="form-control" id="email_profesional" name="email_profesional">
-                                                <div class="invalid-feedback" id="email_profesional_error"></div>
+                                                <div class="invalid-feedback" id="email_error"></div>
                                             </div>
                                             <div class="mb-2 col-md-4">
-                                                <label for="password" class="form-label">Password</label>
-                                                <input type="password" class="form-control" id="password" name="password" placeholder="Kosong = NIDN">
+                                                <label for="password_profesional" class="form-label">Password</label>
+                                                <input type="password" class="form-control" id="password_profesional" name="password_profesional">
                                                 <div class="invalid-feedback" id="password_error"></div>
                                             </div>
                                         </div>
@@ -95,17 +95,17 @@
                                             <div class="mb-2 col-md-6">
                                                 <label for="telepon_profesional" class="form-label">Telepon</label>
                                                 <input type="text" class="form-control" id="telepon_profesional" name="telepon_profesional">
-                                                <div class="invalid-feedback" id="telepon_profesional_error"></div>
+                                                <div class="invalid-feedback" id="telepon_error"></div>
                                             </div>
                                             <div class="mb-2 col-md-6">
                                                 <label for="profile_img_profesional" class="form-label">Foto Profil</label>
                                                 <input type="file" class="form-control" id="profile_img_profesional" name="profile_img_profesional" accept="image/*">
-                                                <div class="invalid-feedback" id="profile_img_profesional_error"></div>
+                                                <div class="invalid-feedback" id="profile_img_error"></div>
                                                 <small class="text-muted">Format gambar: jpeg, png, jpg, gif. Maksimal 2MB.</small>
                                             </div>
                                         </div>
                                         <div class="mt-2 text-end">
-                                            <button type="button" class="btn btn-add" id="btnTambahkanKeDaftar">Tambahkan ke Daftar</button>
+                                            <button type="button" class="btn btn-add" id="btnTambahkanKeDaftarProfesional">Tambahkan ke Daftar</button>
                                         </div>
                                         
                                         <!-- Error message for form submit -->
@@ -117,9 +117,10 @@
                                                 <table class="table table-bordered table-striped">
                                                     <thead>
                                                         <tr>
-                                                            <th>Nama Profesional</th>
+                                                            <th>Nama Dosen</th>
                                                             <th>Email</th>
                                                             <th>Status</th>
+                                                            <th>Foto</th>
                                                             <th>Aksi</th>
                                                         </tr>
                                                     </thead>
@@ -144,7 +145,7 @@
                             </div>
                         </div>
                     </div>
-                    <button class="btn btn-add" data-bs-target="#modalTambahData" data-bs-toggle="modal">Tambah Data</button>
+                    <button class="btn btn-add" data-bs-target="#modalTambahDataProfesional" data-bs-toggle="modal">Tambah Data</button>
                 </div>
             </div>
             
@@ -190,88 +191,133 @@
                     </tr>
 
                     <!-- Modal Edit and Detail Data -->
-                    <!-- <div class="modal fade" id="modalProfesional{{ $p->profesional_id }}" tabindex="-1" aria-labelledby="mitraLabel{{ $p->profesional_id }}" aria-hidden="true">
+                    <div class="modal fade" id="modalProfesional{{ $p->profesional_id }}" tabindex="-1" aria-labelledby="mitraLabel{{ $p->profesional_id }}" aria-hidden="true">
                         <div class="modal-dialog modal-lg">
                             <div class="modal-content">
-                                <form action="" method="POST" data-current-email="{{ $p->email }}">
+                                <form action="{{ route('koordinator.updateDataProfesional', $p->profesional_id) }}" method="POST" data-current-email="{{ $p->email }}" enctype="multipart/form-data">
                                     @csrf
                                     @method('PUT')
                                     <div class="modal-header">
                                         <h5 class="modal-title" id="mitraLabel{{ $p->profesional_id }}">Edit Data Profesional</h5>
                                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                     </div>
-                                    <div class="modal-body">
+                                    <div class="modal-body label-form">
+                                        <!-- Baris 1: Nama, Jenis Kelamin, Tanggal Lahir -->
                                         <div class="row mb-3">
-                                            <div class="col-md-12">
-                                                <label for="nama_profesional" class="form-label">Nama</label>
-                                                <input type="text" class="form-control" id="nama_profesional" name="nama_profesional" value="{{ $p->nama_profesional }}">
-                                                <div class="invalid-feedback" id="nama_profesional_error"></div>
+                                            <!-- Nama Profesional -->
+                                            <div class="mb-2 col-md-4">
+                                                <label for="nama_profesional_{{ $p->profesional_id }}" class="form-label">Nama Profesional</label>
+                                                <input type="text" class="form-control @error('nama_profesional') is-invalid @enderror" id="nama_profesional_{{ $p->profesional_id }}" name="nama_profesional" value="{{ old('nama_profesional', $p->nama_profesional) }}">
+                                                @error('nama_profesional')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
                                             </div>
-                                        </div>
-
-                                        <div class="row mb-3">
-                                            <div class="col-md-4">
-                                                <label for="jenis_kelamin_profesional" class="form-label">Jenis Kelamin</label>
-                                                <select class="form-select" id="jenis_kelamin_profesional" name="jenis_kelamin_profesional">
-                                                    <option value="" {{ $p->jenis_kelamin_profesional == '' ? 'selected' : '' }}>Pilih</option>
-                                                    <option value="Laki-Laki" {{ $p->jenis_kelamin_profesional == 'Laki-Laki' ? 'selected' : '' }}>Laki-Laki</option>
-                                                    <option value="Perempuan" {{ $p->jenis_kelamin_profesional == 'Perempuan' ? 'selected' : '' }}>Perempuan</option>
+                                            
+                                            <!-- Jenis Kelamin -->
+                                            <div class="mb-2 col-md-4">
+                                                <label for="jenis_kelamin_profesional_{{ $p->profesional_id }}" class="form-label">Jenis Kelamin</label>
+                                                <select class="form-select @error('jenis_kelamin_profesional') is-invalid @enderror" 
+                                                    id="jenis_kelamin_profesional_{{ $p->profesional_id }}" name="jenis_kelamin_profesional">
+                                                    <option value="" {{ old('jenis_kelamin_profesional', $p->jenis_kelamin_profesional) == null ? 'selected' : '' }}>Pilih Jenis Kelamin</option>
+                                                    <option value="Laki-Laki" {{ old('jenis_kelamin_profesional', $p->jenis_kelamin_profesional) == 'Laki-Laki' ? 'selected' : '' }}>Laki-Laki</option>
+                                                    <option value="Perempuan" {{ old('jenis_kelamin_profesional', $p->jenis_kelamin_profesional) == 'Perempuan' ? 'selected' : '' }}>Perempuan</option>
                                                 </select>
-                                                <div class="invalid-feedback" id="jenis_kelamin_error"></div>
+                                                @error('jenis_kelamin_profesional')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
                                             </div>
-                                            <div class="col-md-4">
-                                                <label for="tanggal_lahir_profesional" class="form-label">Tanggal Lahir</label>
-                                                <input type="date" class="form-control" id="tanggal_lahir_profesional" name="tanggal_lahir_profesional" value="{{ $p->tanggal_lahir_profesional }}">
-                                                <div class="invalid-feedback" id="tanggal_lahir_error"></div>
+                                            
+                                            <!-- Tanggal Lahir -->
+                                            <div class="mb-2 col-md-4">
+                                                <label for="tanggal_lahir_profesional_{{ $p->profesional_id }}" class="form-label">Tanggal Lahir</label>
+                                                <input type="date" class="form-control @error('tanggal_lahir_profesional') is-invalid @enderror" 
+                                                    id="tanggal_lahir_profesional_{{ $p->profesional_id }}" name="tanggal_lahir_profesional" 
+                                                    value="{{ old('tanggal_lahir_profesional', $p->tanggal_lahir_profesional) }}">
+                                                @error('tanggal_lahir_profesional')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
                                             </div>
-                                            <div class="col-md-4">
-                                                <label for="status" class="form-label">Status Akun</label>
-                                                <select class="form-select" id="status" name="status">
-                                                    <option value="Active" {{ $p->status == 'Active' ? 'selected' : '' }}>Active</option>
-                                                    <option value="Pending" {{ $p->status == 'Pending' ? 'selected' : '' }}>Pending</option>
-                                                    <option value="Rejected" {{ $p->status == 'Rejected' ? 'selected' : '' }}>Rejected</option>
-                                                    <option value="Disabled" {{ $p->status == 'Disabled' ? 'selected' : '' }}>Disabled</option>
+                                        </div>
+                                        
+                                        <!-- Baris 2: Status Akun, Email, Password -->
+                                        <div class="row mb-3">
+                                            <!-- Status Akun -->
+                                            <div class="mb-2 col-md-4">
+                                                <label for="status_akun_profesional_{{ $p->profesional_id }}" class="form-label">Status Akun</label>
+                                                <select class="form-select @error('status_akun_profesional') is-invalid @enderror" 
+                                                    id="status_akun_profesional_{{ $p->profesional_id }}" name="status_akun_profesional">
+                                                    <option value="Active" {{ old('status_akun_profesional', $p->status) == 'Active' ? 'selected' : '' }}>Active</option>
+                                                    <option value="Pending" {{ old('status_akun_profesional', $p->status) == 'Pending' ? 'selected' : '' }}>Pending</option>
+                                                    <option value="Rejected" {{ old('status_akun_profesional', $p->status) == 'Rejected' ? 'selected' : '' }}>Rejected</option>
+                                                    <option value="Disabled" {{ old('status_akun_profesional', $p->status) == 'Disabled' ? 'selected' : '' }}>Disabled</option>
                                                 </select>
-                                                <div class="invalid-feedback" id="status_error"></div>
+                                                @error('status_akun_profesional')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                            
+                                            <!-- Email -->
+                                            <div class="mb-2 col-md-4">
+                                                <label for="email_profesional_{{ $p->profesional_id }}" class="form-label">Email</label>
+                                                <input type="email" class="form-control @error('email_profesional') is-invalid @enderror" 
+                                                    id="email_profesional_{{ $p->profesional_id }}" name="email_profesional" value="{{ old('email_profesional', $p->email) }}"
+                                                    data-original="{{ $p->email }}">
+                                                @error('email_profesional')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                            
+                                            <!-- Password -->
+                                            <div class="mb-2 col-md-4">
+                                                <label for="password_profesional_{{ $p->profesional_id }}" class="form-label">Password</label>
+                                                <input type="password" class="form-control @error('password_profesional') is-invalid @enderror" 
+                                                    id="password_profesional_{{ $p->profesional_id }}" name="password_profesional">
+                                                @error('password_profesional')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                                <small class="text-muted">Kosongi jika tidak ingin mengubah password</small>
                                             </div>
                                         </div>
-
+                                        
+                                        <!-- Baris 3: Telepon, Foto Profil -->
                                         <div class="row mb-3">
-                                            <div class="col-md-6">
-                                                <label for="email_profesional" class="form-label">Email</label>
-                                                <input type="email" class="form-control" id="email_profesional" name="email_profesional" value="{{ $p->email }}">
-                                                <div class="invalid-feedback" id="email_profesional_error"></div>
+                                            <!-- Telepon -->
+                                            <div class="mb-2 col-md-6">
+                                                <label for="telepon_profesional_{{ $p->profesional_id }}" class="form-label">Telepon</label>
+                                                <input type="text" class="form-control @error('telepon_profesional') is-invalid @enderror" 
+                                                    id="telepon_profesional_{{ $p->profesional_id }}" name="telepon_profesional" 
+                                                    value="{{ old('telepon_profesional', $p->telepon_profesional) }}">
+                                                @error('telepon_profesional')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
                                             </div>
-                                            <div class="col-md-6">
-                                                <label for="password" class="form-label">Password</label>
-                                                <input type="text" class="form-control" id="password" name="password" value="" placeholder="Kosongi jika tidak ingin mengubah">
-                                                <div class="invalid-feedback" id="password_error"></div>
-                                            </div>
-                                        </div>
-
-                                        <div class="row mb-3">
-                                            <div class="col-md-6">
-                                                <label for="telepon_profesional" class="form-label">Telepon</label>
-                                                <input type="text" class="form-control" id="telepon_profesional" name="telepon_profesional" value="{{ $p->telepon_profesional }}">
-                                                <div class="invalid-feedback" id="telepon_profesional_error"></div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <label for="profile_img_profesional" class="form-label">Foto Profil</label>
-                                                <input type="file" class="form-control" id="profile_img_profesional" name="profile_img_profesional" accept="image/*">
-                                                <div class="invalid-feedback" id="profile_img_profesional_error"></div>
-                                                <small class="text-muted">Format gambar: jpeg, png, jpg, gif. Maks 2MB.</small>
+                                            
+                                            <!-- Foto Profil -->
+                                            <div class="mb-2 col-md-6">
+                                                <label for="profile_img_profesional_{{ $p->profesional_id }}" class="form-label">Foto Profil</label>
+                                                @if ($p->profile_img_profesional)
+                                                    <div class="mb-2">
+                                                        <img src="{{ asset($p->profile_img_profesional) }}" alt="Profile Image" class="img-thumbnail" style="max-height: 100px;">
+                                                    </div>
+                                                @endif
+                                                <input type="file" class="form-control @error('profile_img_profesional') is-invalid @enderror" 
+                                                    id="profile_img_profesional_{{ $p->profesional_id }}" name="profile_img_profesional" accept="image/*">
+                                                @error('profile_img_profesional')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                                <small class="text-muted">Format gambar: jpeg, png, jpg, gif. Maksimal 2MB.</small>
                                             </div>
                                         </div>
                                     </div>
 
                                     <div class="modal-footer">
-                                        <button type="button" class="btn btn-tutup" data-bs-dismiss="modal">Tutup</button>
+                                        <button type="button" class="btn btn-tutup" data-bs-dismiss="modal">Batalkan</button>
                                         <button type="submit" class="btn btn-add">Simpan Perubahan</button>
                                     </div>
                                 </form>
                             </div>
                         </div>
-                    </div> -->
+                    </div>
 
                     <!-- Modal konfirmasi delete -->
                     <div class="modal fade" id="modalDelete{{ $p->profesional_id }}" tabindex="-1" aria-labelledby="deleteLabel{{ $p->profesional_id }}" aria-hidden="true">
