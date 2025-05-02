@@ -9,16 +9,6 @@ use Illuminate\Support\Str;
 
 
 class DataDosenController extends Controller{
-    public function dashboard(){
-        $koordinator = DB::table('d_koordinator')
-            ->where('user_id', session('user_id'))
-            ->first();
-            
-        return view('pages.Koordinator.dashboard', compact('koordinator'), [
-            'titleSidebar' => 'Dashboard'
-        ]);
-    }
-
     public function getDataDosen(Request $request){
         $search = $request->input('search'); 
 

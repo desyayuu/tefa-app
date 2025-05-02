@@ -40,9 +40,8 @@ Route::middleware([KoordinatorMiddleware::class])->prefix('koordinator')->group(
     Route::post('/data-profesional', [DataProfesionalController::class, 'tambahDataProfesional'])->name('koordinator.tambahDataProfesional');
     Route::post('/check-email-profesional-exists', [DataProfesionalController::class, 'checkEmailProfesionalExists'])->name('koordinator.checkEmailProfesionalExists');
     Route::put('/profesional/{id}', [DataProfesionalController::class, 'updateDataProfesional'])->name('koordinator.updateDataProfesional');
+    Route::delete('/profesional/{id}', [DataProfesionalController::class, 'deleteDataProfesional'])->name('koordinator.deleteDataProfesional');
+
     //Data Mahasiswa 
     Route::get('/data-mahasiswa', [KoordinatorController::class, 'getDataMahasiswa'])->name('koordinator.dataMahasiswa');
-    
-
-
 });

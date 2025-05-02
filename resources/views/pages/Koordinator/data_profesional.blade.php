@@ -323,7 +323,7 @@
                     <div class="modal fade" id="modalDelete{{ $p->profesional_id }}" tabindex="-1" aria-labelledby="deleteLabel{{ $p->profesional_id }}" aria-hidden="true">
                         <div class="modal-dialog modal-dialog-centered">
                             <div class="modal-content">
-                                <form action="" method="POST">
+                                <form action="{{ route('koordinator.deleteDataProfesional', $p->profesional_id) }}" method="POST">
                                     @csrf
                                     @method('DELETE')
                                     <div class="modal-header">
