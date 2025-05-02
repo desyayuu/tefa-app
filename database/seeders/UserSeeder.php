@@ -93,7 +93,7 @@ class UserSeeder extends Seeder
             'tanggal_lahir_mahasiswa' => '2000-01-01',
             'telepon_mahasiswa' => '081234567890',
             'profile_img_mahasiswa' => null,
-            'nim' => '1234567890',
+            'nim_mahasiswa' => '1234567890',
             'created_at' => $now,
             'created_by' => 0
         ]);

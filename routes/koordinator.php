@@ -5,18 +5,21 @@ use App\Http\Controllers\KoordinatorController;
 use App\Http\Middleware\KoordinatorMiddleware;
 use App\Http\Controllers\Koordinator\DataProfesionalController;
 use App\Http\Controllers\Koordinator\DataDosenController;
+use App\Http\Controllers\Koordinator\DataUserController;
+use App\Http\Controllers\Koordinator\DataMitraController;
+use App\Http\Controllers\Koordinator\DataMahasiswaController;
 
 Route::middleware([KoordinatorMiddleware::class])->prefix('koordinator')->group(function () {
     Route::get('/', [KoordinatorController::class, 'dashboard'])->name('koordinator.dashboard');
     Route::get('/dashboard', [KoordinatorController::class, 'dashboard'])->name('koordinator.dashboard');
 
     //Data Mitra
-    Route::get('/data-mitra', [KoordinatorController::class, 'getDataMitra'])->name('koordinator.dataMitra');
-    Route::post('/data-mitra', [KoordinatorController::class, 'storeDataMitra'])->name('koordinator.storeDataMitra');
-    Route::post('/tambah-multiple-data-mitra', [KoordinatorController::class, 'tambahMultipleDataMitra'])->name('koordinator.tambahMultipleDataMitra');
-    Route::put('/mitra/{id}', [KoordinatorController::class, 'updateDataMitra'])->name('koordinator.updateDataMitra');
-    Route::delete('/mitra/{id}', [KoordinatorController::class, 'deleteDataMitra'])->name('koordinator.deleteDataMitra');
-    Route::post('/check-email-exists', [KoordinatorController::class, 'checkEmailExists'])->name('koordinator.checkEmailExists');
+    Route::get('/data-mitra', [DataMitraController::class, 'getDataMitra'])->name('koordinator.dataMitra');
+    Route::post('/data-mitra', [DataMitraController::class, 'storeDataMitra'])->name('koordinator.storeDataMitra');
+    Route::post('/tambah-multiple-data-mitra', [DataMitraController::class, 'tambahMultipleDataMitra'])->name('koordinator.tambahMultipleDataMitra');
+    Route::put('/mitra/{id}', [DataMitraController::class, 'updateDataMitra'])->name('koordinator.updateDataMitra');
+    Route::delete('/mitra/{id}', [DataMitraController::class, 'deleteDataMitra'])->name('koordinator.deleteDataMitra');
+    Route::post('/check-email-exists', [DataMitraController::class, 'checkEmailExists'])->name('koordinator.checkEmailExists');
 
     //Data Proyek
     Route::get('/data-proyek', [KoordinatorController::class, 'getDataProyek'])->name('koordinator.dataProyek');
@@ -31,9 +34,9 @@ Route::middleware([KoordinatorMiddleware::class])->prefix('koordinator')->group(
     Route::delete('/dosen/{id}', [DataDosenController::class, 'deleteDataDosen'])->name('koordinator.deleteDataDosen');
 
     //Data User
-    Route::get('/data-user', [KoordinatorController::class, 'getDataUser'])->name('koordinator.dataUser');
-    Route::put('/koordinator/user/{id}/update-status', [KoordinatorController::class, 'updateStatusUser'])->name('koordinator.updateStatusUser');
-    Route::delete('/koordinator/user/{id}', [KoordinatorController::class, 'deleteDataUser'])->name('koordinator.deleteUser');
+    Route::get('/data-user', [DataUserController::class, 'getDataUser'])->name('koordinator.dataUser');
+    Route::put('/koordinator/user/{id}/update-status', [DataUserController::class, 'updateStatusUser'])->name('koordinator.updateStatusUser');
+    Route::delete('/koordinator/user/{id}', [DataUserController::class, 'deleteDataUser'])->name('koordinator.deleteUser');
 
     // Display professionals
     Route::get('/data-profesional', [DataProfesionalController::class, 'getDataProfesional'])->name('koordinator.dataProfesional');
@@ -43,5 +46,5 @@ Route::middleware([KoordinatorMiddleware::class])->prefix('koordinator')->group(
     Route::delete('/profesional/{id}', [DataProfesionalController::class, 'deleteDataProfesional'])->name('koordinator.deleteDataProfesional');
 
     //Data Mahasiswa 
-    Route::get('/data-mahasiswa', [KoordinatorController::class, 'getDataMahasiswa'])->name('koordinator.dataMahasiswa');
+    Route::get('/data-mahasiswa', [DataMahasiswaController::class, 'getDataMahasiswa'])->name('koordinator.dataMahasiswa');
 });

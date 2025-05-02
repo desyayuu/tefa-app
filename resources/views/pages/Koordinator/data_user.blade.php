@@ -161,8 +161,8 @@
                                             </div>
                                             @elseif($u->role == 'Mahasiswa')
                                             <div class="col-md-6 mt-2">
-                                                <label for="nim" class="form-label">NIM</label>
-                                                <input type="text" class="form-control" id="nim" name="nim" value="{{ $u->nim }}" disabled>
+                                                <label for="nim_mahasiswa" class="form-label">NIM</label>
+                                                <input type="text" class="form-control" id="nim_mahasiswa" name="nim_mahasiswa" value="{{ $u->nim_mahasiswa }}" disabled>
                                             </div>
                                             @elseif($u->role == 'Koordinator')
                                             <div class="col-md-6 mt-2">

@@ -20,7 +20,7 @@ return new class extends Migration
             $table->date('tanggal_lahir_mahasiswa')->nullable();
             $table->string('telepon_mahasiswa')->nullable();
             $table->string('profile_img_mahasiswa')->nullable();
-            $table->string('nim')->unique();
+            $table->string('nim_mahasiswa')->unique();
             $table->string('linkedin')->nullable();
             $table->string('github')->nullable();
             $table->string('doc_cv')->nullable();
