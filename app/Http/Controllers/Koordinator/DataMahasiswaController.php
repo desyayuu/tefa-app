@@ -284,7 +284,7 @@ class DataMahasiswaController extends Controller
 
     }
 
-    public function checkEmailNidnExists(Request $request){
+    public function checkEmailNimExists(Request $request){
         \Log::info('Check email/nim request:', $request->all());
         
         $email = $request->input('email_mahasiswa');
@@ -566,5 +566,21 @@ class DataMahasiswaController extends Controller
             return redirect()->route('koordinator.dataMahasiswa')
                 ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
+    }
+
+    public function getDataMahasiswaById($id){
+        $mahasiswa = DB::table('d_mahasiswa as mahasiswa')
+            ->join('d_user as user', 'mahasiswa.user_id', '=', 'user.user_id')
+            ->select('mahasiswa.*', 'user.*')
+            ->where('mahasiswa.mahasiswa_id', $id)
+            ->first();
+            
+        if (!$mahasiswa) {
+            return redirect()->route('koordinator.dataMahasiswa')->with('error', 'Data mahasiswa tidak ditemukan.');
+        }
+        
+        return view('pages.Koordinator.DataMahasiswa.detail_data_mahasiswa', compact('mahasiswa'), [
+            'titleSidebar' => 'Detail Mahasiswa'
+        ]);
     }
 }

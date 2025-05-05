@@ -47,4 +47,9 @@ Route::middleware([KoordinatorMiddleware::class])->prefix('koordinator')->group(
 
     //Data Mahasiswa 
     Route::get('/data-mahasiswa', [DataMahasiswaController::class, 'getDataMahasiswa'])->name('koordinator.dataMahasiswa');
+    Route::post('/data-mahasiswa', [DataMahasiswaController::class, 'tambahDataMahasiswa'])->name('koordinator.tambahDataMahasiswa');
+    Route::post('/check-email-nim-exists', [DataMahasiswaController::class, 'checkEmailNimExists'])->name('koordinator.checkEmailExists');
+    Route::put('/mahasiswa/{id}', [DataMahasiswaController::class, 'updateDataMahasiswa'])->name('koordinator.updateDataMahasiswa');
+    Route::delete('/mahasiswa/{id}', [DataMahasiswaController::class, 'deleteDataMahasiswa'])->name('koordinator.deleteDataMahasiswa');
+    Route::get('/data-mahasiswa/{id}', [DataMahasiswaController::class, 'getDataMahasiswaById'])->name('koordinator.detailDataMahasiswa');
 });

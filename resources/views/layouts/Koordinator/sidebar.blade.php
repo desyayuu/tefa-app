@@ -99,7 +99,7 @@
             </a>
         </li>
         <li>
-            <a href="{{ route('koordinator.dataMahasiswa') }}" class="{{ request()->routeIs('koordinator.dataMahasiswa') ? 'active' : '' }}" >
+            <a href="{{ route('koordinator.dataMahasiswa') }}" class="{{ request()->routeIs('koordinator.dataMahasiswa') || request()->routeIs('koordinator.detailDataMahasiswa') ? 'active' : '' }}" >
                 <span class="icon">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M11.997 15.1743C7.684 15.1743 4 15.8543 4 18.5743C4 21.2953 7.661 21.9993 11.997 21.9993C16.31 21.9993 19.994 21.3203 19.994 18.5993C19.994 15.8783 16.334 15.1743 11.997 15.1743Z" fill="#878787"/>

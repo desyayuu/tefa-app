@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'TEFA | Data mahasiswa')
+@section('title', 'TEFA | Data Mahasiswa')
 
 @section('content')
 <div class="main-layout">
@@ -36,11 +36,11 @@
                     </a>
                     @endif
                     
-                    <!-- Modal Tambah Data Mahasiswa (Unified for Single dan Multiple) -->
-                    <div class="modal fade" id="modalTambahData" aria-hidden="true" aria-labelledby="modalTambahDataLabel" tabindex="-1">
+                    <!-- Modal Tambah Data Mahasiswa -->
+                    <div class="modal fade" id="modalTambahMahasiswa" aria-hidden="true" aria-labelledby="modalTambahMahasiswaLabel" tabindex="-1">
                         <div class="modal-dialog modal-lg modal-dialog-centered">
                             <div class="modal-content">
-                                <form action="" method="POST" id="formTambahMahasiswa" enctype="multipart/form-data">
+                                <form action="{{route ('koordinator.tambahDataMahasiswa') }}" method="POST" id="formTambahMahasiswa" enctype="multipart/form-data">
                                     @csrf
                                     <div class="modal-header">
                                         <h1 class="modal-title fs-5" id="modalTambahMahasiswaLabel">Tambah Data Mahasiswa</h1>
@@ -49,11 +49,50 @@
                                     <div class="modal-body label-form">
                                         <div class="row mb-3">
                                             <!-- Nama Mahasiswa -->
-                                            <div class="mb-2 col-md-4">
-                                                <label for="nama_mahasiswa" class="form-label">Nama</label>
-                                                <input type="text" class="form-control" id="nama_mahasiswa" name="nama_mahasiswa">
-                                                <div class="invalid-feedback" id="nama_mahasiswa_error"></div>
+                                            <div class="mb-2 col-md-6">
+                                                <label for="nama_mahasiswa" class="form-label">Nama Mahasiswa</label>
+                                                <input type="text" class="form-control" id="nama_mahasiswa" name="nama_mahasiswa" >
+                                                <div class="invalid-feedback" id="nama_error"></div>
                                             </div>
+                                            <!-- NIM -->
+                                            <div class="mb-2 col-md-6">
+                                                <label for="nim_mahasiswa" class="form-label">NIM</label>
+                                                <input type="text" class="form-control" id="nim_mahasiswa" name="nim_mahasiswa" 
+                                                    maxlength="10" pattern="[0-9]+" title="NIM harus berupa angka dan maksimal 10 digit">
+                                                <div class="invalid-feedback" id="nim_error"></div>
+                                                <small class="text-muted">NIM harus berupa angka dan maksimal 10 digit</small>
+                                            </div>
+                                            <!-- Status Akun -->
+                                            <div class="mb-2 col-md-4">
+                                                <label for="status_akun_mahasiswa" class="form-label">Status Akun</label>
+                                                <select class="form-select" id="status_akun_mahasiswa" name="status_akun_mahasiswa">
+                                                    <option value="Active" selected>Active</option>
+                                                    <option value="Pending">Pending</option>
+                                                    <option value="Rejected">Rejected</option>
+                                                    <option value="Disabled">Disabled</option>
+                                                </select>
+                                                <div class="invalid-feedback" id="status_akun_error"></div>
+                                            </div>
+                                            <!-- Email -->
+                                            <div class="mb-2 col-md-4">
+                                                <label for="email_mahasiswa" class="form-label">Email</label>
+                                                <input type="email" class="form-control" id="email_mahasiswa" name="email_mahasiswa">
+                                                <div class="invalid-feedback" id="email_error"></div>
+                                            </div>
+                                            <!-- Password -->
+                                            <div class="mb-2 col-md-4">
+                                                <label for="password_mahasiswa" class="form-label">Password</label>
+                                                <input type="password" class="form-control" id="password_mahasiswa" name="password_mahasiswa">
+                                                <div class="invalid-feedback" id="password_error"></div>
+                                                <small class="text-muted">Password akan otomatis menggunakan jika field ini kosong</small>
+                                            </div>
+                                            <!-- Tanggal Lahir -->
+                                            <div class="mb-2 col-md-4">
+                                                <label for="tanggal_lahir_mahasiswa" class="form-label">Tanggal Lahir</label>
+                                                <input type="date" class="form-control" id="tanggal_lahir_mahasiswa" name="tanggal_lahir_mahasiswa">
+                                                <div class="invalid-feedback" id="tanggal_lahir_error"></div>
+                                            </div>
+                                            <!-- Jenis Kelamin -->
                                             <div class="mb-2 col-md-4">
                                                 <label for="jenis_kelamin_mahasiswa" class="form-label">Jenis Kelamin</label>
                                                 <select class="form-select" id="jenis_kelamin_mahasiswa" name="jenis_kelamin_mahasiswa">
@@ -63,95 +102,72 @@
                                                 </select>
                                                 <div class="invalid-feedback" id="jenis_kelamin_error"></div>
                                             </div>
+                                            <!-- Telepon -->
                                             <div class="mb-2 col-md-4">
-                                                <label for="tanggal_lahir_mahasiswa" class="form-label">Tanggal Lahir</label>
-                                                <input type="date" class="form-control" id="tanggal_lahir_mahasiswa" name="tanggal_lahir_mahasiswa">
-                                                <div class="invalid-feedback" id="tanggal_lahir_error"></div>
-                                            </div>
-                                        </div>
-                                        <div class="row mb-3">
-                                            <div class="mb-2 col-md-4">
-                                                <label for="status" class="form-label">Status Akun</label>
-                                                <select class="form-select" id="status" name="status">
-                                                    <option value="Active" selected>Active</option>
-                                                    <option value="Pending">Pending</option>
-                                                    <option value="Rejected">Rejected</option>
-                                                    <option value="Disabled">Disabled</option>
-                                                </select>
-                                                <div class="invalid-feedback" id="status_error"></div>
-                                            </div>
-                                            <div class="mb-2 col-md-4">
-                                                <label for="email_mahasiswa" class="form-label">Email</label>
-                                                <input type="email" class="form-control" id="email_mahasiswa" name="email_mahasiswa">
-                                                <div class="invalid-feedback" id="email_mahasiswa_error"></div>
-                                            </div>
-                                            <div class="mb-2 col-md-4">
-                                                <label for="password" class="form-label">Password</label>
-                                                <input type="password" class="form-control" id="password" name="password" placeholder="Kosong = NIDN">
-                                                <div class="invalid-feedback" id="password_error"></div>
-                                            </div>
-                                        </div>
-                                        <div class="row mb-3">
-                                            <div class="mb-2 col-md-6">
                                                 <label for="telepon_mahasiswa" class="form-label">Telepon</label>
                                                 <input type="text" class="form-control" id="telepon_mahasiswa" name="telepon_mahasiswa">
-                                                <div class="invalid-feedback" id="telepon_mahasiswa_error"></div>
+                                                <div class="invalid-feedback" id="telepon_error"></div>
                                             </div>
+                                            <!-- Foto Profil -->
                                             <div class="mb-2 col-md-6">
                                                 <label for="profile_img_mahasiswa" class="form-label">Foto Profil</label>
                                                 <input type="file" class="form-control" id="profile_img_mahasiswa" name="profile_img_mahasiswa" accept="image/*">
-                                                <div class="invalid-feedback" id="profile_img_mahasiswa_error"></div>
+                                                <div class="invalid-feedback" id="profile_img_error"></div>
                                                 <small class="text-muted">Format gambar: jpeg, png, jpg, gif. Maksimal 2MB.</small>
                                             </div>
-                                        </div>
-                                        <div class="mt-2 text-end">
-                                            <button type="button" class="btn btn-add" id="btnTambahkanKeDaftar">Tambahkan ke Daftar</button>
+                                            <div class="mt-2">
+                                                <div class="col-12 text-end">
+                                                    <button type="button" class="btn btn-add" id="btnTambahkanKeDaftarMahasiswa">Tambahkan ke Daftar</button>
+                                                </div>
+                                            </div>
                                         </div>
                                         
                                         <!-- Error message for form submit -->
                                         <div class="alert alert-danger d-none" id="form_error"></div>
                                         
-                                        <div class="daftar-profesional-container mt-5">
-                                            <h5>Daftar Profesional yang Akan Ditambahkan</h5>
+                                        <div class="daftar-mahasiswa-container mt-5">
+                                            <h5>Daftar Mahasiswa yang Akan Ditambahkan</h5>
                                             <div class="table-responsive">
-                                                <table class="table table-bordered table-striped">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>Nama Mahasiswa</th>
-                                                            <th>Email</th>
-                                                            <th>Status</th>
-                                                            <th>Aksi</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody id="daftarProfesional">
-                                                        <tr id="emptyRow">
-                                                            <td colspan="5" class="text-center">Belum ada Profesional yang ditambahkan ke daftar</td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
+                                            <table class="table table-bordered table-striped">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Nama Mahasiswa</th>
+                                                        <th>NIM</th>
+                                                        <th>Email</th>
+                                                        <th>Status</th>
+                                                        <th>Foto</th>
+                                                        <th>Aksi</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="daftarMahasiswa">
+                                                    <tr id="emptyRow">
+                                                        <td colspan="6" class="text-center">Belum ada mahasiswa yang ditambahkan ke daftar</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
                                             </div>
                                             
-                                            <!-- Hidden input untuk menyimpan data multiple profesional-->
-                                            <input type="hidden" name="profesional_data" id="profesionalJsonData" value="[]">
+                                            <!-- Hidden input untuk menyimpan data multiple mahasiswa -->
+                                            <input type="hidden" name="mahasiswa_data" id="mahasiswaJsonData" value="[]">
                                             <input type="hidden" name="is_single" id="isSingle" value="1">
                                         </div>
                                     </div>
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-tutup" data-bs-dismiss="modal">Batal</button>
-                                        <button type="submit" class="btn btn-add" id="btnSimpan">Simpan Data</button>
+                                        <button type="submit" class="btn btn-add" id="btnSimpanMahasiswa">Simpan Data</button>
                                     </div>
                                 </form>
                             </div>
                         </div>
                     </div>
-                    <button class="btn btn-add" data-bs-target="#modalTambahData" data-bs-toggle="modal">Tambah Data</button>
+                    <button class="btn btn-add" data-bs-target="#modalTambahMahasiswa" data-bs-toggle="modal">Tambah Data</button>
                 </div>
             </div>
             
             <!-- Handling Hasil Search -->
             @if(isset($search) && $search)
             <div class="alert alert-info">
-                Menampilkan {{ count($mrofesional) }} hasil untuk pencarian "{{ $search }}"
+                Menampilkan {{ count($mahasiswa) }} hasil untuk pencarian "{{ $search }}"
             </div>
             @endif
 
@@ -159,7 +175,7 @@
                 <thead>
                     <tr>
                     <!-- <th scope="col">#</th> -->
-                    <th scope="col">Nama Profesional</th>
+                    <th scope="col">Nama Mahasiswa</th>
                     <th scope="col">Email</th>
                     <th scope="col">Telepon</th>
                     <th scope="col">Aksi</th>
@@ -168,13 +184,12 @@
                 <tbody>
                     @forelse ($mahasiswa as $m)
                     <tr>
-                        <!-- <th scope="row">{{ $loop->iteration }}</th> -->
                         <td>{{ $m->nama_mahasiswa}}</td>
                         <td>{{ $m->email }}</td>
                         <td>{{ $m->telepon_mahasiswa}}</td>
                         <td>
                             <div class="d-flex gap-2">
-                                <a href="#" data-bs-toggle="modal" data-bs-target="#modalProfesional{{ $m->mahasiswa_id }}">
+                                <a href="{{ route('koordinator.detailDataMahasiswa', ['id' => $m->mahasiswa_id]) }}" class="{{ request()->routeIs('koordinator.detailDataMahasiswa') ? 'active' : '' }}">
                                     <svg width="20" height="20" viewBox="0 0 26 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                         <path d="M21.0571 10.9056C21.4729 11.3872 21.6808 11.628 21.6808 12C21.6808 12.372 21.4729 12.6128 21.0571 13.0944C19.5628 14.8252 16.307 18 12.5313 18C8.7555 18 5.49977 14.8252 4.00541 13.0944C3.58961 12.6128 3.38171 12.372 3.38171 12C3.38171 11.628 3.58961 11.3872 4.00541 10.9056C5.49977 9.17485 8.7555 6 12.5313 6C16.307 6 19.5628 9.17485 21.0571 10.9056Z" fill="#3C21F7"/>
                                         <path d="M15.6641 12C15.6641 13.6569 14.2615 15 12.5313 15C10.801 15 9.39844 13.6569 9.39844 12C9.39844 10.3431 10.801 9 12.5313 9C14.2615 9 15.6641 10.3431 15.6641 12Z" fill="white"/>
@@ -188,100 +203,11 @@
                             </div>
                         </td>
                     </tr>
-
-                    <!-- Modal Edit and Detail Data -->
-                    <div class="modal fade" id="modalProfesional{{ $m->mahasiswa_id }}" tabindex="-1" aria-labelledby="mitraLabel{{ $m->mahasiswa_id }}" aria-hidden="true">
-                        <div class="modal-dialog modal-lg">
-                            <div class="modal-content">
-                                <form action="" method="POST" data-current-email="{{ $m->email }}">
-                                    @csrf
-                                    @method('PUT')
-                                    <div class="modal-header">
-                                        <h5 class="modal-title" id="mitraLabel{{ $m->mahasiswa_id }}">Edit Data Profesional</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <!-- Baris 1: Nama -->
-                                        <div class="row mb-3">
-                                            <div class="col-md-12">
-                                                <label for="nama_mahasiswa" class="form-label">Nama</label>
-                                                <input type="text" class="form-control" id="nama_mahasiswa" name="nama_mahasiswa" value="{{ $m->nama_mahasiswa }}">
-                                                <div class="invalid-feedback" id="nama_mahasiswa_error"></div>
-                                            </div>
-                                        </div>
-
-                                        <!-- Baris 2: Jenis Kelamin, Tanggal Lahir, Status Akun -->
-                                        <div class="row mb-3">
-                                            <div class="col-md-4">
-                                                <label for="jenis_kelamin_mahasiswa" class="form-label">Jenis Kelamin</label>
-                                                <select class="form-select" id="jenis_kelamin_mahasiswa" name="jenis_kelamin_mahasiswa">
-                                                    <option value="" {{ $m->jenis_kelamin_mahasiswa == '' ? 'selected' : '' }}>Pilih</option>
-                                                    <option value="Laki-Laki" {{ $m->jenis_kelamin_mahasiswa == 'Laki-Laki' ? 'selected' : '' }}>Laki-Laki</option>
-                                                    <option value="Perempuan" {{ $m->jenis_kelamin_mahasiswa == 'Perempuan' ? 'selected' : '' }}>Perempuan</option>
-                                                </select>
-                                                <div class="invalid-feedback" id="jenis_kelamin_error"></div>
-                                            </div>
-                                            <div class="col-md-4">
-                                                <label for="tanggal_lahir_mahasiswa" class="form-label">Tanggal Lahir</label>
-                                                <input type="date" class="form-control" id="tanggal_lahir_mahasiswa" name="tanggal_lahir_mahasiswa" value="{{ $m->tanggal_lahir_mahasiswa }}">
-                                                <div class="invalid-feedback" id="tanggal_lahir_error"></div>
-                                            </div>
-                                            <div class="col-md-4">
-                                                <label for="status" class="form-label">Status Akun</label>
-                                                <select class="form-select" id="status" name="status">
-                                                    <option value="Active" {{ $m->status == 'Active' ? 'selected' : '' }}>Active</option>
-                                                    <option value="Pending" {{ $m->status == 'Pending' ? 'selected' : '' }}>Pending</option>
-                                                    <option value="Rejected" {{ $m->status == 'Rejected' ? 'selected' : '' }}>Rejected</option>
-                                                    <option value="Disabled" {{ $m->status == 'Disabled' ? 'selected' : '' }}>Disabled</option>
-                                                </select>
-                                                <div class="invalid-feedback" id="status_error"></div>
-                                            </div>
-                                        </div>
-
-                                        <!-- Baris 3: Email & Password -->
-                                        <div class="row mb-3">
-                                            <div class="col-md-6">
-                                                <label for="email_mahasiswa" class="form-label">Email</label>
-                                                <input type="email" class="form-control" id="email_mahasiswa" name="email_mahasiswa" value="{{ $m->email }}">
-                                                <div class="invalid-feedback" id="email_mahasiswa_error"></div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <label for="password" class="form-label">Password</label>
-                                                <input type="text" class="form-control" id="password" name="password" value="{{ $m->password ?? '' }}" placeholder="Kosongi jika tidak ingin mengubah">
-                                                <div class="invalid-feedback" id="password_error"></div>
-                                            </div>
-                                        </div>
-
-                                        <!-- Baris 4: Telepon & Foto Profil -->
-                                        <div class="row mb-3">
-                                            <div class="col-md-6">
-                                                <label for="telepon_mahasiswa" class="form-label">Telepon</label>
-                                                <input type="text" class="form-control" id="telepon_mahasiswa" name="telepon_mahasiswa" value="{{ $m->telepon_mahasiswa }}">
-                                                <div class="invalid-feedback" id="telepon_mahasiswa_error"></div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <label for="profile_img_profesional" class="form-label">Foto Profil</label>
-                                                <input type="file" class="form-control" id="profile_img_profesional" name="profile_img_profesional" accept="image/*">
-                                                <div class="invalid-feedback" id="profile_img_profesional_error"></div>
-                                                <small class="text-muted">Format gambar: jpeg, png, jpg, gif. Maks 2MB.</small>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-tutup" data-bs-dismiss="modal">Tutup</button>
-                                        <button type="submit" class="btn btn-add">Simpan Perubahan</button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-
                     <!-- Modal konfirmasi delete -->
                     <div class="modal fade" id="modalDelete{{ $m->mahasiswa_id }}" tabindex="-1" aria-labelledby="deleteLabel{{ $m->mahasiswa_id }}" aria-hidden="true">
                         <div class="modal-dialog modal-dialog-centered">
                             <div class="modal-content">
-                                <form action="" method="POST">
+                                <form action="{{ route('koordinator.deleteDataMahasiswa', $m->mahasiswa_id) }}" method="POST">
                                     @csrf
                                     @method('DELETE')
                                     <div class="modal-header">
