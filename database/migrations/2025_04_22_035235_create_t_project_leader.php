@@ -13,8 +13,9 @@ return new class extends Migration
     {
         Schema::create('t_project_leader', function (Blueprint $table) {
             $table->string('project_leader_id', 36)->primary();
-            $table->string('dosen_id', 36);
             $table->string('proyek_id', 36);
+            $table->enum('leader_type', ['Dosen', 'Profesional']);
+            $table->string('leader_id', 36);
             $table->dateTime('created_at')->nullable();
             $table->string('created_by', 36)->nullable();
             $table->dateTime('updated_at')->nullable();
@@ -22,8 +23,10 @@ return new class extends Migration
             $table->dateTime('deleted_at')->nullable();
             $table->string('deleted_by', 36)->nullable();
 
-            $table->foreign('dosen_id')->references('dosen_id')->on('d_dosen');
             $table->foreign('proyek_id')->references('proyek_id')->on('m_proyek');
+            
+            // Add a unique constraint to prevent duplicate leaders
+            $table->unique(['proyek_id', 'leader_type', 'leader_id']);
         });
     }
 

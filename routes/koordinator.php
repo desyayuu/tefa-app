@@ -8,6 +8,7 @@ use App\Http\Controllers\Koordinator\DataDosenController;
 use App\Http\Controllers\Koordinator\DataUserController;
 use App\Http\Controllers\Koordinator\DataMitraController;
 use App\Http\Controllers\Koordinator\DataMahasiswaController;
+use App\Http\Controllers\Koordinator\DataProyekController;
 
 Route::middleware([KoordinatorMiddleware::class])->prefix('koordinator')->group(function () {
     Route::get('/', [KoordinatorController::class, 'dashboard'])->name('koordinator.dashboard');
@@ -22,9 +23,9 @@ Route::middleware([KoordinatorMiddleware::class])->prefix('koordinator')->group(
     Route::post('/check-email-exists', [DataMitraController::class, 'checkEmailExists'])->name('koordinator.checkEmailExists');
 
     //Data Proyek
-    Route::get('/data-proyek', [KoordinatorController::class, 'getDataProyek'])->name('koordinator.dataProyek');
-    Route::post('/data-proyek', [KoordinatorController::class, 'tambahDataProyek'])->name('proyek.tambahDataProyek');
-    Route::get('/data-proyek/{id}', [KoordinatorController::class, 'getDataProyekById'])->name('proyek.detailDataProyek');
+    Route::get('/data-proyek', [DataProyekController::class, 'getDataProyek'])->name('koordinator.dataProyek');
+    Route::post('/data-proyek', [DataProyekController::class, 'tambahDataProyek'])->name('koordinator.tambahDataProyek');
+    Route::get('/data-proyek/{id}', [DataProyekController::class, 'getDataProyekById'])->name('koordinator.detailDataProyek');
 
     //Data Dosen
     Route::get('/data-dosen', [DataDosenController::class, 'getDataDosen'])->name('koordinator.dataDosen');
