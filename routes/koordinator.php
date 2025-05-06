@@ -57,4 +57,10 @@ Route::middleware([KoordinatorMiddleware::class])->prefix('koordinator')->group(
 
     // Project Leader
     Route::put('/proyek/{id}/project-leader', [DataProyekController::class, 'updateProjectLeader'])->name('koordinator.updateProjectLeader');
+    Route::post('/proyek/{id}/project-member-dosen', [DataProyekController::class, 'tambahAnggotaDosen'])->name('koordinator.tambahAnggotaDosen');
+    Route::delete('/proyek/{proyekId}/hapus-anggota-dosen/{memberId}', [DataProyekController::class, 'hapusAnggotaDosen'])->name('koordinator.hapusAnggotaDosen');
+    Route::post('/proyek/{id}/project-member-mahasiswa', [DataProyekController::class, 'tambahAnggotaMahasiswa'])->name('koordinator.tambahAnggotaMahasiswa');
+    Route::delete('/proyek/{proyekId}/hapus-anggota-mahasiswa/{memberId}', [DataProyekController::class, 'hapusAnggotaMahasiswa'])->name('koordinator.hapusAnggotaMahasiswa');
+    Route::post('/proyek/{id}/project-member-profesional', [DataProyekController::class, 'tambahAnggotaProfesional'])->name('koordinator.tambahAnggotaProfesional');
+    Route::delete('/proyek/{proyekId}/hapus-anggota-profesional/{memberId}', [DataProyekController::class, 'hapusAnggotaProfesional'])->name('koordinator.hapusAnggotaProfesional');
 });
