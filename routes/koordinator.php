@@ -26,6 +26,7 @@ Route::middleware([KoordinatorMiddleware::class])->prefix('koordinator')->group(
     Route::get('/data-proyek', [DataProyekController::class, 'getDataProyek'])->name('koordinator.dataProyek');
     Route::post('/data-proyek', [DataProyekController::class, 'tambahDataProyek'])->name('koordinator.tambahDataProyek');
     Route::get('/data-proyek/{id}', [DataProyekController::class, 'getDataProyekById'])->name('koordinator.detailDataProyek');
+    Route::put('/data-proyek/{id}', [DataProyekController::class, 'updateDataProyek'])->name('koordinator.updateDataProyek');
 
     //Data Dosen
     Route::get('/data-dosen', [DataDosenController::class, 'getDataDosen'])->name('koordinator.dataDosen');
@@ -53,4 +54,7 @@ Route::middleware([KoordinatorMiddleware::class])->prefix('koordinator')->group(
     Route::put('/mahasiswa/{id}', [DataMahasiswaController::class, 'updateDataMahasiswa'])->name('koordinator.updateDataMahasiswa');
     Route::delete('/mahasiswa/{id}', [DataMahasiswaController::class, 'deleteDataMahasiswa'])->name('koordinator.deleteDataMahasiswa');
     Route::get('/data-mahasiswa/{id}', [DataMahasiswaController::class, 'getDataMahasiswaById'])->name('koordinator.detailDataMahasiswa');
+
+    // Project Leader
+    Route::put('/proyek/{id}/project-leader', [DataProyekController::class, 'updateProjectLeader'])->name('koordinator.updateProjectLeader');
 });

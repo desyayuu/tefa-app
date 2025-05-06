@@ -3,10 +3,12 @@
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h5 class="fw-bold mb-0">Detail Data Proyek</h5>
-                <button type="button" class="btn btn-add" id="edit-button">Simpan Perubahan</button>
+                <button type="submit" form="formProyek" class="btn btn-add">Simpan Perubahan</button>
             </div>
-
-            <form id="formProyek" style="font-size: 14px;" action="" method="POST">
+            {{-- Tidak menampilkan handling_error di sini atau dengan section berbeda --}}
+            @include('components.handling_error', ['section' => 'detail_proyek'])
+            
+            <form id="formProyek" style="font-size: 14px;" action="{{ route('koordinator.updateDataProyek', $proyek->proyek_id) }}" method="POST">
                 @csrf
                 @method('PUT')
 
@@ -15,7 +17,7 @@
                     <div class="mb-3 row align-items-center">
                         <label for="jenis_proyek" class="col-md-2 col-form-label">Jenis Proyek</label>
                         <div class="col-md-10">
-                        <select class="form-select" id="jenis_proyek" name="jenis_proyek">
+                        <select class="form-select select2-basic" id="jenis_proyek" name="jenis_proyek" required>
                             @foreach($jenisProyek as $jenis)
                                 <option value="{{ $jenis->jenis_proyek_id }}" {{ $proyek->jenis_proyek_id == $jenis->jenis_proyek_id ? 'selected' : '' }}>
                                     {{ $jenis->nama_jenis_proyek }}
@@ -25,10 +27,11 @@
                         </div>
                     </div>
 
+                    <!-- Nama Proyek -->
                     <div class="mb-3 row align-items-center">
                         <label for="nama_proyek" class="col-md-2 col-form-label">Nama Proyek</label>
                         <div class="col-md-10">
-                            <input type="text" class="form-control" id="nama_proyek" name="nama_proyek" value="{{ $proyek->nama_proyek }}">
+                            <input type="text" class="form-control form-selection" id="nama_proyek" name="nama_proyek" value="{{ $proyek->nama_proyek }}" required>
                         </div>
                     </div>
 
@@ -36,7 +39,7 @@
                     <div class="mb-3 row align-items-center">
                         <label for="mitra_id" class="col-md-2 col-form-label">Mitra Proyek</label>
                         <div class="col-md-10">
-                            <select class="form-select" id="mitra_id" name="mitra_id">
+                            <select class="form-select select2-basic" id="mitra_id" name="mitra_id" required>
                                 @foreach($daftarMitra as $mitra)
                                     <option value="{{ $mitra->mitra_proyek_id }}" {{ $proyek->mitra_proyek_id == $mitra->mitra_proyek_id ? 'selected' : '' }}>
                                         {{ $mitra->nama_mitra }}
@@ -50,7 +53,7 @@
                     <div class="mb-3 row align-items-center">
                         <label for="status_proyek" class="col-md-2 col-form-label">Status Proyek</label>
                         <div class="col-md-10">
-                        <select class="form-select" id="status_proyek" name="status_proyek">
+                        <select class="form-select form-selection" id="status_proyek" name="status_proyek" required>
                             <option value="Initiation" {{ $proyek->status_proyek == 'Initiation' ? 'selected' : '' }}>Initiation</option>
                             <option value="In Progress" {{ $proyek->status_proyek == 'In Progress' ? 'selected' : '' }}>In Progress</option>
                             <option value="Done" {{ $proyek->status_proyek == 'Done' ? 'selected' : '' }}>Done</option>
@@ -62,7 +65,7 @@
                     <div class="mb-3 row align-items-center">
                         <label for="tanggal_mulai" class="col-md-2 col-form-label">Tanggal Mulai</label>
                         <div class="col-md-10">
-                            <input type="date" class="form-control" id="tanggal_mulai" name="tanggal_mulai" value="{{ $proyek->tanggal_mulai }}">
+                            <input type="date" class="form-control form-selection" id="tanggal_mulai" name="tanggal_mulai" value="{{ $proyek->tanggal_mulai }}" required>
                         </div>
                     </div>
 
@@ -70,7 +73,7 @@
                     <div class="mb-3 row align-items-center">
                         <label for="tanggal_selesai" class="col-md-2 col-form-label">Tanggal Selesai</label>
                         <div class="col-md-10">
-                            <input type="date" class="form-control" id="tanggal_selesai" name="tanggal_selesai" value="{{ $proyek->tanggal_selesai }}">
+                            <input type="date" class="form-control form-selection" id="tanggal_selesai" name="tanggal_selesai" value="{{ $proyek->tanggal_selesai }}" required>
                         </div>
                     </div>
 
@@ -80,8 +83,7 @@
                         <div class="col-md-10">
                             <div class="input-group">
                                 <span class="input-group-text">Rp</span>
-                                <input type="number" class="form-control edit-only" id="dana_pendanaan" name="dana_pendanaan" value="{{ $proyek->dana_pendanaan }}" style="display: none;">
-                                <input type="text" class="form-control view-only" value="{{ number_format($proyek->dana_pendanaan, 0, ',', '.') }}">
+                                <input type="text" class="form-control form-selection" id="dana_pendanaan" name="dana_pendanaan" value="{{ number_format($proyek->dana_pendanaan, 0, ',', '.') }}">
                             </div>
                         </div>    
                     </div>
@@ -90,7 +92,7 @@
                     <div class="mb-3 row align-items-center">
                         <label for="deskripsi_proyek" class="col-md-2 col-form-label">Deskripsi Proyek</label>
                         <div class="col-md-10">
-                            <textarea class="form-control" id="deskripsi_proyek" name="deskripsi_proyek" rows="3">{{ $proyek->deskripsi_proyek }}</textarea>
+                            <textarea class="form-control form-selection" id="deskripsi_proyek" name="deskripsi_proyek" rows="3">{{ $proyek->deskripsi_proyek }}</textarea>
                         </div>
                     </div>
                 </div>

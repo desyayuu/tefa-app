@@ -262,3 +262,15 @@ html {
 .pagination-links{
     margin-top: 20px;
 }
+
+select,
+.select2-container .select2-selection--single,
+.select2-container .select2-results__option {
+    font-size: 14px; 
+}
+
+.form-selection{
+    font-size: 14px;
+}
+
+

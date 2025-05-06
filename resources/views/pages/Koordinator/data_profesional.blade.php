@@ -367,8 +367,3 @@
     </div>
 </div>
 @endsection
-
-@section('scripts')
-
-    <script src="{{ asset('js/Koordiantor/data_profesional.js') }}"></script>
-@endsection

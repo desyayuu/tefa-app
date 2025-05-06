@@ -270,8 +270,3 @@
     </div>
 </div>
 @endsection
-
-@section('scripts')
-
-    <script src="{{ asset('js/koordinator.js') }}"></script>
-@endsection
