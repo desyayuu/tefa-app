@@ -352,6 +352,13 @@ body {
     margin-bottom: 20px;
 }
 
+.detail-dokumen-penunjang{
+    margin-top: 20px; 
+    margin-left: 20px;
+    font-size: 14px;
+    margin-right: 20px;
+}
+
 .card-project-leader, .card-anggota-proyek, .card-anggota-proyek{
     margin-bottom: 20px;
     border-radius: 10px;
@@ -369,3 +376,33 @@ body {
     font-size: 12px;
     font-weight: normal;
 }
+
+/* Styles for action buttons */
+.btn-action-download, 
+.btn-action-delete,
+.btn-preview-delete {
+    background: transparent;
+    border: none;
+    padding: 0.25rem;
+    cursor: pointer;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.btn-preview-delete:hover svg path {
+    fill: #dc3545;
+}
+
+.text-truncate-file {
+    max-width: 250px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: inline-block;
+}
+
+#previewDokumenTable td {
+    vertical-align: middle;
+}
+
+

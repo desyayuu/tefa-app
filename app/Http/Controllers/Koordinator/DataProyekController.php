@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Validator;
+
 
 class DataProyekController extends Controller
 {
@@ -15,7 +17,6 @@ class DataProyekController extends Controller
         $dataDosen = DB::table('d_dosen')->whereNull('deleted_at')->get();
         $dataProfesional = DB::table('d_profesional')->whereNull('deleted_at')->get();
         
-        // Gunakan Query Builder untuk membuat query dasar
         $query = DB::table('m_proyek')
             ->select(
                 'm_proyek.proyek_id',
@@ -31,6 +32,7 @@ class DataProyekController extends Controller
                     ELSE NULL
                 END as nama_project_leader')
             )
+            ->whereNull('m_proyek.deleted_at')
             ->join('d_mitra_proyek', 'm_proyek.mitra_proyek_id', '=', 'd_mitra_proyek.mitra_proyek_id')
             ->join('m_jenis_proyek', 'm_proyek.jenis_proyek_id', '=', 'm_jenis_proyek.jenis_proyek_id')
             ->leftJoin('t_project_leader', 'm_proyek.proyek_id', '=', 't_project_leader.proyek_id')
@@ -70,7 +72,7 @@ class DataProyekController extends Controller
         ]);
     }
 
-    public function tambahDataProyek(Request $request){
+    public function addDataProyek(Request $request){
         $request->validate([
             'mitra_id'          => 'required|uuid',
             'jenis_proyek'      => 'required|uuid',
@@ -175,6 +177,70 @@ class DataProyekController extends Controller
             ->with('section_error', 'detail_proyek'));
         }
     }
+
+    public function deleteDataProyek(Request $request, $proyekId)
+    {
+        DB::beginTransaction();
+    
+        try {
+            // Siapkan timestamp dan user_id untuk tracking deleted_at dan deleted_by
+            $now = now();
+            $userId = auth()->user()->id ?? session('user_id');
+    
+            // 1. Soft delete anggota dosen
+            DB::table('t_project_member_dosen')
+                ->where('proyek_id', $proyekId)
+                ->whereNull('deleted_at')
+                ->update([
+                    'deleted_at' => $now,
+                    'deleted_by' => $userId,
+                ]);
+    
+            // 2. Soft delete anggota mahasiswa
+            DB::table('t_project_member_mahasiswa')
+                ->where('proyek_id', $proyekId)
+                ->whereNull('deleted_at')
+                ->update([
+                    'deleted_at' => $now,
+                    'deleted_by' => $userId,
+                ]);
+    
+            // 3. Soft delete anggota profesional
+            DB::table('t_project_member_profesional')
+                ->where('proyek_id', $proyekId)
+                ->whereNull('deleted_at')
+                ->update([
+                    'deleted_at' => $now,
+                    'deleted_by' => $userId,
+                ]);
+    
+            // 4. Soft delete project leader
+            DB::table('t_project_leader')
+                ->where('proyek_id', $proyekId)
+                ->whereNull('deleted_at')
+                ->update([
+                    'deleted_at' => $now,
+                    'deleted_by' => $userId,
+                ]);
+    
+            // 5. Soft delete proyek itu sendiri
+            DB::table('m_proyek')
+                ->where('proyek_id', $proyekId)
+                ->update([
+                    'deleted_at' => $now,
+                    'deleted_by' => $userId,
+                ]);
+    
+            DB::commit();
+            return redirect()->route('koordinator.dataProyek')
+                ->with('success', 'Data proyek beserta semua anggota berhasil dihapus.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()
+                ->with('error', 'Gagal menghapus data proyek: ' . $e->getMessage());
+        }
+    }
+
 
     public function updateProjectLeader(Request $request, $proyekId) {
         $request->validate([
@@ -342,7 +408,6 @@ class DataProyekController extends Controller
     }
 
     public function getDataProyekById($id){
-        // Get project data
         $proyek = DB::table('m_proyek')
             ->join('d_mitra_proyek', 'm_proyek.mitra_proyek_id', '=', 'd_mitra_proyek.mitra_proyek_id')
             ->join('m_jenis_proyek', 'm_proyek.jenis_proyek_id', '=', 'm_jenis_proyek.jenis_proyek_id')
@@ -358,7 +423,7 @@ class DataProyekController extends Controller
             return redirect()->route('koordinator.dataProyek')->with('error', 'Data proyek tidak ditemukan.');
         }
         
-        // Get project leader information
+
         $projectLeader = DB::table('t_project_leader')
             ->where('proyek_id', $id)
             ->first();
@@ -396,6 +461,9 @@ class DataProyekController extends Controller
         $dataMahasiswa = DB::table('d_mahasiswa')
             ->whereNull('deleted_at')
             ->get();
+        $jenisDokumenPenunjang = DB::table('m_jenis_dokumen_penunjang')
+        ->whereNull('deleted_at')
+        ->get();
 
         // Ambil data anggota dosen
         $anggotaDosen = $this->getAnggotaDosen($id);
@@ -413,7 +481,8 @@ class DataProyekController extends Controller
             'anggotaDosen', 
             'anggotaMahasiswa',
             'anggotaProfesional',
-            'dataMahasiswa'
+            'dataMahasiswa', 
+            'jenisDokumenPenunjang'
         ), [
             'titleSidebar' => 'Detail Data Proyek',
         ]);

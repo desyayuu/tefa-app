@@ -273,4 +273,438 @@ select,
     font-size: 14px;
 }
 
+/* Style untuk menu dengan submenu */
+.has-submenu .main-menu-item {
+    cursor: pointer;
+    padding: 12px 15px;
+    display: flex;
+    align-items: center;
+    position: relative;
+}
 
+.submenu-arrow {
+    position: absolute;
+    right: 15px;
+    transition: transform 0.3s;
+}
+
+.has-submenu.open .submenu-arrow {
+    transform: rotate(180deg);
+}
+
+/* Styling untuk submenu */
+.submenu {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+    padding-left: 25px;
+}
+
+.has-submenu.open .submenu {
+    max-height: 200px; /* Sesuaikan sesuai jumlah submenu */
+}
+
+/* Style untuk item submenu */
+.submenu li {
+    margin: 8px 0;
+}
+
+.submenu-item {
+    display: block;
+    padding: 8px 15px;
+    color: #878787;
+    transition: background-color 0.2s, color 0.2s;
+    border-radius: 4px;
+}
+
+.submenu-item:hover,
+.submenu-item.active {
+    background-color: rgba(116, 118, 237, 0.1);
+    color: #7476ED;
+}
+
+
+.submenu-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 8px;
+    width: 20px;
+    height: 20px;
+}
+
+.submenu-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    color: #878787;
+    transition: background-color 0.2s, color 0.2s;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.submenu-item:hover .submenu-icon svg path,
+.submenu-item:hover .submenu-icon svg circle,
+.submenu-item.active .submenu-icon svg path,
+.submenu-item.active .submenu-icon svg circle {
+    stroke: #3C21F7;
+    fill: none;
+}
+
+.submenu-item:hover .submenu-icon svg path[fill="#878787"],
+.submenu-item.active .submenu-icon svg path[fill="#878787"] {
+    fill: #b8b2ff;
+}
+
+
+.has-submenu.open .main-menu-item .icon svg path,
+.has-submenu.open .main-menu-item .icon svg circle {
+    stroke: #3C21F7;
+    fill: none;
+}
+
+.has-submenu.open .main-menu-item .icon svg path[fill="#878787"],
+.has-submenu.open .submenu-arrow svg path {
+    fill: #3C21F7;
+    stroke: #b8b2ff;
+}
+
+.submenu-item:hover,
+.submenu-item.active {
+    background-color: rgba(184, 178, 255, 0.1);
+    color: #b8b2ff;
+}
+
+.has-submenu.open .main-menu-item .menu-text {
+    color: #3C21F7;
+
+}
+
+
+.has-submenu.open .submenu-arrow svg path {
+    stroke: #3C21F7;
+}
+
+/* Base styles for sidebar */
+.sidebar {
+    width: 240px;
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    background-color: #ffffff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    transition: width 0.3s ease;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.sidebar .brand {
+    display: flex;
+    align-items: center;
+    padding: 20px 15px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.sidebar .brand svg {
+    min-width: 48px;
+    height: 34px;
+}
+
+.sidebar .brand-text {
+    margin-left: 10px;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar .title-sidebar {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+}
+
+.sidebar .subtitle {
+    font-size: 12px;
+    color: #666;
+}
+
+.sidebar-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar-menu li {
+    position: relative;
+    margin: 5px 0;
+}
+
+.sidebar-menu li a {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    color: #878787;
+    text-decoration: none;
+    transition: all 0.3s;
+    border-radius: 4px;
+    margin: 0 8px;
+}
+
+.sidebar-menu li a:hover {
+    background-color: rgba(116, 118, 237, 0.05);
+    color: #7476ED;
+}
+
+.sidebar-menu li a.active {
+    background-color: rgba(116, 118, 237, 0.1);
+    color: #7476ED;
+}
+
+.sidebar-menu li a.active .icon svg path {
+    fill: #7476ED;
+}
+
+.sidebar-menu .icon {
+    min-width: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+}
+
+.menu-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Submenu styles */
+.has-submenu {
+    position: relative;
+}
+
+.has-submenu .main-menu-item {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    position: relative;
+    justify-content: flex-start;
+}
+
+.submenu-arrow {
+    position: absolute;
+    right: 15px;
+    transition: transform 0.3s;
+}
+
+.has-submenu.open .submenu-arrow {
+    transform: rotate(180deg);
+}
+
+.submenu {
+    list-style: none;
+    padding-left: 25px;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+    margin: 0;
+    padding: 0 0 0 20px;
+}
+
+.has-submenu.open .submenu {
+    max-height: 300px;
+    padding-bottom: 10px;
+}
+
+.submenu li {
+    margin: 5px 0;
+}
+
+.submenu-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    color: #878787;
+    text-decoration: none;
+    transition: all 0.3s;
+    border-radius: 4px;
+    position: relative;
+    margin: 0 8px;
+}
+
+.submenu-icon {
+    min-width: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+}
+
+.submenu-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.submenu-item:hover {
+    background-color: rgba(116, 118, 237, 0.05);
+    color: #7476ED;
+}
+
+.submenu-item.active {
+    background-color: rgba(116, 118, 237, 0.1);
+    color: #7476ED;
+}
+
+
+.submenu-item:hover .submenu-icon svg path,
+.submenu-item.active .submenu-icon svg path {
+    stroke: #3C21F7;;
+}
+
+.submenu-item:hover .submenu-icon svg path[fill="#878787"],
+.submenu-item.active .submenu-icon svg path[fill="#878787"] {
+    fill: #3C21F7;;
+}
+
+.has-submenu.open > .main-menu-item {
+    color: #3C21F7;;
+}
+
+.has-submenu.open > .main-menu-item .icon svg path[fill="#878787"] {
+    fill: #3C21F7;;
+}
+
+@media (max-width: 992px) {
+    .sidebar {
+        width: 60px;
+    }
+    
+    .sidebar.expanded {
+        width: 240px;
+    }
+    
+    .sidebar .brand-text,
+    .sidebar .menu-text,
+    .sidebar .submenu-text,
+    .sidebar .submenu-arrow {
+        display: none;
+    }
+    
+    .sidebar.expanded .brand-text,
+    .sidebar.expanded .menu-text,
+    .sidebar.expanded .submenu-text,
+    .sidebar.expanded .submenu-arrow {
+        display: block;
+    }
+    
+    .sidebar .submenu {
+        padding-left: 5px;
+    }
+    
+    .sidebar.expanded .submenu {
+        padding-left: 20px;
+    }
+    
+    .sidebar-menu li a,
+    .submenu-item {
+        padding: 12px 8px;
+        margin: 0 5px;
+        justify-content: center;
+    }
+    
+    .sidebar.expanded .sidebar-menu li a,
+    .sidebar.expanded .submenu-item {
+        padding: 12px 15px;
+        margin: 0 8px;
+        justify-content: flex-start;
+    }
+    
+    .sidebar .icon,
+    .sidebar .submenu-icon {
+        margin-right: 0;
+    }
+    
+    .sidebar.expanded .icon,
+    .sidebar.expanded .submenu-icon {
+        margin-right: 10px;
+    }
+    
+    /* Show submenu on hover for mobile */
+    .sidebar:hover {
+        width: 240px;
+    }
+    
+    .sidebar:hover .brand-text,
+    .sidebar:hover .menu-text,
+    .sidebar:hover .submenu-text {
+        display: block;
+    }
+    
+    .sidebar:hover .submenu {
+        padding-left: 20px;
+    }
+    
+    .sidebar:hover .sidebar-menu li a,
+    .sidebar:hover .submenu-item {
+        padding: 12px 15px;
+        margin: 0 8px;
+        justify-content: flex-start;
+    }
+    
+    .sidebar:hover .icon,
+    .sidebar:hover .submenu-icon {
+        margin-right: 10px;
+    }
+}
+
+@media (max-width: 576px) {
+    .sidebar {
+        width: 50px;
+    }
+    
+    .sidebar.expanded,
+    .sidebar:hover {
+        width: 220px;
+    }
+    
+    .brand svg {
+        width: 36px;
+        height: 26px;
+    }
+}
+
+.btn-action-download, 
+.btn-action-delete {
+    background: transparent;
+    border: none;
+    padding: 0.25rem;
+    transition: transform 0.2s;
+    cursor: pointer;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.btn-action-download:hover,
+.btn-action-delete:hover {
+    transform: scale(1.1);
+}
+
+.btn-action-download:active,
+.btn-action-delete:active {
+    transform: scale(0.95);
+}
+
+#tableDokumenPenunjang td:last-child {
+    text-align: center;
+}
+
+.btn-action-download svg{
+    width: 28px;
+    height: 28px;
+}
+.btn-action-delete svg {
+    width: 20px;
+    height: 20px;
+}

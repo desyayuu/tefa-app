@@ -64,7 +64,7 @@
             <!-- Anggota Profesional Section -->
             <div class="card-project-leader mt-4">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h6 class="card-subtitle mb-0">Anggota Profesional</h6>
+                    <h6 class="card-subtitle mb-0">Profesional</h6>
                     <!-- Tombol Tambah Anggota Profesional -->
                     <button type="button" class="btn btn-add btn-sm px-3 py-1 rounded-pill" data-bs-toggle="modal" data-bs-target="#addProfesionalModal">
                         Tambah
@@ -132,9 +132,6 @@
                     <p class="text-muted small">Belum ada anggota mahasiswa</p>
                 @endif
             </div>
-
-
-
         </div>
     </div>
     @include('pages.Koordinator.DataProyek.modal_anggota_proyek')

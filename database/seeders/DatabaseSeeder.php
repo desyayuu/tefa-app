@@ -10,12 +10,10 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             UserSeeder::class,
-            // KoordinatorSeeder::class,
-            // DosenSeeder::class,
-            // MahasiswaSeeder::class,
             JenisProyekSeeder::class,
             MitraProyekSeeder::class,
             BidangKeahlianSeeder::class,
+            JenisDokumenPenunjangSeeder::class,
         ]);
     }
 }
