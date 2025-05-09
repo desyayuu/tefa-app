@@ -21,6 +21,9 @@
         <div class="section-dokumen-penunjang">
             @include('pages.Koordinator.DataProyek.data_dokumen_penunjang')
         </div>
+        <div class="section-timeline-proyek">
+            @include('pages.Koordinator.DataProyek.data_timeline_proyek')
+        </div>
     </div>
 </div>
 @endsection

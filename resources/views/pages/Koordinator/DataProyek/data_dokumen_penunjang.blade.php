@@ -1,5 +1,5 @@
 <!-- Form Dokumen Penunjang -->
-<div class="detail-dokumen-penunjang flex-grow-1 pb-3">
+<div id="dokumen-penunjang-section" class="detail-dokumen-penunjang flex-grow-1 pb-3">
     <div class="card shadow-sm border-0 rounded-3 h-100">
         <div class="card-body">
             <h5 class="fw-bold mb-0">Dokumen Penunjang</h5>
@@ -9,13 +9,13 @@
                         <input type="hidden" name="proyek_id" value="{{ $proyek->proyek_id }}">
                         @csrf
                         <div class="mb-3 row align-items-center">
-                            <label for="nama_dokumen_penunjang" class="col-md-2 col-form-label">Nama Dokumen</label>
+                            <label for="nama_dokumen_penunjang" class="col-md-2 col-form-label">Nama Dokumen<span class="text-danger">*</span></label>
                             <div class="col-md-10">
                                 <input type="text" class="form-control form-selection" id="nama_dokumen_penunjang" name="nama_dokumen_penunjang" required>
                             </div>
                         </div>
                         <div class="mb-3 row align-items-center">
-                            <label for="jenis_dokumen_penunjang_id" class="col-md-2 col-form-label">Jenis Dokumen</label>
+                            <label for="jenis_dokumen_penunjang_id" class="col-md-2 col-form-label">Jenis Dokumen<span class="text-danger">*</span></label>
                             <div class="col-md-10">
                                 <select class="form-select form-selection" id="jenis_dokumen_penunjang_id" name="jenis_dokumen_penunjang_id" required>
                                     <option value="" disabled selected>Pilih Jenis Dokumen Penunjang</option>
@@ -28,7 +28,7 @@
                             </div>
                         </div>
                         <div class="mb-3 row align-items-center">
-                            <label for="file_dokumen_penunjang" class="col-md-2 col-form-label">File Dokumen</label>
+                            <label for="file_dokumen_penunjang" class="col-md-2 col-form-label">File Dokumen<span class="text-danger">*</span></label>
                             <div class="col-md-10">
                                 <input type="file" class="form-control form-selection" id="file_dokumen_penunjang" name="file_dokumen_penunjang" accept=".pdf, .doc, .docx, .ppt, .pptx, .xls, .xlsx" required>
                             </div>
@@ -74,24 +74,26 @@
 
             <!-- Tabel Data Dokumen Penunjang -->
             <div class="title-table d-flex justify-content-between align-items-center mb-3 mt-5 border-top pt-3">
-                <h5 class="fw-bold mb-0">Daftar Dokumen Penunjang</h5>
-                <div class="position-relative">
-                    <div class="search-container">
-                        <input type="text" id="searchInput" class="form-control pe-5 form-search" placeholder="Cari Dokumen...">
-                        <button type="button" id="searchButton" class="btn position-absolute top-50 end-0 translate-middle-y pe-2 py-2 border-0 bg-transparent">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <circle cx="11.7664" cy="11.7669" r="8.98856" stroke="#130F26" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M18.0181 18.4854L21.5421 22.0002" stroke="#130F26" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                        </button>
+                <h4 class="m-0">Daftar Dokumen Penunjang</h4>
+                <div class="d-flex gap-2 align-items-center">
+                    <div class="position-relative">
+                        <form action="{{ route('koordinator.detailDataProyek', ['id' => $proyek->proyek_id]) }}#dokumen-penunjang-section" method="GET" id="searchDokumenForm">
+                            <input type="text" name="searchDokumenPenunjang" class="form-control pe-5 form-search" id="searchDokumenPenunjang" placeholder="Cari Dokumen..." value="{{ request('searchDokumenPenunjang') ?? '' }}">
+                            <button type="submit" class="btn position-absolute top-50 end-0 translate-middle-y pe-2 py-2 border-0 bg-transparent">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="11.7664" cy="11.7669" r="8.98856" stroke="#130F26" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M18.0181 18.4854L21.5421 22.0002" stroke="#130F26" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>
+            
             <div class="table-responsive">
                 <table class="table table-striped" id="tableDokumenPenunjang">
                     <thead>
                         <tr>
-                            <th>No</th>
                             <th>Nama Dokumen</th>
                             <th>Jenis Dokumen</th>
                             <th>Tanggal Upload</th>
@@ -99,13 +101,14 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- Data will be loaded via AJAX -->
+                        <!-- Data akan dimuat via AJAX -->
                     </tbody>
                 </table>
             </div>
-            <!-- Empty message will be shown/hidden via JavaScript -->
             <div id="emptyDokumenMessage" class="text-center py-3 d-none">
-                <p class="text-muted">Belum ada dokumen penunjang</p>
+                <div class="py-4">
+                    <!-- Pesan kosong akan dimuat melalui JavaScript -->
+                </div>
             </div>
 
         </div>

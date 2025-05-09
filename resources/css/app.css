@@ -676,7 +676,9 @@ select,
 }
 
 .btn-action-download, 
-.btn-action-delete {
+.btn-action-delete,
+.btn-action-detail, 
+.btn-action-delete-timeline{ 
     background: transparent;
     border: none;
     padding: 0.25rem;
@@ -687,12 +689,16 @@ select,
 }
 
 .btn-action-download:hover,
-.btn-action-delete:hover {
+.btn-action-delete:hover,
+.btn-action-detail:hover,
+.btn-action-delete-timeline:hover{ 
     transform: scale(1.1);
 }
 
 .btn-action-download:active,
-.btn-action-delete:active {
+.btn-action-delete:active,
+.btn-action-detail:active, 
+.btn-action-delete-timeline:active{
     transform: scale(0.95);
 }
 
@@ -705,6 +711,15 @@ select,
     height: 28px;
 }
 .btn-action-delete svg {
+    width: 20px;
+    height: 20px;
+}
+.btn-action-detail svg{
+    width: 20px;
+    height: 20px;
+}
+
+.btn-action-delete-timeline svg{
     width: 20px;
     height: 20px;
 }

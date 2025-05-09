@@ -5,9 +5,42 @@ $(document).ready(function() {
     
     let documentsToSave = [];
     
+    // Load dokumen penunjang when page loads
     loadDokumenPenunjang();
+
+    // Jika ada fragment #dokumen-penunjang-section di URL, scroll ke sana
+    if (window.location.hash === '#dokumen-penunjang-section') {
+        setTimeout(function() {
+            scrollToDokumenSection();
+        }, 300); // Delay singkat untuk memastikan semua elemen dimuat
+    }
     
-    // Add document to preview list
+    // Fungsi untuk scroll ke section dokumen penunjang
+    function scrollToDokumenSection() {
+        const dokumenSection = $('#dokumen-penunjang-section');
+        if (dokumenSection.length) {
+            $('html, body').animate({
+                scrollTop: dokumenSection.offset().top - 80 
+            }, 500);
+            
+        }
+    }
+    
+    $('#searchDokumenForm').on('submit', function(e) {
+        e.preventDefault();
+        const searchValue = $('#searchDokumenPenunjang').val();
+        
+        const currentUrl = new URL(window.location.href);
+        currentUrl.searchParams.set('searchDokumenPenunjang', searchValue);
+        currentUrl.hash = 'dokumen-penunjang-section'; 
+        
+        window.history.pushState({}, '', currentUrl.toString());
+        
+        loadDokumenPenunjang();
+        scrollToDokumenSection();
+    });
+    
+    
     $("#btnTambahDokumen").on("click", function() {
         const namaDokumen = $("#nama_dokumen_penunjang").val();
         const jenisDokumenId = $("#jenis_dokumen_penunjang_id").val();
@@ -58,7 +91,6 @@ $(document).ready(function() {
         }
     });
     
-    // Function to update preview table
     function updatePreviewTable() {
         const tableBody = $("#previewDokumenTable tbody");
         tableBody.empty();
@@ -90,7 +122,6 @@ $(document).ready(function() {
         });
     }
     
-    // Function to remove document from preview
     function removeDocumentFromPreview(id) {
         documentsToSave = documentsToSave.filter(doc => doc.id !== id);
         
@@ -107,7 +138,6 @@ $(document).ready(function() {
         $("#previewDokumenSection").addClass("d-none");
     });
     
-    // Save all documents
     $("#btnSimpanDokumen").on("click", function() {
         if (documentsToSave.length === 0) {
             if (typeof Swal !== 'undefined') {
@@ -157,7 +187,12 @@ $(document).ready(function() {
                 // Reset and reload
                 documentsToSave = [];
                 $("#previewDokumenSection").addClass("d-none");
-                loadDokumenPenunjang();
+                
+                // Reload dokumen penunjang list to display new documents
+                setTimeout(function() {
+                    loadDokumenPenunjang(); // Delay sedikit untuk memastikan data tersimpan di server
+                }, 500);
+                
                 return;
             }
             
@@ -167,6 +202,7 @@ $(document).ready(function() {
             formData.append('nama_dokumen_penunjang', doc.nama_dokumen_penunjang);
             formData.append('jenis_dokumen_penunjang_id', doc.jenis_dokumen_penunjang_id);
             formData.append('file_dokumen_penunjang', doc.file);
+            formData.append('_token', $('meta[name="csrf-token"]').attr('content'));
             
             // Update loading message
             Swal.update({
@@ -207,35 +243,64 @@ $(document).ready(function() {
         saveNextDocument(0);
     });
     
-    // Get dokumen penunjang 
     function loadDokumenPenunjang() {
         const proyekId = $('input[name="proyek_id"]').val();
+        const searchParam = $("#searchDokumenPenunjang").val() || '';
+        
+        $("#tableDokumenPenunjang tbody").html(`
+            <tr>
+                <td colspan="5" class="text-center py-4">
+                    <div class="d-flex justify-content-center">
+                        <div class="spinner-border spinner-border-sm text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                    <p class="mt-2 text-muted small">Memuat data...</p>
+                </td>
+            </tr>
+        `);
         
         $.ajax({
             url: `/koordinator/proyek/${proyekId}/dokumen-penunjang`,
             type: 'GET',
+            data: {
+                search: searchParam
+            },
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },
             success: function(response) {
-                if (response.success && response.data) {
+                console.log("API Response:", response);
+                if (response.success && response.data && response.data.length > 0) {
                     renderDokumenTable(response.data);
                 } else {
                     showEmptyMessage();
                 }
             },
-            error: function() {
-                showEmptyMessage();
+            error: function(xhr) {
+                console.error("Error loading dokumen:", xhr.responseText);
+                $("#tableDokumenPenunjang tbody").html(`
+                    <tr>
+                        <td colspan="5" class="text-center text-danger py-4">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="mb-3">
+                                <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="#FF5757" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M15 9L9 15" stroke="#FF5757" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M9 9L15 15" stroke="#FF5757" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <p>Terjadi kesalahan saat memuat data</p>
+                            <p class="small text-muted">Silakan coba lagi nanti</p>
+                        </td>
+                    </tr>
+                `);
             }
         });
     }
     
-    // Function to render dokumen table
     function renderDokumenTable(data) {
         const tableBody = $("#tableDokumenPenunjang tbody");
         tableBody.empty();
         
-        if (data.length === 0) {
+        if (!data || data.length === 0) {
             showEmptyMessage();
             return;
         }
@@ -245,15 +310,19 @@ $(document).ready(function() {
         
         // Append rows to table
         data.forEach((dokumen, index) => {
+            const dokumenId = dokumen.dokumen_penunjang_proyek_id;
+            const namaDokumen = dokumen.nama_dokumen_penunjang;
+            const jenisDokumen = dokumen.jenis_dokumen;
+            const createdAt = dokumen.created_at;
+            
             tableBody.append(`
                 <tr>
-                    <td>${index + 1}</td>
-                    <td>${dokumen.nama_dokumen_penunjang}</td>
-                    <td>${dokumen.jenis_dokumen}</td>
-                    <td>${formatDate(dokumen.created_at)}</td>
+                    <td>${namaDokumen}</td>
+                    <td>${jenisDokumen}</td>
+                    <td>${formatDate(createdAt)}</td>
                     <td>
-                        <div class="d-flex">
-                            <a href="/koordinator/proyek/dokumen-penunjang/download/${dokumen.dokumen_penunjang_proyek_id}" 
+                        <div class="d-flex gap-2">
+                            <a href="/koordinator/proyek/dokumen-penunjang/download/${dokumenId}" 
                             class="btn btn-action-download" 
                             title="Download">
                                 <svg width="26" height="25" viewBox="0 0 26 25" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -261,7 +330,7 @@ $(document).ready(function() {
                                     <path d="M10.0067 13.0054L12.64 15.6064M12.64 15.6064L15.2733 13.0054M12.64 15.6064L12.64 5.20228" stroke="#00BC39" stroke-linecap="round"/>
                                 </svg>
                             </a>
-                            <button type="button" class="btn btn-action-delete btn-delete-dokumen" title="Hapus" data-id="${dokumen.dokumen_penunjang_proyek_id}">
+                            <button type="button" class="btn btn-action-delete btn-delete-dokumen" title="Hapus" data-id="${dokumenId}">
                                 <svg width="26" height="25" viewBox="0 0 26 25" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M12.5576 3.12109C17.7479 3.12109 21.9551 7.3139 21.9551 12.4854C21.9549 17.6566 17.7478 21.8486 12.5576 21.8486C7.36753 21.8486 3.16035 17.6566 3.16016 12.4854C3.16016 7.31393 7.36741 3.12115 12.5576 3.12109ZM9.01367 7.54883C8.62018 7.22898 8.03966 7.25268 7.67285 7.61816C7.30632 7.98355 7.28285 8.56113 7.60352 8.95312L7.67285 9.0293L11.1406 12.4844L7.67285 15.9404C7.28162 16.3302 7.28162 16.9627 7.67285 17.3525C8.06401 17.7421 8.69767 17.742 9.08887 17.3525L12.5576 13.8955L16.0264 17.3525C16.4176 17.7422 17.0522 17.7423 17.4434 17.3525C17.8344 16.9627 17.8345 16.3302 17.4434 15.9404L13.9736 12.4844L17.4424 9.0293L17.5117 8.95312C17.8325 8.56109 17.8091 7.98357 17.4424 7.61816C17.0756 7.25268 16.495 7.22898 16.1016 7.54883L16.0254 7.61816L12.5576 11.0723L9.08984 7.61816L9.01367 7.54883Z" fill="#E56F8C"/>
                                 </svg>
@@ -278,21 +347,56 @@ $(document).ready(function() {
     
     // Function to format date
     function formatDate(dateString) {
+        if (!dateString) return '-';
+        
         const date = new Date(dateString);
+        
+        // Check if date is valid
+        if (isNaN(date.getTime())) {
+            return dateString; // Return original string if date is invalid
+        }
+        
         return date.toLocaleDateString('id-ID', {
             day: '2-digit',
             month: 'long',
             year: 'numeric'
         });
     }
-    
-    // Function to show empty message
+
+    // Function untuk menampilkan pesan kosong - disesuaikan untuk mendukung pencarian
     function showEmptyMessage() {
         $("#tableDokumenPenunjang tbody").empty();
         $("#emptyDokumenMessage").removeClass("d-none");
+        
+        const searchParam = $("#searchDokumenPenunjang").val() || '';
+        if (searchParam) {
+            $("#emptyDokumenMessage div").html(`
+                <svg width="60" height="60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="mb-3">
+                    <circle cx="11" cy="11" r="8" stroke="#8E8E8E" stroke-width="1.5"/>
+                    <path d="M16.5 16.5L21 21" stroke="#8E8E8E" stroke-width="1.5" stroke-linecap="round"/>
+                    <path d="M11 7V11" stroke="#8E8E8E" stroke-width="1.5" stroke-linecap="round"/>
+                    <path d="M11 15H11.01" stroke="#8E8E8E" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                <p class="text-muted mb-1">Tidak ada dokumen ditemukan dengan kata kunci: <strong>"${searchParam}"</strong></p>
+            `);
+        } else {
+            $("#emptyDokumenMessage div").html(`
+                <svg width="60" height="60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="mb-3">
+                    <path d="M8 2V5" stroke="#8E8E8E" stroke-width="1.5" stroke-linecap="round"/>
+                    <path d="M16 2V5" stroke="#8E8E8E" stroke-width="1.5" stroke-linecap="round"/>
+                    <path d="M3.5 9.08984H20.5" stroke="#8E8E8E" stroke-width="1.5" stroke-linecap="round"/>
+                    <path d="M19.21 15.7698L15.67 19.3098C15.53 19.4498 15.4 19.7098 15.37 19.8998L15.18 21.2498C15.11 21.7398 15.45 22.0798 15.94 22.0098L17.29 21.8198C17.48 21.7898 17.75 21.6598 17.88 21.5198L21.42 17.9798C22.03 17.3698 22.32 16.6598 21.42 15.7598C20.53 14.8698 19.82 15.1598 19.21 15.7698Z" stroke="#8E8E8E" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M18.7002 16.2798C19.0002 17.3598 19.8402 18.1998 20.9202 18.4998" stroke="#8E8E8E" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M12 22H8C4.5 22 3 20 3 17V8.5C3 5.5 4.5 3.5 8 3.5H16C19.5 3.5 21 5.5 21 8.5V12" stroke="#8E8E8E" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M11.9955 13.7002H12.0045" stroke="#8E8E8E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M8.29431 13.7002H8.30329" stroke="#8E8E8E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M8.29431 16.7002H8.30329" stroke="#8E8E8E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <p class="text-muted">Belum ada dokumen penunjang</p>
+            `);
+        }
     }
-    
-    // Function to attach delete events
+
     function attachDeleteEvents() {
         $(".btn-delete-dokumen").on("click", function() {
             const dokumenId = $(this).data("id");
@@ -313,8 +417,7 @@ $(document).ready(function() {
             });
         });
     }
-    
-    // Function to delete dokumen
+
     function deleteDokumen(id) {
         $.ajax({
             url: `/koordinator/proyek/dokumen-penunjang/${id}`,
@@ -355,4 +458,5 @@ $(document).ready(function() {
             }
         });
     }
+
 });

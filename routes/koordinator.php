@@ -10,6 +10,9 @@ use App\Http\Controllers\Koordinator\DataMitraController;
 use App\Http\Controllers\Koordinator\DataMahasiswaController;
 use App\Http\Controllers\Koordinator\DataProyekController;
 use App\Http\Controllers\Koordinator\DataDokumenPenunjangController;
+use App\Http\Controllers\Koordinator\DataTimelineController;
+use App\Http\Controllers\Koordinator\DataAnggotaProyekController;
+
 
 Route::middleware([KoordinatorMiddleware::class])->prefix('koordinator')->group(function () {
     Route::get('/', [KoordinatorController::class, 'dashboard'])->name('koordinator.dashboard');
@@ -57,18 +60,25 @@ Route::middleware([KoordinatorMiddleware::class])->prefix('koordinator')->group(
     Route::delete('/mahasiswa/{id}', [DataMahasiswaController::class, 'deleteDataMahasiswa'])->name('koordinator.deleteDataMahasiswa');
     Route::get('/data-mahasiswa/{id}', [DataMahasiswaController::class, 'getDataMahasiswaById'])->name('koordinator.detailDataMahasiswa');
 
-    // Project Leader
-    Route::put('/proyek/{id}/project-leader', [DataProyekController::class, 'updateProjectLeader'])->name('koordinator.updateProjectLeader');
-    Route::post('/proyek/{id}/project-member-dosen', [DataProyekController::class, 'tambahAnggotaDosen'])->name('koordinator.tambahAnggotaDosen');
-    Route::delete('/proyek/{proyekId}/hapus-anggota-dosen/{memberId}', [DataProyekController::class, 'hapusAnggotaDosen'])->name('koordinator.hapusAnggotaDosen');
-    Route::post('/proyek/{id}/project-member-mahasiswa', [DataProyekController::class, 'tambahAnggotaMahasiswa'])->name('koordinator.tambahAnggotaMahasiswa');
-    Route::delete('/proyek/{proyekId}/hapus-anggota-mahasiswa/{memberId}', [DataProyekController::class, 'hapusAnggotaMahasiswa'])->name('koordinator.hapusAnggotaMahasiswa');
-    Route::post('/proyek/{id}/project-member-profesional', [DataProyekController::class, 'tambahAnggotaProfesional'])->name('koordinator.tambahAnggotaProfesional');
-    Route::delete('/proyek/{proyekId}/hapus-anggota-profesional/{memberId}', [DataProyekController::class, 'hapusAnggotaProfesional'])->name('koordinator.hapusAnggotaProfesional');
+    // Project Leader and Members
+    Route::put('/proyek/{id}/project-leader', [DataAnggotaProyekController::class, 'updateProjectLeader'])->name('koordinator.updateProjectLeader');
+    Route::post('/proyek/{id}/project-member-dosen', [DataAnggotaProyekController::class, 'tambahAnggotaDosen'])->name('koordinator.tambahAnggotaDosen');
+    Route::delete('/proyek/{proyekId}/hapus-anggota-dosen/{memberId}', [DataAnggotaProyekController::class, 'hapusAnggotaDosen'])->name('koordinator.hapusAnggotaDosen');
+    Route::post('/proyek/{id}/project-member-mahasiswa', [DataAnggotaProyekController::class, 'tambahAnggotaMahasiswa'])->name('koordinator.tambahAnggotaMahasiswa');
+    Route::delete('/proyek/{proyekId}/hapus-anggota-mahasiswa/{memberId}', [DataAnggotaProyekController::class, 'hapusAnggotaMahasiswa'])->name('koordinator.hapusAnggotaMahasiswa');
+    Route::post('/proyek/{id}/project-member-profesional', [DataAnggotaProyekController::class, 'tambahAnggotaProfesional'])->name('koordinator.tambahAnggotaProfesional');
+    Route::delete('/proyek/{proyekId}/hapus-anggota-profesional/{memberId}', [DataAnggotaProyekController::class, 'hapusAnggotaProfesional'])->name('koordinator.hapusAnggotaProfesional');
 
     //Dokumen Penunjang Proyek 
     Route::post('/proyek/dokumen-penunjang/', [DataDokumenPenunjangController::class, 'addDokumenPenunjang'])->name('koordinator.addDokumenPenunjang');
     Route::get('/proyek/{id}/dokumen-penunjang', [DataDokumenPenunjangController::class, 'getDokumenPenunjang'])->name('koordinator.getDokumenPenunjang');
     Route::delete('/proyek/dokumen-penunjang/{id}', [DataDokumenPenunjangController::class, 'deleteDokumenPenunjang'])->name('koordinator.deleteDokumenPenunjang');
     Route::get('/proyek/dokumen-penunjang/download/{id}', [DataDokumenPenunjangController::class, 'downloadDokumenPenunjang'])->name('koordinator.downloadDokumenPenunjang');
+
+    //Data Timeline
+    Route::get('/proyek/{id}/timeline', [DataTimelineController::class, 'index'])->name('koordinator.dataTimeline');
+    Route::post('/proyek/timeline', [DataTimelineController::class, 'addDataTimeline'])->name('koordinator.tambahDataTimeline');
+    Route::get('/proyek/timeline/{id}', [DataTimelineController::class, 'detailDataTimeline'])->name('koordinator.detailDataTimeline');
+    Route::put('/proyek/timeline/{id}', [DataTimelineController::class, 'updateDataTimeline'])->name('koordinator.updateDataTimeline');
+    Route::delete('/proyek/timeline/{id}', [DataTimelineController::class, 'deleteDataTimeline'])->name('koordinator.deleteDataTimeline');
 });

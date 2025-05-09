@@ -9,6 +9,49 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Response;
 
 class DataDokumenPenunjangController extends Controller{
+
+    public function index($id, Request $request)
+    {
+        $proyek = DB::table('m_proyek')
+            ->join('d_mitra_proyek', 'm_proyek.mitra_proyek_id', '=', 'd_mitra_proyek.mitra_proyek_id')
+            ->join('m_jenis_proyek', 'm_proyek.jenis_proyek_id', '=', 'm_jenis_proyek.jenis_proyek_id')
+            ->where('m_proyek.proyek_id', $id)
+            ->select(
+                'm_proyek.*',
+                'd_mitra_proyek.nama_mitra',
+                'm_jenis_proyek.nama_jenis_proyek'
+            )
+            ->first();
+
+        if (!$proyek) {
+            return redirect()->route('koordinator.dataProyek')->with('error', 'Data proyek tidak ditemukan.');
+        }
+
+        $search = $request->input('searchDokumenPenunjang');
+        $query = DB::table('m_dokumen_penunjang_proyek as dp')
+            ->join('m_jenis_dokumen_penunjang as jdp', 'dp.jenis_dokumen_penunjang_id', '=', 'jdp.jenis_dokumen_penunjang_id')
+            ->where('dp.proyek_id', $id)
+            ->whereNull('dp.deleted_at');
+        
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('dp.nama_dokumen_penunjang', 'like', "%{$search}%")
+                  ->orWhere('jdp.nama_jenis_dokumen_penunjang', 'like', "%{$search}%");
+            });
+        }
+
+        $dokumenPenunjang = $query->orderBy('dp.created_at', 'desc')
+            ->select(
+                'dp.dokumen_penunjang_proyek_id',
+                'dp.nama_dokumen_penunjang',
+                'jdp.nama_jenis_dokumen_penunjang as jenis_dokumen',
+                'dp.file_dokumen_penunjang as file_path',
+                'dp.created_at'
+            )
+            ->get();
+        return view('pages.Koordinator.DataProyek.data_dokumen_penunjang', compact('proyek', 'dokumenPenunjang', 'search'));
+    }
+
     public function addDokumenPenunjang(Request $request)
     {
         try {
@@ -82,33 +125,38 @@ class DataDokumenPenunjangController extends Controller{
         }
     }
 
-    public function getDokumenPenunjang($id)
+    public function getDokumenPenunjang($proyekId, Request $request)
     {
-        try {
-            $dokumenPenunjang = DB::table('m_dokumen_penunjang_proyek as dp')
-                ->join('m_jenis_dokumen_penunjang as jdp', 'dp.jenis_dokumen_penunjang_id', '=', 'jdp.jenis_dokumen_penunjang_id')
-                ->where('dp.proyek_id', $id)
-                ->whereNull('dp.deleted_at')
-                ->select(
-                    'dp.dokumen_penunjang_proyek_id',
-                    'dp.nama_dokumen_penunjang',
-                    'jdp.nama_jenis_dokumen_penunjang as jenis_dokumen',
-                    'dp.file_dokumen_penunjang as file_path',
-                    'dp.created_at'
-                )
-                ->orderBy('dp.created_at', 'desc')
-                ->get();
-
-            return response()->json([
-                'success' => true,
-                'data' => $dokumenPenunjang
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
-            ], 500);
+        // Get search parameter
+        $search = $request->input('search');
+        
+        // Build query with joins
+        $query = DB::table('m_dokumen_penunjang_proyek')
+            ->join('m_jenis_dokumen_penunjang', 'm_dokumen_penunjang_proyek.jenis_dokumen_penunjang_id', '=', 'm_jenis_dokumen_penunjang.jenis_dokumen_penunjang_id')
+            ->where('proyek_id', $proyekId)
+            ->whereNull('m_dokumen_penunjang_proyek.deleted_at')
+            ->select(
+                'm_dokumen_penunjang_proyek.*',
+                'm_jenis_dokumen_penunjang.nama_jenis_dokumen_penunjang as jenis_dokumen'
+            );
+        
+        // Apply search filter if provided
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('nama_dokumen_penunjang', 'like', "%{$search}%")
+                ->orWhere('m_jenis_dokumen_penunjang.nama_jenis_dokumen_penunjang', 'like', "%{$search}%");
+            });
         }
+        
+        // Get ordered results
+        $dokumen = $query->orderBy('m_dokumen_penunjang_proyek.created_at', 'desc')
+            ->get();
+        
+        // Selalu kembalikan format yang konsisten dengan success: true
+        return response()->json([
+            'success' => true,
+            'data' => $dokumen
+        ]);
     }
 
     public function deleteDokumenPenunjang($id)

@@ -11,16 +11,22 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('m_jenis_dokumen_penunjang', function (Blueprint $table) {
-            $table->string('jenis_dokumen_penunjang_id', 36)->primary();
-            $table->string('nama_jenis_dokumen_penunjang');
-            $table->string('keterangan_jenis_dokumen_penunjang')->nullable();
+        Schema::create('t_timeline_proyek', function (Blueprint $table) {
+            $table->string('timeline_proyek_id', 36)->primary();
+            $table->string('proyek_id', 36);
+            $table->string('nama_timeline_proyek');
+            $table->dateTime('tanggal_mulai_timeline');
+            $table->dateTime('tanggal_selesai_timeline');
+            $table->string('deskripsi_timeline')->nullable();
+            
             $table->dateTime('created_at')->nullable();
             $table->string('created_by', 36)->nullable();
             $table->dateTime('updated_at')->nullable();
             $table->string('updated_by', 36)->nullable();
             $table->dateTime('deleted_at')->nullable();
             $table->string('deleted_by', 36)->nullable();
+
+            $table->foreign('proyek_id')->references('proyek_id')->on('m_proyek');           
         });
     }
 
@@ -29,6 +35,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('m_jenis_dokumen_penunjang');
+        Schema::dropIfExists('t_timeline_proyek');
     }
 };

@@ -27,9 +27,6 @@ return new class extends Migration
 
             $table->foreign('proyek_id')->references('proyek_id')->on('m_proyek');
             $table->foreign('jenis_dokumen_penunjang_id')->references('jenis_dokumen_penunjang_id')->on('m_jenis_dokumen_penunjang');
-            $table->foreign('created_by')->references('user_id')->on('d_user');
-            $table->foreign('updated_by')->references('user_id')->on('d_user');
-            $table->foreign('deleted_by')->references('user_id')->on('d_user');
         });
     }
 
