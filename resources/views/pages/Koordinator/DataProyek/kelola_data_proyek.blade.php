@@ -24,6 +24,9 @@
         <div class="section-timeline-proyek">
             @include('pages.Koordinator.DataProyek.data_timeline_proyek')
         </div>
+        <div class="section-progres-proyek">
+            @include('pages.Koordinator.DataProyek.data_progres_proyek')
+        </div>
     </div>
 </div>
 @endsection

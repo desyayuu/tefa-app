@@ -337,7 +337,7 @@ class DataProyekController extends Controller
                 
                 // Insert data anggota
                 DB::table('t_project_member_dosen')->insert([
-                    't_project_member_dosen_id' => $memberId,
+                    'project_member_dosen_id' => $memberId,
                     'dosen_id' => $dosenId,
                     'proyek_id' => $proyekId,
                     'created_at' => now(),
@@ -376,7 +376,7 @@ class DataProyekController extends Controller
         try {
             // Soft delete anggota
             DB::table('t_project_member_dosen')
-                ->where('t_project_member_dosen_id', $memberId)
+                ->where('project_member_dosen_id', $memberId)
                 ->where('proyek_id', $proyekId)
                 ->update([
                     'deleted_at' => now(),
@@ -401,7 +401,7 @@ class DataProyekController extends Controller
             ->where('t_project_member_dosen.proyek_id', $proyekId)
             ->whereNull('t_project_member_dosen.deleted_at')
             ->select(
-                't_project_member_dosen.t_project_member_dosen_id',
+                't_project_member_dosen.project_member_dosen_id',
                 'd_dosen.dosen_id',
                 'd_dosen.nama_dosen',
                 'd_dosen.nidn_dosen'
@@ -549,7 +549,7 @@ class DataProyekController extends Controller
                 
                 // Insert data anggota
                 DB::table('t_project_member_mahasiswa')->insert([
-                    't_project_member_mahasiswa_id' => $memberId,
+                    'project_member_mahasiswa_id' => $memberId,
                     'mahasiswa_id' => $mahasiswaId,
                     'proyek_id' => $proyekId,
                     'created_at' => now(),
@@ -588,7 +588,7 @@ class DataProyekController extends Controller
         try {
             // Soft delete anggota
             DB::table('t_project_member_mahasiswa')
-                ->where('t_project_member_mahasiswa_id', $memberId)
+                ->where('project_member_mahasiswa_id', $memberId)
                 ->where('proyek_id', $proyekId)
                 ->update([
                     'deleted_at' => now(),
@@ -613,7 +613,7 @@ class DataProyekController extends Controller
             ->where('t_project_member_mahasiswa.proyek_id', $proyekId)
             ->whereNull('t_project_member_mahasiswa.deleted_at')
             ->select(
-                't_project_member_mahasiswa.t_project_member_mahasiswa_id',
+                't_project_member_mahasiswa.project_member_mahasiswa_id',
                 'd_mahasiswa.mahasiswa_id',
                 'd_mahasiswa.nama_mahasiswa',
                 'd_mahasiswa.nim_mahasiswa'
@@ -659,7 +659,7 @@ class DataProyekController extends Controller
                 
                 // Insert data anggota
                 DB::table('t_project_member_profesional')->insert([
-                    't_project_member_profesional_id' => $memberId,
+                    'project_member_profesional_id' => $memberId,
                     'profesional_id' => $profesionalId,
                     'proyek_id' => $proyekId,
                     'created_at' => now(),
@@ -698,7 +698,7 @@ class DataProyekController extends Controller
         try {
             // Soft delete anggota
             DB::table('t_project_member_profesional')
-                ->where('t_project_member_profesional_id', $memberId)
+                ->where('project_member_profesional_id', $memberId)
                 ->where('proyek_id', $proyekId)
                 ->update([
                     'deleted_at' => now(),
@@ -724,7 +724,7 @@ class DataProyekController extends Controller
             ->where('t_project_member_profesional.proyek_id', $proyekId)
             ->whereNull('t_project_member_profesional.deleted_at')
             ->select(
-                't_project_member_profesional.t_project_member_profesional_id',
+                't_project_member_profesional.project_member_profesional_id',
                 'd_profesional.profesional_id',
                 'd_profesional.nama_profesional',
                 'd_user.email'

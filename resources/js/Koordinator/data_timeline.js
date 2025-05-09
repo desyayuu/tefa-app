@@ -1,913 +1,1060 @@
-document.addEventListener('DOMContentLoaded', function() {
-    const alerts = document.querySelectorAll('.alert-dismissible');
-    alerts.forEach(function(alert) {
+$(document).ready(function() {
+    loadDataTimeline();
+
+    if (window.location.hash === '#data-timeline-section') {
         setTimeout(function() {
-            const bsAlert = new bootstrap.Alert(alert);
-            bsAlert.close();
-        }, 3000); 
+            scrollToDataTimelineSection();
+        }, 300); 
+    }
+
+    function scrollToDataTimelineSection() {
+        const dataTimelineSection = $('#data-timeline-section');
+        if (dataTimelineSection.length) {
+            $('html, body').animate({
+                scrollTop: dataTimelineSection.offset().top - 80 
+            }, 500);
+        }
+    }
+
+    // Search timeline
+    $('#searchTimelineForm').on('submit', function(e) {
+        e.preventDefault();
+        const searchValue = $('#searchTimeline').val();
+        
+        const currentUrl = new URL(window.location.href);
+        currentUrl.searchParams.set('search', searchValue);
+        currentUrl.hash = 'data-timeline-section'; 
+        
+        window.history.pushState({}, '', currentUrl.toString());
+        
+        loadDataTimeline();
+        scrollToDataTimelineSection();
     });
-    
-    initTimelineFunctionality();
-    const viewEditButtons = document.querySelectorAll('.btn-action-detail');
-    viewEditButtons.forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            // Prevent default action (important if the button is inside a form)
-            e.preventDefault();
-            
-            // Get the timeline ID from the data-id attribute
-            const timelineId = this.getAttribute('data-id');
-            
-            // Log for debugging
-            console.log('Edit button clicked for timeline ID:', timelineId);
-            
-            // Fetch and display timeline data in the modal
-            fetchTimelineData(timelineId);
-        });
+
+    // Clear search filter
+    $('#btnClearSearch').on('click', function() {
+        $('#searchTimeline').val('');
+        const currentUrl = new URL(window.location.href);
+        currentUrl.searchParams.delete('search');
+        window.history.pushState({}, '', currentUrl.toString());
+        
+        loadDataTimeline();
+        $('#btnClearSearch').addClass('d-none');
     });
 
-    if (window.location.hash) {
-        const element = document.querySelector(window.location.hash);
+    // Tambahkan fungsi loading detail timeline jika belum ada
+    function loadTimelineDetail(timelineId) {
+        // Reset form
+        $("#formEditTimeline")[0].reset();
+        $("#edit_form_error").addClass('d-none').text('');
+        $(".is-invalid").removeClass("is-invalid");
+        $(".invalid-feedback").text('');
         
-        if (element) {
-            setTimeout(function() {
-                element.scrollIntoView({ behavior: 'smooth' });
-            }, 300);
-        }
-    }
-});
-
-// Validate edit form - FIX: Use correct element IDs
-function validateEditForm() {
-    let isValid = true;
-    
-    // Validate name
-    const editNama = document.getElementById('edit_nama_timeline');
-    if (!editNama || !editNama.value.trim()) {
-        showEditError('edit_nama_timeline_error', 'Nama timeline harus diisi');
-        if (editNama) editNama.classList.add('is-invalid');
-        isValid = false;
-    }
-    
-    // Validate start date - FIX: Correct ID
-    const editTanggalMulai = document.getElementById('edit_tanggal_mulai_timeline');
-    if (!editTanggalMulai || !editTanggalMulai.value.trim()) {
-        showEditError('edit_tanggal_mulai_timeline_error', 'Tanggal mulai harus diisi');
-        if (editTanggalMulai) editTanggalMulai.classList.add('is-invalid');
-        isValid = false;
-    }
-    
-    // Validate end date - FIX: Correct ID
-    const editTanggalSelesai = document.getElementById('edit_tanggal_selesai_timeline');
-    if (!editTanggalSelesai || !editTanggalSelesai.value.trim()) {
-        showEditError('edit_tanggal_selesai_timeline_error', 'Tanggal selesai harus diisi');
-        if (editTanggalSelesai) editTanggalSelesai.classList.add('is-invalid');
-        isValid = false;
-    }
-    
-    // Validate start date < end date
-    if (editTanggalMulai && editTanggalSelesai && 
-        editTanggalMulai.value.trim() && editTanggalSelesai.value.trim()) {
-        if (new Date(editTanggalMulai.value.trim()) > new Date(editTanggalSelesai.value.trim())) {
-            showEditError('edit_tanggal_selesai_timeline_error', 'Tanggal selesai harus setelah tanggal mulai');
-            editTanggalSelesai.classList.add('is-invalid');
-            isValid = false;
-        }
-    }
-    
-    return isValid;
-}
-
-// Clear edit form errors - FIX: Check if elements exist before accessing them
-function clearEditFormErrors() {
-    // Function to safely clear error text
-    function clearErrorText(id) {
-        const element = document.getElementById(id);
-        if (element) element.textContent = '';
-    }
-    
-    // Function to safely remove invalid class
-    function removeInvalidClass(id) {
-        const element = document.getElementById(id);
-        if (element) element.classList.remove('is-invalid');
-    }
-    
-    // Clear error texts
-    clearErrorText('edit_nama_timeline_error');
-    clearErrorText('edit_tanggal_mulai_timeline_error');  // FIX: Correct ID
-    clearErrorText('edit_tanggal_selesai_timeline_error'); // FIX: Correct ID
-    clearErrorText('edit_deskripsi_timeline_error');
-    
-    // Clear and hide form error
-    const formError = document.getElementById('edit_form_error');
-    if (formError) {
-        formError.textContent = '';
-        formError.classList.add('d-none');
-    }
-    
-    // Remove invalid class
-    removeInvalidClass('edit_nama_timeline');
-    removeInvalidClass('edit_tanggal_mulai_timeline'); // FIX: Correct ID
-    removeInvalidClass('edit_tanggal_selesai_timeline'); // FIX: Correct ID
-    removeInvalidClass('edit_deskripsi');
-}
-
-// Show edit form error - FIX: More robust error display
-function showEditError(elementId, message) {
-    const element = document.getElementById(elementId);
-    if (element) {
-        element.textContent = message;
+        // Set timeline ID
+        $("#edit_timeline_id").val(timelineId);
         
-        // If this is a feedback element, also set the associated input as invalid
-        if (elementId.endsWith('_error')) {
-            const inputId = elementId.replace('_error', '');
-            const inputElement = document.getElementById(inputId);
-            if (inputElement) {
-                inputElement.classList.add('is-invalid');
-            }
-        }
-    } else {
-        // If we can't find the specific error element, show in the form error instead
-        const formError = document.getElementById('edit_form_error');
-        if (formError) {
-            formError.textContent = message;
-            formError.classList.remove('d-none');
-        }
-    }
-}
-
-// Enhanced logging for debugging
-function debugEditForm() {
-    console.log("=== Edit Form Debug ===");
-    
-    // Check if modal exists
-    const modal = document.getElementById('modalEditTimeline');
-    console.log("Modal exists:", !!modal);
-    
-    // Check form and fields
-    const form = document.getElementById('formEditTimeline');
-    console.log("Form exists:", !!form);
-    
-    // Check each input field
-    const fields = [
-        'edit_timeline_id', 
-        'edit_nama_timeline', 
-        'edit_tanggal_mulai_timeline', 
-        'edit_tanggal_selesai_timeline',
-        'edit_deskripsi'
-    ];
-    
-    fields.forEach(id => {
-        const element = document.getElementById(id);
-        console.log(`Field ${id} exists:`, !!element);
-        if (element) {
-            console.log(`Field ${id} value:`, element.value);
-        }
-    });
-}
-
-// Modified function to fetch timeline data - More robust with better error handling and debugging
-function fetchTimelineData(timelineId) {
-    console.log("Fetching timeline data for ID:", timelineId);
-    
-    // Show loading
-    const modal = new bootstrap.Modal(document.getElementById('modalEditTimeline'));
-    modal.show();
-    
-    const updateBtn = document.getElementById('btnUpdateTimeline');
-    if (updateBtn) {
-        updateBtn.disabled = true;
-        updateBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
-    }
-    
-    // Clear previous errors
-    clearEditFormErrors();
-    
-    // Get CSRF token
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-    
-    // Fetch timeline data
-    fetch(`/koordinator/proyek/timeline/${timelineId}`, {
-        method: 'GET',
-        headers: {
-            'Accept': 'application/json',
-            'X-CSRF-TOKEN': csrfToken || ''
-        }
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        return response.json();
-    })
-    .then(data => {
-        console.log("Timeline data received:", data);
+        // Tampilkan loading state
+        const modalBody = $("#modalEditTimeline .modal-body");
+        const originalContent = modalBody.html();
         
-        if (data.success && data.data) {
-            const timeline = data.data;
-            
-            // Set form action
-            const editForm = document.getElementById('formEditTimeline');
-            if (editForm) {
-                editForm.action = `/koordinator/proyek/timeline/${timelineId}`;
-            }
-            
-            // Set values in form fields - With robust error handling
-            function setFieldValue(id, value) {
-                const field = document.getElementById(id);
-                if (field) {
-                    field.value = value || '';
-                } else {
-                    console.error(`Field ${id} not found!`);
-                }
-            }
-            
-            // Set timeline ID
-            setFieldValue('edit_timeline_id', timeline.timeline_proyek_id);
-            
-            // Set name
-            setFieldValue('edit_nama_timeline', timeline.nama_timeline_proyek);
-            
-            // Set start date
-            if (timeline.tanggal_mulai_timeline) {
-                let startDate = timeline.tanggal_mulai_timeline;
-                if (startDate.includes(' ')) {
-                    startDate = startDate.split(' ')[0];
-                }
-                setFieldValue('edit_tanggal_mulai_timeline', startDate);
-            }
-            
-            // Set end date
-            if (timeline.tanggal_selesai_timeline) {
-                let endDate = timeline.tanggal_selesai_timeline;
-                if (endDate.includes(' ')) {
-                    endDate = endDate.split(' ')[0];
-                }
-                setFieldValue('edit_tanggal_selesai_timeline', endDate);
-            }
-            
-            // Set description
-            setFieldValue('edit_deskripsi', timeline.deskripsi_timeline);
-            
-            // Debug to check values
-            debugEditForm();
-        } else {
-            // Show error message
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: data.message || 'Failed to load timeline data'
-            });
-            
-            setTimeout(() => {
-                const modalInstance = bootstrap.Modal.getInstance(document.getElementById('modalEditTimeline'));
-                if (modalInstance) modalInstance.hide();
-            }, 1000);
-        }
-    })
-    .catch(error => {
-        console.error("Error fetching timeline data:", error);
+        modalBody.html(`
+            <div class="d-flex justify-content-center align-items-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="ms-3 mb-0">Memuat data...</p>
+            </div>
+        `);
         
-        // Show error message
-        Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'An error occurred while fetching timeline data'
-        });
-        
-        setTimeout(() => {
-            const modalInstance = bootstrap.Modal.getInstance(document.getElementById('modalEditTimeline'));
-            if (modalInstance) modalInstance.hide();
-        }, 1000);
-    })
-    .finally(() => {
-        // Reset button state
-        if (updateBtn) {
-            updateBtn.disabled = false;
-            updateBtn.textContent = 'Simpan Perubahan';
-        }
-    });
-}
-
-// Document ready function to set up event listeners for the view/edit butto
-function initTimelineFunctionality() {
-    let timelineList = [];
-    const btnTambahkanKeDaftarTimeline = document.getElementById('btnTambahkanKeDaftarTimeline');
-    const btnSimpanTimeline = document.getElementById('btnSimpanTimeline');
-    const daftarTimeline = document.getElementById('daftarTimeline');
-    const timelineJsonData = document.getElementById('timelineJsonData');
-    const isSingleTimeline = document.getElementById('isSingleTimeline');
-    const emptyRowTimeline = document.getElementById('emptyRowTimeline');
-    const formTimeline = document.getElementById('formTambahDataTimeline');
-    const modalTambahTimeline = document.getElementById('modalTambahTimeline');
-    
-    // Jika elemen tidak ditemukan, berarti kita tidak di halaman yang relevan
-    if (!btnTambahkanKeDaftarTimeline || !daftarTimeline) {
-        return;
-    }
-    
-    // Form inputs
-    const namaTimeline = document.getElementById('nama_timeline');
-    const tanggalMulai = document.getElementById('tanggal_mulai_timeline');
-    const tanggalSelesai = document.getElementById('tanggal_selesai_timeline');
-    const deskripsiTimeline = document.getElementById('deskripsi');
-    
-    // Error containers
-    const namaTimelineError = document.getElementById('nama_timeline_error');
-    const tanggalMulaiTimelineError = document.getElementById('tanggal_mulai_timeline_error');
-    const tanggalSelesaiTimelineError = document.getElementById('tanggal_selesai_timeline_error');
-    const deskripsiTimelineError = document.getElementById('deskripsi_timeline_error');
-    const formTimelineError = document.getElementById('form_timeline_error');
-    
-    // Reset modal saat dibuka
-    if (modalTambahTimeline) {
-        modalTambahTimeline.addEventListener('show.bs.modal', function() {
-            resetForm();
-            clearValidationErrors();
-            timelineList = [];
-            updateTimelineTable();
-            updateJsonData();
-            if (isSingleTimeline) isSingleTimeline.value = "1"; // Default sebagai single
-        });
-    }
-    
-    // Tambahkan timeline ke daftar
-    btnTambahkanKeDaftarTimeline.addEventListener('click', function() {
-        // Clear previous errors
-        clearValidationErrors();
-        
-        const nama = namaTimeline.value.trim();
-        const tglMulai = tanggalMulai.value.trim();
-        const tglSelesai = tanggalSelesai.value.trim();
-        const deskripsi = deskripsiTimeline.value.trim();
-        
-        // Validasi data
-        let isValid = true;
-        
-        // Validasi nama
-        if (!nama) {
-            showError(namaTimelineError, 'Nama timeline harus diisi');
-            isValid = false;
-        }
-        
-        // Validasi tanggal mulai
-        if (!tglMulai) {
-            showError(tanggalMulaiTimelineError, 'Tanggal mulai harus diisi');
-            isValid = false;
-        }
-        
-        // Validasi tanggal selesai
-        if (!tglSelesai) {
-            showError(tanggalSelesaiTimelineError, 'Tanggal selesai harus diisi');
-            isValid = false;
-        }
-        
-        // Validasi tanggal mulai < tanggal selesai
-        if (tglMulai && tglSelesai) {
-            if (new Date(tglMulai) > new Date(tglSelesai)) {
-                showError(tanggalSelesaiTimelineError, 'Tanggal selesai harus setelah tanggal mulai');
-                isValid = false;
-            }
-        }
-        
-        if (!isValid) {
-            return;
-        }
-        
-        // Format tanggal untuk tampilan
-        const formattedStartDate = formatDateForDisplay(tglMulai);
-        const formattedEndDate = formatDateForDisplay(tglSelesai);
-        
-        // Tambahkan ke array
-        timelineList.push({
-            nama_timeline: nama,
-            tanggal_mulai_timeline: tglMulai,
-            tanggal_selesai_timeline: tglSelesai,
-            deskripsi_timeline: deskripsi || null,
-            id: Date.now(),
-            // Tambahkan format tanggal untuk tampilan
-            formattedStartDate: formattedStartDate,
-            formattedEndDate: formattedEndDate
-        });
-        
-        // Update table & json data
-        updateTimelineTable();
-        updateJsonData();
-        
-        // Reset form untuk entri berikutnya
-        namaTimeline.value = '';
-        tanggalMulai.value = '';
-        tanggalSelesai.value = '';
-        deskripsiTimeline.value = '';
-        // Tanggal tidak direset agar user bisa menambahkan timeline berurutan
-        
-        // Tandai sebagai multiple
-        isSingleTimeline.value = "0";
-    });
-    
-    // Submit form handler
-    if (formTimeline) {
-        formTimeline.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            // Clear previous errors
-            clearValidationErrors();
-            formTimelineError.textContent = '';
-            formTimelineError.classList.add('d-none');
-            
-            // Cek mode (single atau multiple)
-            if (isSingleTimeline.value === "1") {
-                // Validasi form single
-                if (!validateSingleForm()) {
-                    return;
-                }
-                
-                // Konversi data form ke JSON untuk single insert
-                const singleData = [{
-                    nama_timeline: namaTimeline.value.trim(),
-                    tanggal_mulai_timeline: tanggalMulai.value.trim(),
-                    tanggal_selesai_timeline: tanggalSelesai.value.trim(),
-                    deskripsi_timeline: deskripsiTimeline.value.trim() || null
-                }];
-                
-                timelineJsonData.value = JSON.stringify(singleData);
-            } else {
-                // Validasi untuk multiple (pastikan ada data)
-                if (timelineList.length === 0) {
-                    showError(formTimelineError, 'Belum ada data timeline yang ditambahkan ke daftar');
-                    return;
-                }
-            }
-            
-            // Siapkan data form
-            const formData = new FormData(formTimeline);
-            
-            // Kirim request AJAX
-            submitTimelineData(formData);
-        });
-    }
-    
-    // Fungsi untuk validasi form single
-    function validateSingleForm() {
-        let isValid = true;
-        
-        // Validasi nama
-        if (!namaTimeline.value.trim()) {
-            showError(namaTimelineError, 'Nama timeline harus diisi');
-            isValid = false;
-        }
-        
-        // Validasi tanggal mulai
-        if (!tanggalMulai.value.trim()) {
-            showError(tanggalMulaiTimelineError, 'Tanggal mulai harus diisi');
-            isValid = false;
-        }
-        
-        // Validasi tanggal selesai
-        if (!tanggalSelesai.value.trim()) {
-            showError(tanggalSelesaiTimelineError, 'Tanggal selesai harus diisi');
-            isValid = false;
-        }
-        
-        // Validasi tanggal mulai < tanggal selesai
-        if (tanggalMulai.value.trim() && tanggalSelesai.value.trim()) {
-            if (new Date(tanggalMulai.value.trim()) > new Date(tanggalSelesai.value.trim())) {
-                showError(tanggalSelesaiTimelineError, 'Tanggal selesai harus setelah tanggal mulai');
-                isValid = false;
-            }
-        }
-        
-        return isValid;
-    }
-    
-    // Fungsi untuk submit data timeline
-    function submitTimelineData(formData) {
-        // Show loading state
-        btnSimpanTimeline.disabled = true;
-        btnSimpanTimeline.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Menyimpan...';
-        
-        // Ambil CSRF token
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-        
-        // Kirim request AJAX
-        fetch('/koordinator/proyek/timeline', {
-            method: 'POST',
-            body: formData,
+        // Ambil data dari server
+        $.ajax({
+            url: `/koordinator/proyek/timeline/${timelineId}`,
+            type: 'GET',
             headers: {
-                'X-CSRF-TOKEN': csrfToken,
-                'Accept': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Success notification
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Berhasil',
-                    text: data.message
-                }).then(() => {
-                    // Reset form and close modal
-                    resetForm();
-                    const modal = bootstrap.Modal.getInstance(modalTambahTimeline);
-                    modal.hide();
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                if (response.success && response.data) {
+                    // Pulihkan konten modal
+                    modalBody.html(originalContent);
                     
-                    // Reload page to show new data
-                    window.location.reload();
-                });
-            } else {
-                // Error handling
-                let errorMessage = data.message;
+                    // Isi form dengan data
+                    const data = response.data;
+                    $("#edit_nama_timeline").val(data.nama_timeline_proyek);
+                    $("#edit_tanggal_mulai_timeline").val(formatDateForInput(data.tanggal_mulai_timeline));
+                    $("#edit_tanggal_selesai_timeline").val(formatDateForInput(data.tanggal_selesai_timeline));
+                    $("#edit_deskripsi").val(data.deskripsi_timeline);
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal',
+                        text: 'Gagal memuat data timeline',
+                        confirmButtonText: 'OK'
+                    });
+                    
+                    // Tutup modal
+                    $('#modalEditTimeline').modal('hide');
+                }
+            },
+            error: function(xhr) {
+                console.error("Error loading timeline detail:", xhr.responseText);
                 
-                if (data.errors) {
-                    errorMessage = '';
-                    for (const key in data.errors) {
-                        errorMessage += data.errors[key][0] + '<br>';
-                    }
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal',
+                    text: 'Gagal memuat data timeline',
+                    confirmButtonText: 'OK'
+                });
+                
+                // Tutup modal
+                $('#modalEditTimeline').modal('hide');
+            }
+        });
+    }
+
+    // Perbaikan fungsi loadDataTimeline dengan debugging
+    function loadDataTimeline() {
+        const proyekId = $('input[name="proyek_id"]').val();
+        const searchParam = $("#searchTimeline").val() || '';
+        
+        console.log("Loading timeline data for project ID:", proyekId);
+        console.log("Search parameter:", searchParam);
+        
+        if (searchParam) {
+            $('#btnClearSearch').removeClass('d-none');
+        } else {
+            $('#btnClearSearch').addClass('d-none');
+        }
+        
+        $("#tableDataTimeline tbody").html(`
+            <tr>
+                <td colspan="5" class="text-center py-4">
+                    <div class="d-flex justify-content-center">
+                        <div class="spinner-border spinner-border-sm text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                    <p class="mt-2 text-muted small">Memuat data...</p>
+                </td>
+            </tr>
+        `);
+        
+        // Sembunyikan pesan kosong saat loading
+        $("#emptyDataTimelineMessage").addClass("d-none");
+        
+        $.ajax({
+            url: `/koordinator/proyek/${proyekId}/timeline`,
+            type: 'GET',
+            data: {
+                search: searchParam
+            },
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                console.log("API Response:", response);
+                
+                // Jika response adalah view HTML (non-JSON)
+                if (typeof response === 'string' && response.indexOf('<!DOCTYPE html>') >= 0) {
+                    console.log("Received HTML response instead of JSON. This suggests the controller is not returning JSON for AJAX requests.");
+                    // Tampilkan pesan error
+                    showEmptyMessageTimeline(searchParam);
+                    return;
                 }
                 
-                showError(formTimelineError, errorMessage);
+                // Jika server mengembalikan timelines langsung (bukan dalam property data)
+                if (Array.isArray(response)) {
+                    console.log("Response is an array directly");
+                    renderTimelineTable(response);
+                    return;
+                }
+                
+                // Jika response dalam format {success: true, data: [...]}
+                if (response.success && response.data && response.data.length > 0) {
+                    console.log("Rendering timeline data:", response.data);
+                    renderTimelineTable(response.data);
+                } 
+                // Jika response dalam format {timelines: [...]} (cek jika property timelines ada)
+                else if (response.timelines && response.timelines.length > 0) {
+                    console.log("Rendering timeline data from 'timelines' property:", response.timelines);
+                    renderTimelineTable(response.timelines);
+                }
+                // Jika tidak ada data atau format lain
+                else {
+                    console.log("No timeline data found");
+                    showEmptyMessageTimeline(searchParam);
+                }
+            },
+            error: function(xhr) {
+                console.error("Error loading timeline:", xhr.responseText);
+                
+                $("#tableDataTimeline tbody").html(`
+                    <tr>
+                        <td colspan="5" class="text-center text-danger py-4">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="mb-3">
+                                <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="#FF5757" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M15 9L9 15" stroke="#FF5757" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M9 9L15 15" stroke="#FF5757" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <p>Terjadi kesalahan saat memuat data</p>
+                            <p class="small text-muted">Silakan coba lagi nanti</p>
+                        </td>
+                    </tr>
+                `);
             }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showError(formTimelineError, 'Terjadi kesalahan saat memproses permintaan');
-        })
-        .finally(() => {
-            // Reset button state
-            btnSimpanTimeline.disabled = false;
-            btnSimpanTimeline.textContent = 'Simpan Data';
         });
     }
     
-    // Fungsi update tabel timeline
-    function updateTimelineTable() {
-        // Clear existing rows (except empty row)
-        const existingRows = daftarTimeline.querySelectorAll('tr:not(#emptyRowTimeline)');
-        existingRows.forEach(row => row.remove());
-        
-        if (timelineList.length === 0) {
-            // Pastikan baris kosong ditampilkan
-            if (emptyRowTimeline) {
-                emptyRowTimeline.style.display = 'table-row';
-            }
-        } else {
-            // Sembunyikan baris kosong
-            if (emptyRowTimeline) {
-                emptyRowTimeline.style.display = 'none';
-            }
-            
-            // Add new rows
-            timelineList.forEach((timeline, index) => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${timeline.nama_timeline}</td>
-                    <td>${timeline.formattedStartDate || timeline.tanggal_mulai_timeline}</td>
-                    <td>${timeline.formattedEndDate || timeline.tanggal_selesai_timeline}</td>
-                    <td>
-                        <button type="button" class="btn btn-sm btn-danger btn-hapus-item" data-id="${timeline.id}">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path fill-rule="evenodd" clip-rule="evenodd" d="M21.7627 13.2734C21.7627 18.677 17.6296 23.0575 12.5312 23.0575C7.43286 23.0575 3.2998 18.677 3.2998 13.2734C3.2998 7.86976 7.43286 3.48926 12.5312 3.48926C17.6296 3.48926 21.7627 7.86976 21.7627 13.2734ZM15.9478 8.19757L16.0215 8.12654C16.4027 7.79716 16.965 7.82103 17.3203 8.19757C17.6756 8.57412 17.6981 9.17013 17.3873 9.57414L17.3203 9.65228L13.9038 13.2734L17.3204 16.8945C17.6994 17.2963 17.6994 17.9475 17.3204 18.3492C16.9413 18.751 16.3268 18.751 15.9478 18.3492L12.5312 14.7281L9.11464 18.3492C8.73563 18.751 8.12112 18.751 7.74211 18.3492C7.3631 17.9475 7.3631 17.2963 7.74211 16.8945L11.1587 13.2734L7.74214 9.65227L7.67513 9.57414C7.36436 9.17012 7.38687 8.57411 7.74214 8.19757C8.09742 7.82102 8.65976 7.79716 9.04095 8.12654L9.11467 8.19757L12.5312 11.8187L15.9478 8.19757Z" fill="#E56F8C"/>
-                            </svg>
-                            Hapus
-                        </button>
-                    </td>
-                `;
-                daftarTimeline.appendChild(row);
-            });
-            
-            // Bind hapus buttons
-            document.querySelectorAll('.btn-hapus-item').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const id = parseInt(this.getAttribute('data-id'));
-                    timelineList = timelineList.filter(item => item.id !== id);
-                    updateTimelineTable();
-                    updateJsonData();
-                    
-                    // Jika sudah tidak ada data, set kembali ke single
-                    if (timelineList.length === 0) {
-                        isSingleTimeline.value = "1";
-                    }
-                });
-            });
-        }
-    }
-    
-    // Update hidden JSON data
-    function updateJsonData() {
-        // Buat salinan data tanpa ID temporary dan format date
-        const cleanData = timelineList.map(({ nama_timeline, tanggal_mulai_timeline, tanggal_selesai_timeline, deskripsi_timeline }) => ({
-            nama_timeline, 
-            tanggal_mulai_timeline, 
-            tanggal_selesai_timeline, 
-            deskripsi_timeline
-        }));
-        
-        timelineJsonData.value = JSON.stringify(cleanData);
-    }
-    
-    // Reset form inputs
-    function resetForm() {
-        if (namaTimeline) namaTimeline.value = '';
-        if (tanggalMulai) tanggalMulai.value = '';
-        if (tanggalSelesai) tanggalSelesai.value = '';
-        if (deskripsiTimeline) deskripsiTimeline.value = '';
-        
-        // Reset timeline list
-        timelineList = [];
-    }
-    
-    // Clear validation errors
-    function clearValidationErrors() {
-        if (namaTimelineError) namaTimelineError.textContent = '';
-        if (tanggalMulaiTimelineError) tanggalMulaiTimelineError.textContent = '';
-        if (tanggalSelesaiTimelineError) tanggalSelesaiTimelineError.textContent = '';
-        if (deskripsiTimelineError) deskripsiTimelineError.textContent = '';
-        
-        // Hide form error
-        if (formTimelineError) {
-            formTimelineError.textContent = '';
-            formTimelineError.classList.add('d-none');
-        }
-        
-        // Remove invalid class from inputs
-        if (namaTimeline) namaTimeline.classList.remove('is-invalid');
-        if (tanggalMulai) tanggalMulai.classList.remove('is-invalid');
-        if (tanggalSelesai) tanggalSelesai.classList.remove('is-invalid');
-        if (deskripsiTimeline) deskripsiTimeline.classList.remove('is-invalid');
-    }
-    
-    // Show error message
-    function showError(element, message) {
-        if (!element) return;
-        
-        if (element === formError) {
-            element.innerHTML = message;
-            element.classList.remove('d-none');
-        } else {
-            element.textContent = message;
-            
-            // Add invalid class to the corresponding input
-            if (element === namaTimelineError && namaTimeline) namaTimeline.classList.add('is-invalid');
-            if (element === tanggalMulaiTimelineError && tanggalMulai) tanggalMulai.classList.add('is-invalid');
-            if (element === tanggalSelesaiTimelineError && tanggalSelesai) tanggalSelesai.classList.add('is-invalid');
-            if (element === deskripsiTimelineError && deskripsiTimeline) deskripsiTimeline.classList.add('is-invalid');
-        }
-    }
-    
-    // Format date for display (YYYY-MM-DD to DD Month YYYY)
-    // Format date for display (YYYY-MM-DD to DD Month YYYY)
-    function formatDateForDisplay(dateString) {
+    // Format date for input field (YYYY-MM-DD)
+    function formatDateForInput(dateString) {
         if (!dateString) return '';
         
         const date = new Date(dateString);
-        const options = { day: '2-digit', month: 'long', year: 'numeric' };
+        if (isNaN(date.getTime())) return '';
         
-        try {
-            return date.toLocaleDateString('id-ID', options);
-        } catch(e) {
-            console.error('Error formatting date:', e);
-            return dateString;
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        
+        return `${year}-${month}-${day}`;
+    }
+    
+    // Update timeline
+    $("#formEditTimeline").on('submit', function(e) {
+        e.preventDefault();
+        
+        // Reset error messages
+        $("#edit_form_error").addClass('d-none').text('');
+        $(".is-invalid").removeClass("is-invalid");
+        $(".invalid-feedback").text('');
+        
+        const timelineId = $("#edit_timeline_id").val();
+        const formData = new FormData(this);
+        
+        // Validasi sederhana
+        const namaTimeline = $("#edit_nama_timeline").val();
+        const tanggalMulai = $("#edit_tanggal_mulai_timeline").val();
+        const tanggalSelesai = $("#edit_tanggal_selesai_timeline").val();
+        
+        let hasErrors = false;
+        
+        if (!namaTimeline) {
+            $("#edit_nama_timeline_error").text("Nama timeline harus diisi");
+            $("#edit_nama_timeline").addClass("is-invalid");
+            hasErrors = true;
+        }
+        
+        if (!tanggalMulai) {
+            $("#edit_tanggal_mulai_timeline_error").text("Tanggal mulai harus diisi");
+            $("#edit_tanggal_mulai_timeline").addClass("is-invalid");
+            hasErrors = true;
+        }
+        
+        if (!tanggalSelesai) {
+            $("#edit_tanggal_selesai_timeline_error").text("Tanggal selesai harus diisi");
+            $("#edit_tanggal_selesai_timeline").addClass("is-invalid");
+            hasErrors = true;
+        }
+        
+        if (tanggalMulai && tanggalSelesai && new Date(tanggalMulai) > new Date(tanggalSelesai)) {
+            $("#edit_tanggal_selesai_timeline_error").text("Tanggal selesai harus setelah tanggal mulai");
+            $("#edit_tanggal_selesai_timeline").addClass("is-invalid");
+            hasErrors = true;
+        }
+        
+        if (hasErrors) {
+            return false;
+        }
+        
+        // Tampilkan loading state
+        const submitButton = $("#btnUpdateTimeline");
+        const originalText = submitButton.text();
+        submitButton.prop('disabled', true).html(`
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            <span>Menyimpan...</span>
+        `);
+        
+        // Kirim data ke server
+        $.ajax({
+            url: `/koordinator/proyek/timeline/${timelineId}`,
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                if (response.success) {
+                    // Tampilkan notifikasi sukses
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil',
+                        text: response.message,
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        // Refresh data
+                        loadDataTimeline();
+                        // Tutup modal
+                        $('#modalEditTimeline').modal('hide');
+                    });
+                } else {
+                    // Tampilkan pesan error
+                    $("#edit_form_error").removeClass('d-none').text(response.message);
+                }
+            },
+            error: function(xhr) {
+                console.error("Error updating timeline:", xhr.responseText);
+                
+                if (xhr.status === 422) {
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        if (response.errors) {
+                            // Tampilkan error untuk setiap field
+                            $.each(response.errors, function(field, messages) {
+                                const errorField = field === 'nama_timeline' ? 'edit_nama_timeline' : 
+                                                  field === 'tanggal_mulai_timeline' ? 'edit_tanggal_mulai_timeline' : 
+                                                  field === 'tanggal_selesai_timeline' ? 'edit_tanggal_selesai_timeline' : 
+                                                  field === 'deskripsi_timeline' ? 'edit_deskripsi' : field;
+                                
+                                const errorMessage = Array.isArray(messages) ? messages[0] : messages;
+                                $(`#${errorField}_error`).text(errorMessage);
+                                $(`#${errorField}`).addClass('is-invalid');
+                            });
+                        } else {
+                            $("#edit_form_error").removeClass('d-none').text('Terjadi kesalahan. Silakan coba lagi.');
+                        }
+                    } catch (e) {
+                        $("#edit_form_error").removeClass('d-none').text('Terjadi kesalahan. Silakan coba lagi.');
+                    }
+                } else {
+                    $("#edit_form_error").removeClass('d-none').text('Terjadi kesalahan. Silakan coba lagi.');
+                }
+            },
+            complete: function() {
+                // Reset loading state
+                submitButton.prop('disabled', false).html(originalText);
+            }
+        });
+    });
+    
+    // Konfirmasi hapus timeline
+    function confirmDeleteTimeline(timelineId) {
+        Swal.fire({
+            title: 'Konfirmasi Hapus',
+            text: 'Apakah Anda yakin ingin menghapus timeline ini?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Ya, Hapus',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                deleteTimeline(timelineId);
+            }
+        });
+    }
+    
+    // Hapus timeline
+    function deleteTimeline(timelineId) {
+        $.ajax({
+            url: `/koordinator/proyek/timeline/${timelineId}`,
+            type: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                if (response.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil',
+                        text: response.message,
+                        confirmButtonText: 'OK'
+                    });
+                    
+                    // Refresh data
+                    loadDataTimeline();
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal',
+                        text: response.message || 'Gagal menghapus timeline',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            },
+            error: function(xhr) {
+                console.error("Error deleting timeline:", xhr.responseText);
+                
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal',
+                    text: 'Terjadi kesalahan saat menghapus timeline',
+                    confirmButtonText: 'OK'
+                });
+            }
+        });
+    }
+
+    
+    // Render tabel timeline
+    function renderTimelineTable(data) {
+        const tableBody = $("#tableDataTimeline tbody");
+        tableBody.empty();
+        
+        if (!data || data.length === 0) {
+            const searchParam = $("#searchTimeline").val() || '';
+            showEmptyMessageTimeline(searchParam);
+            return;
+        }
+        
+        // Sembunyikan pesan kosong ketika ada data
+        $("#emptyDataTimelineMessage").addClass("d-none");
+        
+        data.forEach((timeline, index) => {
+            const timelineId = timeline.timeline_proyek_id;
+            const namaTimeline = timeline.nama_timeline_proyek;
+            const tanggalMulai = formatDate(timeline.tanggal_mulai_timeline);
+            const tanggalSelesai = formatDate(timeline.tanggal_selesai_timeline);
+            
+            tableBody.append(`
+                <tr>
+                    <td>${index + 1}</td>
+                    <td>${namaTimeline}</td>
+                    <td>${tanggalMulai}</td>
+                    <td>${tanggalSelesai}</td>
+                    <td>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-action-detail" data-id="${timelineId}" data-bs-toggle="modal" data-bs-target="#modalEditTimeline">
+                                <svg width="15" height="15" viewBox="0 0 26 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M21.0571 10.9056C21.4729 11.3872 21.6808 11.628 21.6808 12C21.6808 12.372 21.4729 12.6128 21.0571 13.0944C19.5628 14.8252 16.307 18 12.5313 18C8.7555 18 5.49977 14.8252 4.00541 13.0944C3.58961 12.6128 3.38171 12.372 3.38171 12C3.38171 11.628 3.58961 11.3872 4.00541 10.9056C5.49977 9.17485 8.7555 6 12.5313 6C16.307 6 19.5628 9.17485 21.0571 10.9056Z" fill="#3C21F7"/>
+                                    <path d="M15.6641 12C15.6641 13.6569 14.2615 15 12.5313 15C10.801 15 9.39844 13.6569 9.39844 12C9.39844 10.3431 10.801 9 12.5313 9C14.2615 9 15.6641 10.3431 15.6641 12Z" fill="white"/>
+                                </svg>
+                            </button>
+                            <button type="button" class="btn btn-action-delete btn-delete-timeline" data-id="${timelineId}">
+                                <svg width="20" height="20" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M21.5896 12.4848C21.5896 17.6563 17.459 21.8486 12.3636 21.8486C7.26829 21.8486 3.1377 17.6563 3.1377 12.4848C3.1377 7.31339 7.26829 3.12109 12.3636 3.12109C17.459 3.12109 21.5896 7.31339 21.5896 12.4848ZM7.56137 17.3588C7.17375 16.9654 7.17375 16.3276 7.56137 15.9342L10.9599 12.4848L7.56137 9.03551C7.17375 8.6421 7.17375 8.00426 7.56137 7.61085C7.94899 7.21744 8.57744 7.21744 8.96506 7.61085L12.3636 11.0602L15.7622 7.61085C16.1498 7.21744 16.7783 7.21744 17.1659 7.61085C17.5535 8.00426 17.5535 8.6421 17.1659 9.03551L13.7673 12.4848L17.1659 15.9342C17.5535 16.3276 17.5535 16.9654 17.1659 17.3588C16.7783 17.7522 16.1498 17.7522 15.7622 17.3588L12.3636 13.9095L8.96506 17.3588C8.57744 17.7522 7.94899 17.7522 7.56137 17.3588Z" fill="#E56F8C"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `);
+        });
+        
+        // Attach event handlers
+        attachEventHandlers();
+    }
+    
+    // Format tanggal
+    function formatDate(dateString) {
+        if (!dateString) return '-';
+        
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) return dateString;
+        
+        const months = [
+            'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+            'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+        ];
+        
+        return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
+    }
+    
+    // Tampilkan pesan kosong
+    function showEmptyMessageTimeline(searchParam) {
+        $("#tableDataTimeline tbody").empty();
+        $("#emptyDataTimelineMessage").removeClass("d-none");
+        
+        if (searchParam) {
+            $("#emptyDataTimelineMessage div").html(`
+                <svg width="60" height="60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="mb-3">
+                    <circle cx="11" cy="11" r="8" stroke="#8E8E8E" stroke-width="1.5"/>
+                    <path d="M16.5 16.5L21 21" stroke="#8E8E8E" stroke-width="1.5" stroke-linecap="round"/>
+                    <path d="M11 7V11" stroke="#8E8E8E" stroke-width="1.5" stroke-linecap="round"/>
+                    <path d="M11 15H11.01" stroke="#8E8E8E" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                <p class="text-muted mb-1">Tidak ada timeline ditemukan dengan kata kunci: <strong>"${searchParam}"</strong></p>
+            `);
+        } else {
+            $("#emptyDataTimelineMessage div").html(`
+                <svg width="60" height="60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="mb-3">
+                    <path d="M8 2V5" stroke="#8E8E8E" stroke-width="1.5" stroke-linecap="round"/>
+                    <path d="M16 2V5" stroke="#8E8E8E" stroke-width="1.5" stroke-linecap="round"/>
+                    <path d="M3.5 9.08984H20.5" stroke="#8E8E8E" stroke-width="1.5" stroke-linecap="round"/>
+                    <path d="M19.21 15.7698L15.67 19.3098C15.53 19.4498 15.4 19.7098 15.37 19.8998L15.18 21.2498C15.11 21.7398 15.45 22.0798 15.94 22.0098L17.29 21.8198C17.48 21.7898 17.75 21.6598 17.88 21.5198L21.42 17.9798C22.03 17.3698 22.32 16.6598 21.42 15.7598C20.53 14.8698 19.82 15.1598 19.21 15.7698Z" stroke="#8E8E8E" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M18.7002 16.2798C19.0002 17.3598 19.8402 18.1998 20.9202 18.4998" stroke="#8E8E8E" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M12 22H8C4.5 22 3 20 3 17V8.5C3 5.5 4.5 3.5 8 3.5H16C19.5 3.5 21 5.5 21 8.5V12" stroke="#8E8E8E" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M11.9955 13.7002H12.0045" stroke="#8E8E8E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M8.29431 13.7002H8.30329" stroke="#8E8E8E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M8.29431 16.7002H8.30329" stroke="#8E8E8E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <p class="text-muted">Belum ada timeline</p>
+            `);
         }
     }
     
-    // Set up action handlers for the timeline list table
-    setupTimelineActionHandlers();
-}
-
-// Setup event handlers for edit and delete buttons in the timeline table
-function setupTimelineActionHandlers() {
-    // Hapus timeline handler
-    document.querySelectorAll('.btn-delete-timeline').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const timelineId = this.getAttribute('data-id');
+    // ================ TAMBAH DATA TIMELINE ================
+    
+    // Simpan data timeline collection
+    let timelineCollection = [];
+    
+    // Tombol tambahkan ke daftar
+    $("#btnTambahkanKeDaftarTimeline").on('click', function() {
+        // Reset error messages
+        resetFormErrors();
+        
+        // Ambil nilai form
+        const namaTimeline = $("#nama_timeline").val();
+        const tanggalMulai = $("#tanggal_mulai_timeline").val();
+        const tanggalSelesai = $("#tanggal_selesai_timeline").val();
+        const deskripsi = $("#deskripsi_timeline").val() || '';
+        
+        // Validasi sederhana
+        let errors = {};
+        let hasErrors = false;
+        
+        if (!namaTimeline) {
+            $("#nama_timeline").addClass("is-invalid");
+            $("#nama_timeline_error").text("Nama timeline harus diisi");
+            hasErrors = true;
+        }
+        
+        if (!tanggalMulai) {
+            $("#tanggal_mulai_timeline").addClass("is-invalid");
+            $("#tanggal_mulai_timeline_error").text("Tanggal mulai harus diisi");
+            hasErrors = true;
+        }
+        
+        if (!tanggalSelesai) {
+            $("#tanggal_selesai_timeline").addClass("is-invalid");
+            $("#tanggal_selesai_timeline_error").text("Tanggal selesai harus diisi");
+            hasErrors = true;
+        }
+        
+        if (tanggalMulai && tanggalSelesai && new Date(tanggalMulai) > new Date(tanggalSelesai)) {
+            $("#tanggal_selesai_timeline").addClass("is-invalid");
+            $("#tanggal_selesai_timeline_error").text("Tanggal selesai harus setelah tanggal mulai");
+            hasErrors = true;
+        }
+        
+        if (hasErrors) {
+            return;
+        }
+        
+        // Tambahkan ke collection
+        const timelineItem = {
+            id: Date.now(), // ID unik sementara
+            nama_timeline: namaTimeline,
+            tanggal_mulai_timeline: tanggalMulai,
+            tanggal_selesai_timeline: tanggalSelesai,
+            deskripsi_timeline: deskripsi
+        };
+        
+        timelineCollection.push(timelineItem);
+        
+        // Update hidden input
+        $("#timelineJsonData").val(JSON.stringify(timelineCollection));
+        
+        // Set is_single ke 0 (multiple)
+        $("#isSingleTimeline").val("0");
+        
+        // Render collection to table
+        renderTimelineCollection();
+        
+        // Reset form
+        resetTimelineForm();
+    });
+    
+    // Reset form timeline
+    function resetTimelineForm() {
+        $("#nama_timeline").val('');
+        $("#tanggal_mulai_timeline").val('');
+        $("#tanggal_selesai_timeline").val('');
+        $("#deskripsi").val('');
+        resetFormErrors();
+    }
+    
+    // Reset error messages
+    function resetFormErrors() {
+        // Reset validation classes and messages
+        $(".is-invalid").removeClass("is-invalid");
+        $(".invalid-feedback").text('');
+        $("#form_timeline_error").addClass('d-none').text('');
+    }
+    
+    // Render collection ke tabel
+    function renderTimelineCollection() {
+        const tbody = $("#daftarTimeline");
+        
+        if (timelineCollection.length === 0) {
+            tbody.html(`
+                <tr id="emptyRowTimeline">
+                    <td colspan="4" class="text-center">Belum ada timeline yang ditambahkan ke daftar</td>
+                </tr>
+            `);
+            return;
+        }
+        
+        // Hapus row kosong jika ada
+        $("#emptyRowTimeline").remove();
+        
+        // Clear tbody dan re-render semua item
+        tbody.empty();
+        
+        timelineCollection.forEach((item, index) => {
+            const formattedMulai = formatDate(item.tanggal_mulai_timeline);
+            const formattedSelesai = formatDate(item.tanggal_selesai_timeline);
+            
+            tbody.append(`
+                <tr>
+                    <td>${item.nama_timeline}</td>
+                    <td>${formattedMulai}</td>
+                    <td>${formattedSelesai}</td>
+                    <td>
+                        <button type="button" class="btn btn-action-delete btn-remove-timeline" data-id="${item.id}">
+                            <svg width="20" height="20" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M21.5896 12.4848C21.5896 17.6563 17.459 21.8486 12.3636 21.8486C7.26829 21.8486 3.1377 17.6563 3.1377 12.4848C3.1377 7.31339 7.26829 3.12109 12.3636 3.12109C17.459 3.12109 21.5896 7.31339 21.5896 12.4848ZM7.56137 17.3588C7.17375 16.9654 7.17375 16.3276 7.56137 15.9342L10.9599 12.4848L7.56137 9.03551C7.17375 8.6421 7.17375 8.00426 7.56137 7.61085C7.94899 7.21744 8.57744 7.21744 8.96506 7.61085L12.3636 11.0602L15.7622 7.61085C16.1498 7.21744 16.7783 7.21744 17.1659 7.61085C17.5535 8.00426 17.5535 8.6421 17.1659 9.03551L13.7673 12.4848L17.1659 15.9342C17.5535 16.3276 17.5535 16.9654 17.1659 17.3588C16.7783 17.7522 16.1498 17.7522 15.7622 17.3588L12.3636 13.9095L8.96506 17.3588C8.57744 17.7522 7.94899 17.7522 7.56137 17.3588Z" fill="#E56F8C"/>
+                            </svg>
+                        </button>
+                    </td>
+                </tr>
+            `);
+        });
+        
+        // Attach click event for remove button
+        $(".btn-remove-timeline").off('click').on('click', function() {
+            const id = $(this).data('id');
+            removeTimelineItem(id);
+        });
+    }
+    
+    // Hapus item dari collection
+    function removeTimelineItem(id) {
+        timelineCollection = timelineCollection.filter(item => item.id !== id);
+        $("#timelineJsonData").val(JSON.stringify(timelineCollection));
+        
+        // Set is_single ke 1 jika tidak ada item
+        if (timelineCollection.length === 0) {
+            $("#isSingleTimeline").val("1");
+        }
+        
+        renderTimelineCollection();
+    }
+    
+    // Reset Form saat modal ditutup
+    $('#modalTambahTimeline').on('hidden.bs.modal', function () {
+        resetTimelineForm();
+        timelineCollection = [];
+        $("#timelineJsonData").val('[]');
+        $("#isSingleTimeline").val("1");
+        renderTimelineCollection();
+    });
+    
+    // Kirim form tambah timeline
+    $("#formTambahDataTimeline").on('submit', function(e) {
+        e.preventDefault();
+        resetFormErrors();
+        
+        const isSingle = $("#isSingleTimeline").val() === "1";
+        const formData = new FormData(this);
+        
+        // Tambahkan form field yang relevan sesuai mode (single atau multiple)
+        if (isSingle) {
+            // Validasi input untuk single timeline
+            const namaTimeline = $("#nama_timeline").val();
+            const tanggalMulai = $("#tanggal_mulai_timeline").val();
+            const tanggalSelesai = $("#tanggal_selesai_timeline").val();
+            
+            let hasErrors = false;
+            
+            if (!namaTimeline) {
+                $("#nama_timeline_error").text("Nama timeline harus diisi");
+                $("#nama_timeline").addClass("is-invalid");
+                hasErrors = true;
+            }
+            
+            if (!tanggalMulai) {
+                $("#tanggal_mulai_timeline_error").text("Tanggal mulai harus diisi");
+                $("#tanggal_mulai_timeline").addClass("is-invalid");
+                hasErrors = true;
+            }
+            
+            if (!tanggalSelesai) {
+                $("#tanggal_selesai_timeline_error").text("Tanggal selesai harus diisi");
+                $("#tanggal_selesai_timeline").addClass("is-invalid");
+                hasErrors = true;
+            }
+            
+            if (tanggalMulai && tanggalSelesai && new Date(tanggalMulai) > new Date(tanggalSelesai)) {
+                $("#tanggal_selesai_timeline_error").text("Tanggal selesai harus setelah tanggal mulai");
+                $("#tanggal_selesai_timeline").addClass("is-invalid");
+                hasErrors = true;
+            }
+            
+            if (hasErrors) {
+                return false;
+            }
+        } else {
+            // Validasi untuk multiple timeline
+            if (timelineCollection.length === 0) {
+                $("#form_timeline_error").removeClass('d-none').text('Anda belum menambahkan timeline ke daftar');
+                return false;
+            }
+        }
+        
+        // Tampilkan loading state
+        const submitButton = $("#btnSimpanTimeline");
+        const originalText = submitButton.text();
+        submitButton.prop('disabled', true).html(`
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            <span>Menyimpan...</span>
+        `);
+        
+        // Kirim data ke server
+        $.ajax({
+            url: `/koordinator/proyek/timeline/`,
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                if (response.success) {
+                    // Tampilkan notifikasi sukses
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil',
+                        text: response.message,
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        // Refresh data
+                        loadDataTimeline();
+                        // Tutup modal
+                        $('#modalTambahTimeline').modal('hide');
+                    });
+                } else {
+                    // Tampilkan pesan error
+                    $("#form_timeline_error").removeClass('d-none').text(response.message);
+                }
+            },
+            error: function(xhr) {
+                console.error("Error adding timeline:", xhr.responseText);
+                
+                // Parse response untuk error validasi
+                if (xhr.status === 422) {
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        if (response.errors) {
+                            // Tampilkan error untuk setiap field
+                            $.each(response.errors, function(field, messages) {
+                                const errorMessage = Array.isArray(messages) ? messages[0] : messages;
+                                $(`#${field}_error`).text(errorMessage);
+                                $(`#${field}`).addClass('is-invalid');
+                            });
+                        } else {
+                            $("#form_timeline_error").removeClass('d-none').text('Terjadi kesalahan. Silakan coba lagi.');
+                        }
+                    } catch (e) {
+                        $("#form_timeline_error").removeClass('d-none').text('Terjadi kesalahan. Silakan coba lagi.');
+                    }
+                } else {
+                    $("#form_timeline_error").removeClass('d-none').text('Terjadi kesalahan. Silakan coba lagi.');
+                }
+            },
+            complete: function() {
+                // Reset loading state
+                submitButton.prop('disabled', false).html(originalText);
+            }
+        });
+    });
+    
+    // ================ EVENT HANDLERS ================
+    function attachEventHandlers() {
+        // Event handler untuk btn-action-detail (tombol edit)
+        $('.btn-action-detail').off('click').on('click', function() {
+            const timelineId = $(this).data('id');
+            loadTimelineDetail(timelineId);
+        });
+        
+        // Event handler untuk btn-delete-timeline
+        $('.btn-delete-timeline').off('click').on('click', function() {
+            const timelineId = $(this).data('id');
             confirmDeleteTimeline(timelineId);
         });
-    });
-    
-    // Edit timeline handler
-    document.querySelectorAll('.btn-edit-timeline').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const timelineId = this.getAttribute('data-id');
-            openEditTimelineModal(timelineId);
-        });
-    });
-    
-    // Edit form submit handler
-    const editForm = document.getElementById('formEditTimeline');
-    if (editForm) {
-        editForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            submitEditTimelineForm(this);
-        });
     }
-}
 
-// Open edit modal and load timeline data
-function openEditTimelineModal(timelineId) {
-    const editForm = document.getElementById('formEditTimeline');
-    if (!editForm) return;
-    
-    // Set loading state
-    clearEditFormErrors();
-    document.getElementById('btnUpdateTimeline').innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
-    
-    // Get CSRF token
-    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-    
-    // Fetch timeline data
-    fetch(`/koordinator/proyek/timeline/${timelineId}`, {
-        method: 'GET',
-        headers: {
-            'Accept': 'application/json',
-            'X-CSRF-TOKEN': csrfToken
+    $("#btnTambahkanKeDaftarTimeline").on('click', function() {
+        // Reset error messages
+        resetFormErrors();
+        
+        // Ambil nilai form
+        const namaTimeline = $("#nama_timeline").val();
+        const tanggalMulai = $("#tanggal_mulai_timeline").val();
+        const tanggalSelesai = $("#tanggal_selesai_timeline").val();
+        const deskripsi_timeline = $("#deskripsi_timeline").val() || '';
+        
+        // Validasi sederhana
+        let errors = {};
+        let hasErrors = false;
+        
+        if (!namaTimeline) {
+            $("#nama_timeline_error").text("Nama timeline harus diisi");
+            $("#nama_timeline").addClass("is-invalid");
+            hasErrors = true;
         }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            const timeline = data.data;
-            
-            // Populate form fields
-            document.getElementById('edit_timeline_id').value = timeline.timeline_proyek_id;
-            document.getElementById('edit_nama_timeline').value = timeline.nama_timeline_proyek;
-            
-            // Format date fields (YYYY-MM-DD HH:MM:SS to YYYY-MM-DD)
-            if (timeline.tanggal_mulai_timeline) {
-                document.getElementById('edit_tanggal_mulai_timeline').value = timeline.tanggal_mulai_timeline.split(' ')[0];
-            }
-            
-            if (timeline.tanggal_selesai_timeline) {
-                document.getElementById('edit_tanggal_selesai_timeline').value = timeline.tanggal_selesai_timeline.split(' ')[0];
-            }
-            
-            document.getElementById('edit_deskripsi').value = timeline.deskripsi_timeline || '';
-            
-            // Show modal
-            const editModal = new bootstrap.Modal(document.getElementById('modalEditTimeline'));
-            editModal.show();
-        } else {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: data.message || 'Gagal memuat data timeline'
-            });
+        
+        if (!tanggalMulai) {
+            $("#tanggal_mulai_timeline_error").text("Tanggal mulai harus diisi");
+            $("#tanggal_mulai_timeline").addClass("is-invalid");
+            hasErrors = true;
         }
-    })
-    .catch(error => {
-        console.error('Error fetching timeline data:', error);
-        Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'Terjadi kesalahan saat memuat data timeline'
-        });
-    })
-    .finally(() => {
-        // Reset button
-        document.getElementById('btnUpdateTimeline').textContent = 'Perbarui Data';
+        
+        if (!tanggalSelesai) {
+            $("#tanggal_selesai_timeline_error").text("Tanggal selesai harus diisi");
+            $("#tanggal_selesai_timeline").addClass("is-invalid");
+            hasErrors = true;
+        }
+        
+        if (tanggalMulai && tanggalSelesai && new Date(tanggalMulai) > new Date(tanggalSelesai)) {
+            $("#tanggal_selesai_timeline_error").text("Tanggal selesai harus setelah tanggal mulai");
+            $("#tanggal_selesai_timeline").addClass("is-invalid");
+            hasErrors = true;
+        }
+        
+        if (hasErrors) {
+            return;
+        }
+        
+        // Tambahkan ke collection
+        const timelineItem = {
+            id: Date.now(), // ID unik sementara
+            nama_timeline: namaTimeline,
+            tanggal_mulai_timeline: tanggalMulai,
+            tanggal_selesai_timeline: tanggalSelesai,
+            deskripsi_timeline: deskripsi_timeline
+        };
+        
+        timelineCollection.push(timelineItem);
+        
+        // Update hidden input
+        $("#timelineJsonData").val(JSON.stringify(timelineCollection));
+        
+        // Set is_single ke 0 (multiple)
+        $("#isSingleTimeline").val("0");
+        
+        // Render collection to table
+        renderTimelineCollection();
+        
+        // Reset form
+        resetTimelineForm();
     });
-}
-
-// Submit edit timeline form
-function submitEditTimelineForm(form) {
-    // Clear previous errors
-    clearEditFormErrors();
     
-    // Validate form
-    if (!validateEditForm()) {
-        return;
+    // Reset form timeline
+    function resetTimelineForm() {
+        $("#nama_timeline").val('');
+        $("#tanggal_mulai_timeline").val('');
+        $("#tanggal_selesai_timeline").val('');
+        $("#deskripsi_timeline").val('');
+        resetFormErrors();
+    }
+
+    // Reset error messages
+    function resetFormErrors() {
+        // Reset validation classes and messages
+        $(".is-invalid").removeClass("is-invalid");
+        $(".invalid-feedback").empty(); // Mengosongkan teks error
+        $("#form_timeline_error").addClass('d-none').empty(); // Sembunyikan alert error
+    }
+
+    // Render collection ke tabel
+    function renderTimelineCollection() {
+        const tbody = $("#daftarTimeline");
+        
+        if (timelineCollection.length === 0) {
+            tbody.html(`
+                <tr id="emptyRowTimeline">
+                    <td colspan="4" class="text-center">Belum ada timeline yang ditambahkan ke daftar</td>
+                </tr>
+            `);
+            return;
+        }
+        
+        // Hapus row kosong jika ada
+        $("#emptyRowTimeline").remove();
+        
+        // Clear tbody dan re-render semua item
+        tbody.empty();
+        
+        timelineCollection.forEach((item, index) => {
+            const formattedMulai = formatDate(item.tanggal_mulai_timeline);
+            const formattedSelesai = formatDate(item.tanggal_selesai_timeline);
+            
+            tbody.append(`
+                <tr>
+                    <td>${item.nama_timeline}</td>
+                    <td>${formattedMulai}</td>
+                    <td>${formattedSelesai}</td>
+                    <td>
+                        <button type="button" class="btn btn-action-delete btn-remove-timeline" data-id="${item.id}">
+                            <svg width="20" height="20" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M21.5896 12.4848C21.5896 17.6563 17.459 21.8486 12.3636 21.8486C7.26829 21.8486 3.1377 17.6563 3.1377 12.4848C3.1377 7.31339 7.26829 3.12109 12.3636 3.12109C17.459 3.12109 21.5896 7.31339 21.5896 12.4848ZM7.56137 17.3588C7.17375 16.9654 7.17375 16.3276 7.56137 15.9342L10.9599 12.4848L7.56137 9.03551C7.17375 8.6421 7.17375 8.00426 7.56137 7.61085C7.94899 7.21744 8.57744 7.21744 8.96506 7.61085L12.3636 11.0602L15.7622 7.61085C16.1498 7.21744 16.7783 7.21744 17.1659 7.61085C17.5535 8.00426 17.5535 8.6421 17.1659 9.03551L13.7673 12.4848L17.1659 15.9342C17.5535 16.3276 17.5535 16.9654 17.1659 17.3588C16.7783 17.7522 16.1498 17.7522 15.7622 17.3588L12.3636 13.9095L8.96506 17.3588C8.57744 17.7522 7.94899 17.7522 7.56137 17.3588Z" fill="#E56F8C"/>
+                            </svg>
+                        </button>
+                    </td>
+                </tr>
+            `);
+        });
+        
+        // Attach click event for remove button
+        $(".btn-remove-timeline").off('click').on('click', function() {
+            const id = $(this).data('id');
+            removeTimelineItem(id);
+        }); 
+    }
+
+    // Hapus item dari collection
+    function removeTimelineItem(id) {
+        timelineCollection = timelineCollection.filter(item => item.id !== id);
+        $("#timelineJsonData").val(JSON.stringify(timelineCollection));
+        
+        // Set is_single ke 1 jika tidak ada item
+        if (timelineCollection.length === 0) {
+            $("#isSingleTimeline").val("1");
+        }
+        
+        renderTimelineCollection();
+    }
+
+    // Reset Form saat modal ditutup
+    $('#modalTambahTimeline').on('hidden.bs.modal', function () {
+        resetTimelineForm();
+        timelineCollection = [];
+        $("#timelineJsonData").val('[]');
+        $("#isSingleTimeline").val("1");
+        renderTimelineCollection();
+    });
+
+    // Kirim form tambah timeline
+$("#formTambahDataTimeline").on('submit', function(e) {
+    e.preventDefault();
+    resetFormErrors();
+    
+    const isSingle = $("#isSingleTimeline").val() === "1";
+    const formData = new FormData(this);
+    
+    // Tambahkan form field yang relevan sesuai mode (single atau multiple)
+    if (isSingle) {
+        // Validasi input untuk single timeline
+        const namaTimeline = $("#nama_timeline").val();
+        const tanggalMulai = $("#tanggal_mulai_timeline").val();
+        const tanggalSelesai = $("#tanggal_selesai_timeline").val();
+        
+        let hasErrors = false;
+        
+        if (!namaTimeline) {
+            $("#nama_timeline_error").text("Nama timeline harus diisi");
+            $("#nama_timeline").addClass("is-invalid");
+            hasErrors = true;
+        }
+        
+        if (!tanggalMulai) {
+            $("#tanggal_mulai_timeline_error").text("Tanggal mulai harus diisi");
+            $("#tanggal_mulai_timeline").addClass("is-invalid");
+            hasErrors = true;
+        }
+        
+        if (!tanggalSelesai) {
+            $("#tanggal_selesai_timeline_error").text("Tanggal selesai harus diisi");
+            $("#tanggal_selesai_timeline").addClass("is-invalid");
+            hasErrors = true;
+        }
+        
+        if (tanggalMulai && tanggalSelesai && new Date(tanggalMulai) > new Date(tanggalSelesai)) {
+            $("#tanggal_selesai_timeline_error").text("Tanggal selesai harus setelah tanggal mulai");
+            $("#tanggal_selesai_timeline").addClass("is-invalid");
+            hasErrors = true;
+        }
+        
+        if (hasErrors) {
+            return false;
+        }
+    } else {
+        // Validasi untuk multiple timeline
+        if (timelineCollection.length === 0) {
+            $("#form_timeline_error").removeClass('d-none').text('Anda belum menambahkan timeline ke daftar');
+            return false;
+        }
     }
     
-    // Set loading state
-    const updateBtn = document.getElementById('btnUpdateTimeline');
-    updateBtn.disabled = true;
-    updateBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Menyimpan...';
+    // Tampilkan loading state
+    const submitButton = $("#btnSimpanTimeline");
+    const originalText = submitButton.text();
+    submitButton.prop('disabled', true).html(`
+        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+        <span>Menyimpan...</span>
+    `);
     
-    // Get timeline ID
-    const timelineId = document.getElementById('edit_timeline_id').value;
-    
-    // Prepare form data
-    const formData = new FormData(form);
-    
-    // Get CSRF token
-    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-    
-    // Send AJAX request
-    fetch(`/koordinator/proyek/timeline/${timelineId}`, {
-        method: 'POST',
-        body: formData,
+    // Kirim data ke server
+    $.ajax({
+        url: `/koordinator/proyek/timeline/`,
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
         headers: {
-            'X-CSRF-TOKEN': csrfToken,
-            'Accept': 'application/json'
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Success notification
-            Swal.fire({
-                icon: 'success',
-                title: 'Berhasil',
-                text: data.message || 'Timeline berhasil diperbarui'
-            }).then(() => {
-                // Close modal and reload page
-                const modal = bootstrap.Modal.getInstance(document.getElementById('modalEditTimeline'));
-                modal.hide();
-                window.location.reload();
-            });
-        } else {
-            // Error handling
-            let errorMessage = data.message || 'Gagal memperbarui timeline';
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        },
+        success: function(response) {
+            if (response.success) {
+                // Tampilkan notifikasi sukses
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil',
+                    text: response.message,
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    // Refresh data
+                    loadDataTimeline();
+                    // Tutup modal
+                    $('#modalTambahTimeline').modal('hide');
+                });
+            } else {
+                // Tampilkan pesan error
+                $("#form_timeline_error").removeClass('d-none').text(response.message);
+            }
+        },
+        error: function(xhr) {
+            console.error("Error adding timeline:", xhr.responseText);
             
-            if (data.errors) {
-                // Display validation errors
-                const errors = data.errors;
-                for (const key in errors) {
-                    if (key === 'nama_timeline') {
-                        showEditError('edit_nama_timeline_error', errors[key][0]);
-                    } else if (key === 'tanggal_mulai_timeline') {
-                        showEditError('edit_tanggal_mulai_timeline_error', errors[key][0]);
-                    } else if (key === 'tanggal_selesai_timeline') {
-                        showEditError('edit_tanggal_selesai_timeline_error', errors[key][0]);
-                    } else if (key === 'deskripsi_timeline') {
-                        showEditError('edit_deskripsi_timeline_error', errors[key][0]);
+            // Parse response untuk error validasi
+            if (xhr.status === 422) {
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    if (response.errors) {
+                        // Tampilkan error untuk setiap field
+                        $.each(response.errors, function(field, messages) {
+                            const errorMessage = Array.isArray(messages) ? messages[0] : messages;
+                            $(`#${field}_error`).text(errorMessage);
+                            $(`#${field}`).addClass('is-invalid');
+                        });
+                    } else {
+                        $("#form_timeline_error").removeClass('d-none').text('Terjadi kesalahan. Silakan coba lagi.');
                     }
+                } catch (e) {
+                    $("#form_timeline_error").removeClass('d-none').text('Terjadi kesalahan. Silakan coba lagi.');
                 }
             } else {
-                // Show general error
-                document.getElementById('edit_form_error').textContent = errorMessage;
-                document.getElementById('edit_form_error').classList.remove('d-none');
+                $("#form_timeline_error").removeClass('d-none').text('Terjadi kesalahan. Silakan coba lagi.');
             }
-        }
-    })
-    .catch(error => {
-        console.error('Error updating timeline:', error);
-        document.getElementById('edit_form_error').textContent = 'Terjadi kesalahan saat memperbarui timeline';
-        document.getElementById('edit_form_error').classList.remove('d-none');
-    })
-    .finally(() => {
-        // Reset button state
-        updateBtn.disabled = false;
-        updateBtn.textContent = 'Perbarui Data';
-    });
-}
-
-
-// Confirm and delete timeline
-function confirmDeleteTimeline(timelineId) {
-    Swal.fire({
-        title: 'Konfirmasi Hapus',
-        text: 'Apakah Anda yakin ingin menghapus timeline ini?',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Ya, Hapus',
-        cancelButtonText: 'Batal'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            deleteTimeline(timelineId);
+        },
+        complete: function() {
+            // Reset loading state
+            submitButton.prop('disabled', false).html(originalText);
         }
     });
-}
-
-// Delete timeline
-function deleteTimeline(timelineId) {
-    // Get CSRF token
-    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-    
-    // Send delete request
-    fetch(`/koordinator/proyek/timeline/${timelineId}`, {
-        method: 'DELETE',
-        headers: {
-            'X-CSRF-TOKEN': csrfToken,
-            'Accept': 'application/json'
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            Swal.fire({
-                icon: 'success',
-                title: 'Berhasil',
-                text: data.message || 'Timeline berhasil dihapus'
-            }).then(() => {
-                // Reload page
-                window.location.reload();
-            });
-        } else {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: data.message || 'Gagal menghapus timeline'
-            });
-        }
-    })
-    .catch(error => {
-        console.error('Error deleting timeline:', error);
-        Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'Terjadi kesalahan saat menghapus timeline'
-        });
-    });
-}
+});
+}); 

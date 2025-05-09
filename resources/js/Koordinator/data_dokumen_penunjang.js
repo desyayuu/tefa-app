@@ -5,17 +5,14 @@ $(document).ready(function() {
     
     let documentsToSave = [];
     
-    // Load dokumen penunjang when page loads
     loadDokumenPenunjang();
 
-    // Jika ada fragment #dokumen-penunjang-section di URL, scroll ke sana
     if (window.location.hash === '#dokumen-penunjang-section') {
         setTimeout(function() {
             scrollToDokumenSection();
-        }, 300); // Delay singkat untuk memastikan semua elemen dimuat
+        }, 300); 
     }
     
-    // Fungsi untuk scroll ke section dokumen penunjang
     function scrollToDokumenSection() {
         const dokumenSection = $('#dokumen-penunjang-section');
         if (dokumenSection.length) {
@@ -132,7 +129,6 @@ $(document).ready(function() {
         }
     }
     
-    // Cancel preview
     $("#btnBatalPreview").on("click", function() {
         documentsToSave = [];
         $("#previewDokumenSection").addClass("d-none");
@@ -156,7 +152,6 @@ $(document).ready(function() {
         let errorCount = 0;
         const totalDocuments = documentsToSave.length;
         
-        // Show loading
         Swal.fire({
             title: 'Menyimpan Dokumen...',
             html: `Menyimpan 0 dari ${totalDocuments}`,
@@ -166,10 +161,8 @@ $(document).ready(function() {
             }
         });
         
-        // Save documents one by one
         const saveNextDocument = (index) => {
             if (index >= documentsToSave.length) {
-                // All documents processed
                 if (errorCount === 0) {
                     Swal.fire({
                         icon: 'success',
@@ -188,9 +181,8 @@ $(document).ready(function() {
                 documentsToSave = [];
                 $("#previewDokumenSection").addClass("d-none");
                 
-                // Reload dokumen penunjang list to display new documents
                 setTimeout(function() {
-                    loadDokumenPenunjang(); // Delay sedikit untuk memastikan data tersimpan di server
+                    loadDokumenPenunjang();
                 }, 500);
                 
                 return;
@@ -204,7 +196,6 @@ $(document).ready(function() {
             formData.append('file_dokumen_penunjang', doc.file);
             formData.append('_token', $('meta[name="csrf-token"]').attr('content'));
             
-            // Update loading message
             Swal.update({
                 html: `Menyimpan ${index + 1} dari ${totalDocuments}`
             });
@@ -225,8 +216,6 @@ $(document).ready(function() {
                         errorCount++;
                         console.error('Error saving document:', response.message);
                     }
-                    
-                    // Process next document
                     saveNextDocument(index + 1);
                 },
                 error: function(xhr) {

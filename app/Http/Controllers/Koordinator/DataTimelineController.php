@@ -12,9 +12,9 @@ use Illuminate\Support\Facades\Response;
 
 class DataTimelineController extends Controller
 {
-    /**
-     * Display timeline data for a specific project
-     */
+/**
+ * Pastikan controller mengembalikan response JSON untuk AJAX request
+ */
     public function index($id, Request $request)
     {
         $proyek = DB::table('m_proyek')
@@ -44,13 +44,21 @@ class DataTimelineController extends Controller
         if ($search) {
             $query->where(function($q) use ($search) {
                 $q->where('nama_timeline_proyek', 'like', "%{$search}%")
-                  ->orWhere('deskripsi_timeline', 'like', "%{$search}%");
+                ->orWhere('deskripsi_timeline', 'like', "%{$search}%");
             });
         }
         
-        $timelines = $query->orderBy('tanggal_mulai_timeline', 'desc')
+        $timelines = $query->orderBy('created_at', 'asc')
             ->get();
         
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'data' => $timelines
+            ]);
+        }
+        
+        // Jika bukan AJAX, return view
         return view('pages.Koordinator.DataProyek.data_timeline_proyek', compact('proyek', 'timelines', 'search'));
     }
     
@@ -185,7 +193,7 @@ class DataTimelineController extends Controller
     /**
      * Update timeline data
      */
-    public function update(Request $request, $id)
+    public function updateDataTimeline(Request $request, $id)
     {
         // Check if timeline exists
         $timeline = DB::table('t_timeline_proyek')
@@ -256,6 +264,7 @@ class DataTimelineController extends Controller
             ->where('timeline_proyek_id', $id)
             ->update([
                 'deleted_at' => Carbon::now(),
+                'deleted_by' => auth()->user()->id ?? session('user_id'),
             ]);
         
         return response()->json([

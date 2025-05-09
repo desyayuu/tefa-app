@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('t_project_member_profesional', function (Blueprint $table) {
-            $table->string('t_project_member_profesional_id', 36)->primary();
+            $table->string('project_member_profesional_id', 36)->primary();
             $table->string('profesional_id', 36);
             $table->string('proyek_id', 36);
             $table->dateTime('created_at')->nullable();

@@ -43,7 +43,7 @@
                                     <div class="text-dark fw-medium">{{ $anggota->nama_dosen }}</div>
                                 </div>
                                 <div>
-                                    <form action="{{ route('koordinator.hapusAnggotaDosen', ['proyekId' => $proyek->proyek_id, 'memberId' => $anggota->t_project_member_dosen_id]) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus anggota dosen ini?');">
+                                    <form action="{{ route('koordinator.hapusAnggotaDosen', ['proyekId' => $proyek->proyek_id, 'memberId' => $anggota->project_member_dosen_id]) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus anggota dosen ini?');">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-sm border-0 bg-transparent p-0">
@@ -79,7 +79,7 @@
                                     <div class="text-dark fw-medium">{{ $anggota->nama_profesional }}</div>
                                 </div>
                                 <div>
-                                    <form action="{{ route('koordinator.hapusAnggotaProfesional', ['proyekId' => $proyek->proyek_id, 'memberId' => $anggota->t_project_member_profesional_id]) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus anggota profesional ini?');">
+                                    <form action="{{ route('koordinator.hapusAnggotaProfesional', ['proyekId' => $proyek->proyek_id, 'memberId' => $anggota->project_member_profesional_id]) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus anggota profesional ini?');">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-sm border-0 bg-transparent p-0">
@@ -115,7 +115,7 @@
                                     <div class="text-dark fw-medium">{{ $anggota->nama_mahasiswa }}</div>
                                 </div>
                                 <div>
-                                    <form action="{{ route('koordinator.hapusAnggotaMahasiswa', ['proyekId' => $proyek->proyek_id, 'memberId' => $anggota->t_project_member_mahasiswa_id]) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus anggota mahasiswa ini?');">
+                                    <form action="{{ route('koordinator.hapusAnggotaMahasiswa', ['proyekId' => $proyek->proyek_id, 'memberId' => $anggota->project_member_mahasiswa_id]) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus anggota mahasiswa ini?');">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-sm border-0 bg-transparent p-0">
