@@ -1,17 +1,30 @@
 $(document).ready(function() {
+    let documentsToSave = [];
+    let currentPage = 1;
+    let perPage = 3;
+
+    loadDokumenPenunjang(1);
+
     if (typeof Swal === 'undefined') {
         document.write('<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"><\/script>');
     }
-    
-    let documentsToSave = [];
-    
-    loadDokumenPenunjang();
 
     if (window.location.hash === '#dokumen-penunjang-section') {
         setTimeout(function() {
             scrollToDokumenSection();
         }, 300); 
     }
+    
+    $(document).on('click', '.pagination-link', function(e) {
+        e.preventDefault();
+        currentPage = $(this).data('page');
+        loadDokumenPenunjang(currentPage);
+        
+        // Scroll ke bagian atas tabel
+        $('html, body').animate({
+            scrollTop: $('#tableDokumenPenunjang').offset().top - 100
+        }, 500);
+    });
     
     function scrollToDokumenSection() {
         const dokumenSection = $('#dokumen-penunjang-section');
@@ -21,6 +34,13 @@ $(document).ready(function() {
             }, 500);
             
         }
+    }
+
+    function updatePaginationInfo(currentPage, perPage, total) {
+        const from = total > 0 ? (currentPage - 1) * perPage + 1 : 0;
+        const to = Math.min(currentPage * perPage, total);
+        
+        $("#dokumenPaginationInfo").html(`Showing ${from} to ${to} of ${total} entries`);
     }
     
     $('#searchDokumenForm').on('submit', function(e) {
@@ -33,7 +53,9 @@ $(document).ready(function() {
         
         window.history.pushState({}, '', currentUrl.toString());
         
-        loadDokumenPenunjang();
+        // Reset to page 1 when searching
+        currentPage = 1;
+        loadDokumenPenunjang(currentPage);
         scrollToDokumenSection();
     });
     
@@ -134,17 +156,14 @@ $(document).ready(function() {
         $("#previewDokumenSection").addClass("d-none");
     });
     
+    // Fungsi untuk menyimpan dokumen
     $("#btnSimpanDokumen").on("click", function() {
         if (documentsToSave.length === 0) {
-            if (typeof Swal !== 'undefined') {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Tidak Ada Dokumen',
-                    text: 'Tidak ada dokumen untuk disimpan'
-                });
-            } else {
-                alert('Tidak ada dokumen untuk disimpan');
-            }
+            Swal.fire({
+                icon: 'error',
+                title: 'Tidak Ada Dokumen',
+                text: 'Tidak ada dokumen untuk disimpan'
+            });
             return;
         }
         
@@ -181,8 +200,12 @@ $(document).ready(function() {
                 documentsToSave = [];
                 $("#previewDokumenSection").addClass("d-none");
                 
+                console.log("Documents saved, reloading data...");
+                
                 setTimeout(function() {
-                    loadDokumenPenunjang();
+                    // Kembali ke halaman pertama setelah menambahkan dokumen
+                    currentPage = 1;
+                    loadDokumenPenunjang(currentPage);
                 }, 500);
                 
                 return;
@@ -201,7 +224,7 @@ $(document).ready(function() {
             });
             
             $.ajax({
-                url: '/koordinator/proyek/dokumen-penunjang/',
+                url: `/koordinator/proyek/dokumen-penunjang`, // URL sesuai route
                 type: 'POST',
                 data: formData,
                 processData: false,
@@ -210,6 +233,7 @@ $(document).ready(function() {
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                 },
                 success: function(response) {
+                    console.log("Document saved response:", response);
                     if (response.success) {
                         successCount++;
                     } else {
@@ -232,13 +256,16 @@ $(document).ready(function() {
         saveNextDocument(0);
     });
     
-    function loadDokumenPenunjang() {
+
+    function loadDokumenPenunjang(page = 1) {
         const proyekId = $('input[name="proyek_id"]').val();
         const searchParam = $("#searchDokumenPenunjang").val() || '';
-        
+    
+        console.log("Loading dokumen penunjang, page:", page, "search:", searchParam);
+    
         $("#tableDokumenPenunjang tbody").html(`
             <tr>
-                <td colspan="5" class="text-center py-4">
+                <td colspan="4" class="text-center py-4">
                     <div class="d-flex justify-content-center">
                         <div class="spinner-border spinner-border-sm text-primary" role="status">
                             <span class="visually-hidden">Loading...</span>
@@ -248,29 +275,79 @@ $(document).ready(function() {
                 </td>
             </tr>
         `);
-        
+    
+        // Sembunyikan pagination saat loading
+        $("#dokumenPagination").html('');
+    
         $.ajax({
             url: `/koordinator/proyek/${proyekId}/dokumen-penunjang`,
             type: 'GET',
             data: {
-                search: searchParam
+                search: searchParam,
+                page: page,
+                per_page: perPage
             },
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },
             success: function(response) {
                 console.log("API Response:", response);
-                if (response.success && response.data && response.data.length > 0) {
-                    renderDokumenTable(response.data);
+                
+                // Periksa apakah response adalah objek dan memiliki properti data
+                if (response && response.success && response.data) {
+                    
+                    if (response.data.total !== undefined) {
+                        updatePaginationInfo(
+                            response.data.current_page || page,
+                            response.data.per_page || perPage,
+                            response.data.total || 0
+                        );
+                    } else if (response.pagination) {
+                        updatePaginationInfo(
+                            response.pagination.current_page || page,
+                            response.pagination.per_page || perPage,
+                            response.pagination.total || 0
+                        );
+                    }
+
+                    // Periksa apakah response.data adalah objek paginator Laravel
+                    if (response.data.data) {
+                        // Gunakan data dari paginator
+                        const dokumenData = response.data.data;
+                        console.log("Dokumen data:", dokumenData);
+                        
+                        if (dokumenData && dokumenData.length > 0) {
+                            renderDokumenTable(dokumenData);
+                            
+                            // Tampilkan pagination
+                            if (response.pagination && response.pagination.html) {
+                                $("#dokumenPagination").html(response.pagination.html);
+                            } else {
+                                $("#dokumenPagination").html('');
+                            }
+                        } else {
+                            showEmptyMessage();
+                            $("#dokumenPagination").html('');
+                        }
+                    } else {
+                        // Fallback jika response.data bukan objek paginator
+                        if (Array.isArray(response.data) && response.data.length > 0) {
+                            renderDokumenTable(response.data);
+                        } else {
+                            showEmptyMessage();
+                        }
+                    }
                 } else {
                     showEmptyMessage();
+                    $("#dokumenPagination").html('');
+                    updatePaginationInfo(1, perPage, 0); 
                 }
             },
             error: function(xhr) {
                 console.error("Error loading dokumen:", xhr.responseText);
                 $("#tableDokumenPenunjang tbody").html(`
                     <tr>
-                        <td colspan="5" class="text-center text-danger py-4">
+                        <td colspan="4" class="text-center text-danger py-4">
                             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="mb-3">
                                 <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="#FF5757" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                                 <path d="M15 9L9 15" stroke="#FF5757" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -281,15 +358,20 @@ $(document).ready(function() {
                         </td>
                     </tr>
                 `);
+                $("#dokumenPagination").html('');
+                updatePaginationInfo(1, perPage, 0);
             }
         });
     }
-    
+
+    // Fungsi renderDokumenTable yang lebih robust
     function renderDokumenTable(data) {
         const tableBody = $("#tableDokumenPenunjang tbody");
         tableBody.empty();
         
-        if (!data || data.length === 0) {
+        console.log("Rendering dokumen table with data:", data);
+        
+        if (!data || !Array.isArray(data) || data.length === 0) {
             showEmptyMessage();
             return;
         }
@@ -299,10 +381,23 @@ $(document).ready(function() {
         
         // Append rows to table
         data.forEach((dokumen, index) => {
+            // Pastikan dokumen adalah objek dan memiliki properti yang diperlukan
+            if (!dokumen || typeof dokumen !== 'object') {
+                console.error("Invalid dokumen data:", dokumen);
+                return; // Skip this iteration
+            }
+            
             const dokumenId = dokumen.dokumen_penunjang_proyek_id;
-            const namaDokumen = dokumen.nama_dokumen_penunjang;
-            const jenisDokumen = dokumen.jenis_dokumen;
+            const namaDokumen = dokumen.nama_dokumen_penunjang || 'Tidak ada nama';
+            const jenisDokumen = dokumen.jenis_dokumen || 'Tidak diketahui';
             const createdAt = dokumen.created_at;
+            
+            console.log("Rendering dokumen:", {
+                id: dokumenId,
+                nama: namaDokumen,
+                jenis: jenisDokumen,
+                created: createdAt
+            });
             
             tableBody.append(`
                 <tr>
@@ -333,6 +428,7 @@ $(document).ready(function() {
         // Attach delete events to buttons
         attachDeleteEvents();
     }
+    
     
     // Function to format date
     function formatDate(dateString) {
@@ -423,7 +519,7 @@ $(document).ready(function() {
                     });
                     
                     // Reload dokumen penunjang list
-                    loadDokumenPenunjang();
+                    loadDokumenPenunjang(currentPage);
                 } else {
                     Swal.fire({
                         icon: 'error',

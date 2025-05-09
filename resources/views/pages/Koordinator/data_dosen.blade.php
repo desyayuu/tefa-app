@@ -383,7 +383,7 @@
                     Showing {{ $dosen->firstItem() }} to {{ $dosen->lastItem() }} of {{ $dosen->total() }} entries
                 </div>
                 <div class="pagination-links">
-                    {{ $dosen->appends(['search' => request('search')])->links('vendor.pagination.custom') }}
+                    {{ $dosen->appends(['search' => request('search')])->links('vendor.pagination.custom_master') }}
                 </div>
             </div>
         </div>

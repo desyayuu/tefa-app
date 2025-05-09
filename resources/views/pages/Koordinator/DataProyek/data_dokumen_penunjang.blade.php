@@ -105,12 +105,24 @@
                     </tbody>
                 </table>
             </div>
+
             <div id="emptyDokumenMessage" class="text-center py-3 d-none">
                 <div class="py-4">
                     <!-- Pesan kosong akan dimuat melalui JavaScript -->
                 </div>
             </div>
-
+            
+            <div class="d-flex justify-content-between align-items-center mt-3">
+                <!-- Info showing entries - akan diupdate via JavaScript -->
+                <div id="dokumenPaginationInfo" class="showing-text">
+                    Showing 0 to 0 of 0 entries
+                </div>
+                
+                <!-- Pagination links -->
+                <div id="dokumenPagination">
+                    <!-- Pagination akan dimuat via AJAX -->
+                </div>
+            </div>
         </div>
     </div>
 </div>

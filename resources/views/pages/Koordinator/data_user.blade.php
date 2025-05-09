@@ -263,7 +263,7 @@
                     Showing {{ $user->firstItem() }} to {{ $user->lastItem() }} of {{ $user->total() }} entries
                 </div>
                 <div class="pagination-links">
-                    {{ $user->appends(['search' => request('search')])->links('vendor.pagination.custom') }}
+                    {{ $user->appends(['search' => request('search')])->links('vendor.pagination.custom_master') }}
                 </div>
             </div>
         </div>

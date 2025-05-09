@@ -40,6 +40,7 @@ class DataDokumenPenunjangController extends Controller{
             });
         }
 
+        $perPage = $request->input('per_page', 3);
         $dokumenPenunjang = $query->orderBy('dp.created_at', 'desc')
             ->select(
                 'dp.dokumen_penunjang_proyek_id',
@@ -48,7 +49,8 @@ class DataDokumenPenunjangController extends Controller{
                 'dp.file_dokumen_penunjang as file_path',
                 'dp.created_at'
             )
-            ->get();
+            ->paginate($perPage);
+
         return view('pages.Koordinator.DataProyek.data_dokumen_penunjang', compact('proyek', 'dokumenPenunjang', 'search'));
     }
 
@@ -129,6 +131,8 @@ class DataDokumenPenunjangController extends Controller{
     {
         // Get search parameter
         $search = $request->input('search');
+        $perPage = $request->input('per_page', 3);
+        $page = $request->input('page', 1);
         
         // Build query with joins
         $query = DB::table('m_dokumen_penunjang_proyek')
@@ -150,12 +154,28 @@ class DataDokumenPenunjangController extends Controller{
         
         // Get ordered results
         $dokumen = $query->orderBy('m_dokumen_penunjang_proyek.created_at', 'desc')
-            ->get();
+            ->paginate($perPage, ['*'], 'page', $page);
         
-        // Selalu kembalikan format yang konsisten dengan success: true
+        $paginationHtml = ''; 
+        if($dokumen->hasPages()) {
+            // Tambahkan atribut data-page ke link pagination
+            $paginationHtml = view('vendor.pagination.custom', [
+                'paginator' => $dokumen,
+                'elements' => $dokumen->links()->elements,
+            ])->render();
+        }
+        
+        // PERBAIKAN: Kembalikan data paginasi dalam format yang konsisten
         return response()->json([
             'success' => true,
-            'data' => $dokumen
+            'data' => $dokumen, // Mengembalikan seluruh paginator object
+            'pagination' => [
+                'current_page' => $dokumen->currentPage(),
+                'last_page' => $dokumen->lastPage(),
+                'per_page' => $dokumen->perPage(),
+                'total' => $dokumen->total(),
+                'html' => $paginationHtml
+            ]
         ]);
     }
 

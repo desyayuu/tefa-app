@@ -360,7 +360,7 @@
                     Showing {{ $profesional->firstItem() }} to {{ $profesional->lastItem() }} of {{ $profesional->total() }} entries
                 </div>
                 <div class="pagination-links">
-                    {{ $profesional->appends(['search' => request('search')])->links('vendor.pagination.custom') }}
+                    {{ $profesional->appends(['search' => request('search')])->links('vendor.pagination.custom_master') }}
                 </div>
             </div>
         </div>

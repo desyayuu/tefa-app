@@ -244,7 +244,7 @@
                     Showing {{ $mahasiswa->firstItem() }} to {{ $mahasiswa->lastItem() }} of {{ $mahasiswa->total() }} entries
                 </div>
                 <div class="pagination-links">
-                    {{ $mahasiswa->appends(['search' => request('search')])->links('vendor.pagination.custom') }}
+                    {{ $mahasiswa->appends(['search' => request('search')])->links('vendor.pagination.custom_master') }}
                 </div>
             </div>
         </div>
