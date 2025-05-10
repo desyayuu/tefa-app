@@ -45,6 +45,17 @@
                     <!-- Pesan kosong akan dimuat melalui JavaScript -->
                 </div>
             </div>
+            <div class="d-flex justify-content-between align-items-center mt-3">
+                <!-- Info showing entries - akan diupdate via JavaScript -->
+                <div id="timelinePaginationInfo" class="showing-text">
+                    Showing 0 to 0 of 0 entries
+                </div>
+                
+                <!-- Pagination links -->
+                <div id="timelinePagination">
+                    <!-- Pagination akan dimuat via AJAX -->
+                </div>
+            </div>
         </div>
     </div>
 </div>

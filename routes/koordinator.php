@@ -76,7 +76,7 @@ Route::middleware([KoordinatorMiddleware::class])->prefix('koordinator')->group(
     Route::get('/proyek/dokumen-penunjang/download/{id}', [DataDokumenPenunjangController::class, 'downloadDokumenPenunjang'])->name('koordinator.downloadDokumenPenunjang');
 
     //Data Timeline
-    Route::get('/proyek/{id}/timeline', [DataTimelineController::class, 'index'])->name('koordinator.dataTimeline');
+    Route::get('/proyek/{id}/timeline', [DataTimelineController::class, 'getDataTimeline'])->name('koordinator.dataTimeline');
     Route::post('/proyek/timeline', [DataTimelineController::class, 'addDataTimeline'])->name('koordinator.tambahDataTimeline');
     Route::get('/proyek/timeline/{id}', [DataTimelineController::class, 'detailDataTimeline'])->name('koordinator.detailDataTimeline');
     Route::put('/proyek/timeline/{id}', [DataTimelineController::class, 'updateDataTimeline'])->name('koordinator.updateDataTimeline');
