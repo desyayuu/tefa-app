@@ -12,6 +12,7 @@ use App\Http\Controllers\Koordinator\DataProyekController;
 use App\Http\Controllers\Koordinator\DataDokumenPenunjangController;
 use App\Http\Controllers\Koordinator\DataTimelineController;
 use App\Http\Controllers\Koordinator\DataAnggotaProyekController;
+use App\Http\Controllers\Koordinator\DataLuaranController;
 
 
 Route::middleware([KoordinatorMiddleware::class])->prefix('koordinator')->group(function () {
@@ -81,4 +82,12 @@ Route::middleware([KoordinatorMiddleware::class])->prefix('koordinator')->group(
     Route::get('/proyek/timeline/{id}', [DataTimelineController::class, 'detailDataTimeline'])->name('koordinator.detailDataTimeline');
     Route::put('/proyek/timeline/{id}', [DataTimelineController::class, 'updateDataTimeline'])->name('koordinator.updateDataTimeline');
     Route::delete('/proyek/timeline/{id}', [DataTimelineController::class, 'deleteDataTimeline'])->name('koordinator.deleteDataTimeline');
+
+    //Data Dokumentasi Proyek
+    // Show luaran page
+Route::get('/proyek/{id}/luaran', [DataLuaranController::class, 'getDataLuaranDokumentasi'])->name('koordinator.getDataLuaranDokumentasi');
+Route::post('/proyek/luaran', [DataLuaranController::class, 'saveLuaranProyek'])->name('koordinator.updateDataLuaran');
+Route::post('/proyek/dokumentasi', [DataLuaranController::class, 'uploadDokumentasi'])->name('koordinator.addDokumentasi');
+Route::delete('/proyek/dokumentasi/{id}', [DataLuaranController::class, 'deleteDokumentasi'])->name('koordinator.deleteDokumentasi');
+
 });

@@ -7,6 +7,7 @@ import './Koordinator/data_proyek';
 import './Koordinator/detail_data_proyek';
 import './Koordinator/data_dokumen_penunjang';
 import './Koordinator/data_timeline';
+import './Koordinator/data_luaran';
 
 document.addEventListener('DOMContentLoaded', function() {
     const currentPath = window.location.pathname;

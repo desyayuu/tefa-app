@@ -27,6 +27,9 @@
         <div class="section-progres-proyek">
             @include('pages.Koordinator.DataProyek.data_progres_proyek')
         </div>
+        <div class="section-progres-proyek">
+            @include('pages.Koordinator.DataProyek.data_luaran_proyek')
+        </div>
     </div>
 </div>
 @endsection
