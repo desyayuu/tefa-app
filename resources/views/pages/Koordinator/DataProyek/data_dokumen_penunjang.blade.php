@@ -31,6 +31,7 @@
                             <label for="file_dokumen_penunjang" class="col-md-2 col-form-label">File Dokumen<span class="text-danger">*</span></label>
                             <div class="col-md-10">
                                 <input type="file" class="form-control form-selection" id="file_dokumen_penunjang" name="file_dokumen_penunjang" accept=".pdf, .doc, .docx, .ppt, .pptx, .xls, .xlsx" required>
+                                <small class="text-muted">Format: pdf, doc, docx, ppt, pptx, xls, xlsx</small>
                             </div>
                         </div>
                         <!-- Button Tambah ke Daftar -->
