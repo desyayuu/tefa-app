@@ -20,32 +20,30 @@
                     <div class="col-md-10">
                         @if(isset($luaranProyek) && $luaranProyek->poster_proyek)
                             <div class="d-flex align-items-center mb-2">
-                                <span class="me-2">File saat inisbx :</span>
+                                <span class="me-2">File saat ini:</span>
                                 @php
                                     $extension = pathinfo($luaranProyek->poster_proyek, PATHINFO_EXTENSION);
                                 @endphp
                                 
                                 @if(in_array(strtolower($extension), ['jpg', 'jpeg', 'png']))
                                     <a href="{{ asset($luaranProyek->poster_proyek) }}" 
-                                       class="text-primary small" target="_blank">
+                                    class="text-primary small" target="_blank">
                                         <img src="{{ asset($luaranProyek->poster_proyek) }}" 
-                                             class="img-thumbnail" height="40" width="40">
+                                            class="img-thumbnail" height="40" width="40">
                                         Lihat poster
-                                    </a>
-                                @else
-                                    <a href="{{ asset($luaranProyek->poster_proyek) }}" 
-                                       class="text-primary small" target="_blank">
-                                        <i class="fas fa-file-pdf me-1"></i>
-                                        Lihat poster (PDF)
                                     </a>
                                 @endif
                             </div>
                         @endif
-                        <input type="file" class="form-control" id="poster_proyek" name="poster_proyek" accept="image/*,application/pdf">
+                        <input type="file" class="form-control" id="poster_proyek" name="poster_proyek" accept="image/*">
                         <div class="invalid-feedback" id="poster_proyek_error"></div>
-                        <small class="text-muted">Format: jpeg, png, jpg, pdf.</small>
+                        <small class="text-muted">Format: jpeg, png, jpg</small>
                         
-                        <div id="posterPreview" class="mt-2"></div>
+                        {{-- Container preview poster - awalnya tersembunyi --}}
+                        <div id="posterPreviewContainer" class="dokumentasi-preview-container mt-3" style="display: none;">
+                            <p class="dokumentasi-section-title">Preview Poster Baru</p>
+                            <div id="posterPreview"></div>
+                        </div>
                     </div>
                 </div>
 
@@ -76,9 +74,10 @@
                             <small class="text-muted ms-2">Anda dapat memilih beberapa file sekaligus (jpg, png)</small>
                         </div>
                         
-                        <!-- Dokumentasi Gallery -->
-                        <div class="dokumentasi-gallery">
-                            @if(isset($dokumentasiProyek) && $dokumentasiProyek->count() > 0)
+                        <!-- Container untuk dokumentasi yang sudah ada di database -->
+                        @if(isset($dokumentasiProyek) && $dokumentasiProyek->count() > 0)
+                            <p class="dokumentasi-section-title">Dokumentasi Tersimpan</p>
+                            <div class="dokumentasi-gallery">
                                 @foreach($dokumentasiProyek as $dok)
                                 <div class="dokumentasi-item position-relative">
                                     <img src="{{ asset($dok->path_file) }}" 
@@ -92,10 +91,15 @@
                                     </button>
                                 </div>
                                 @endforeach
-                            @endif
-                            
-                            <!-- Preview untuk file yang akan diupload -->
-                            <div id="dokumentasiPreviewContainer" class="d-flex flex-wrap gap-3"></div>
+                            </div>
+                        @else
+                            <div class="dokumentasi-gallery"></div>
+                        @endif
+                        
+                        <!-- Container untuk preview file yang akan diupload -->
+                        <div id="dokumentasiPreviewContainer" class="dokumentasi-preview-container mt-3" style="display: none;">
+                            <p class="dokumentasi-section-title">Preview Dokumentasi Baru</p>
+                            <div id="dokumentasiPreviewItems"></div>
                         </div>
                     </div>
                 </div>

@@ -84,10 +84,9 @@ Route::middleware([KoordinatorMiddleware::class])->prefix('koordinator')->group(
     Route::delete('/proyek/timeline/{id}', [DataTimelineController::class, 'deleteDataTimeline'])->name('koordinator.deleteDataTimeline');
 
     //Data Dokumentasi Proyek
-    // Show luaran page
-Route::get('/proyek/{id}/luaran', [DataLuaranController::class, 'getDataLuaranDokumentasi'])->name('koordinator.getDataLuaranDokumentasi');
-Route::post('/proyek/luaran', [DataLuaranController::class, 'saveLuaranProyek'])->name('koordinator.updateDataLuaran');
-Route::post('/proyek/dokumentasi', [DataLuaranController::class, 'uploadDokumentasi'])->name('koordinator.addDokumentasi');
-Route::delete('/proyek/dokumentasi/{id}', [DataLuaranController::class, 'deleteDokumentasi'])->name('koordinator.deleteDokumentasi');
+    Route::get('/proyek/{id}/luaran', [DataLuaranController::class, 'getDataLuaranDokumentasi'])->name('koordinator.getDataLuaranDokumentasi');
+    Route::post('/proyek/luaran', [DataLuaranController::class, 'saveLuaranProyek'])->name('koordinator.updateDataLuaran');
+    Route::post('/proyek/dokumentasi', [DataLuaranController::class, 'uploadDokumentasi'])->name('koordinator.addDokumentasi');
+    Route::delete('/proyek/dokumentasi/{id}', [DataLuaranController::class, 'deleteDokumentasi'])->name('koordinator.deleteDokumentasi');
 
 });

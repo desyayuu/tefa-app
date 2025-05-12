@@ -1,4 +1,23 @@
 $(document).ready(function() {
+
+    $(document).on('click', '.poster-item, .poster-item img', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Find the image source
+        let src;
+        if ($(this).hasClass('poster-item')) {
+            src = $(this).find('img').attr('src');
+        } else {
+            src = $(this).attr('src');
+        }
+        
+        console.log("Poster clicked, opening in modal:", src);
+        $("#posterPreviewImage").attr('src', src);
+        $("#posterPreviewModal").modal('show');
+        
+        return false;
+    });
     // ===== DATA FETCHING FUNCTIONS =====
     
     // Function untuk mendapatkan data luaran dan dokumentasi proyek
@@ -79,27 +98,45 @@ $(document).ready(function() {
                 const posterPath = ensureAbsolutePath(luaran.poster_proyek);
                 
                 // Show poster preview differently based on file type
-                if (['jpg', 'jpeg', 'png', 'gif'].includes(extension)) {
-                    // Image preview
-                    const posterHtml = `
-                        <div class="d-flex align-items-center mb-2">
-                            <a href="${posterPath}" class="text-primary small" >
-                                <img src="${posterPath}" class="img-fluid">
-                            </a>
-                        </div>
-                    `;
-                    $("#poster_proyek").before(posterHtml);
-                } else if (extension === 'pdf') {
-                    // PDF preview
-                    const posterHtml = `
-                        <div class="d-flex align-items-center mb-2">
-                            <a href="${posterPath}" class="text-primary small">
-                                <i class="fas fa-file-pdf me-1"></i>
-                                Lihat poster (PDF)
-                            </a>
-                        </div>
-                    `;
-                    $("#poster_proyek").before(posterHtml);
+                // if (['jpg', 'jpeg', 'png', 'gif'].includes(extension)) {
+                //     // Image preview
+                //     const posterHtml = `
+                //         <div class="poster-item position-relative"">
+                //                 <img src="${posterPath}" class="img-fluid">
+                //         </div>
+                //     `;
+                //     $("#poster_proyek").before(posterHtml);
+                
+                // } else if (extension === 'pdf') {
+                //     // PDF preview
+                //     const posterHtml = `
+                //         <div class="poster-item position-relative">
+                //             <a href="${posterPath}" class="text-primary small">
+                //                 <i class="fas fa-file-pdf me-1"></i>
+                //                 Lihat poster (PDF)
+                //             </a>
+                //         </div>
+                //     `;
+                //     $("#poster_proyek").before(posterHtml);
+                // }
+
+                if (luaran.poster_proyek) {
+                    console.log("Found poster:", luaran.poster_proyek);
+                    const extension = luaran.poster_proyek.split('.').pop().toLowerCase();
+                    
+                    // Fix the path to ensure it's absolute
+                    const posterPath = ensureAbsolutePath(luaran.poster_proyek);
+                    
+                    // Show poster preview differently based on file type
+                    if (['jpg', 'jpeg', 'png', 'gif'].includes(extension)) {
+                        // Image preview
+                        const posterHtml = `
+                            <div class="poster-item">
+                                <img src="${posterPath}" class="img-fluid" alt="Poster Proyek">
+                            </div>
+                        `;
+                        $("#poster_proyek").before(posterHtml);
+                    }
                 }
             }
         } else {
@@ -181,53 +218,52 @@ $(document).ready(function() {
         $("#dokumentasi").click();
     });
     
-    $("#dokumentasi").on('change', function() {
-        const files = this.files;
-        console.log("Files selected for dokumentasi:", files.length);
+    $(document).on('click', '.btn-remove-preview', function(e) {
+        // Penting: Hentikan event propagation agar tidak memicu event click pada parent
+        e.stopPropagation();
         
-        const previewContainer = $("#dokumentasiPreviewContainer");
+        const item = $(this).closest('.dokumentasi-item');
+        const filename = $(this).data('filename');
         
-        // Clear previous previews
-        previewContainer.empty();
+        console.log("Remove preview clicked for file:", filename);
         
-        // Generate preview for each file
-        for (let i = 0; i < files.length; i++) {
-            const file = files[i];
-            console.log("Processing file:", file.name, file.type);
-            
-            if (!file.type.match('image.*')) {
-                console.warn("Skipping non-image file:", file.name);
-                continue; // Skip non-image files
-            }
-            
-            const reader = new FileReader();
-            
-            reader.onload = function(e) {
-                console.log("File preview loaded:", file.name);
-                const preview = `
-                    <div class="dokumentasi-item position-relative">
-                        <img src="${e.target.result}" 
-                            class="img-fluid rounded bg-light">
-                        
-                        <button type="button" class="btn btn-hapus btn-remove-preview">
-                            <svg width="16" height="16" viewBox="0 0 19 19" fill="white" xmlns="http://www.w3.org/2000/svg">
-                                <path fill-rule="evenodd" clip-rule="evenodd" d="M18.7851 9.48484C18.7851 14.6563 14.6051 18.8486 9.44866 18.8486C4.29227 18.8486 0.112183 14.6563 0.112183 9.48484C0.112183 4.31339 4.29227 0.121094 9.44866 0.121094C14.6051 0.121094 18.7851 4.31339 18.7851 9.48484ZM12.8922 4.61499L12.968 4.54584C13.3602 4.22524 13.9388 4.24842 14.3043 4.61499C14.6698 4.98156 14.6929 5.56186 14.3733 5.9552L14.3043 6.03127L10.8608 9.48484L14.3043 12.9384C14.6942 13.3295 14.6942 13.9636 14.3043 14.3546C13.9143 14.7457 13.2821 14.7457 12.8921 14.3546L9.44866 10.9011L6.00519 14.3546C5.61524 14.7457 4.98299 14.7457 4.59304 14.3546C4.20309 13.9636 4.20309 13.3295 4.59304 12.9384L8.03651 9.48484L4.59299 6.03127L4.52404 5.9552C4.20437 5.56186 4.22749 4.98157 4.59299 4.61499C4.9585 4.24842 5.5371 4.22524 5.9293 4.54584L6.00514 4.61499L9.44866 8.06857L12.8922 4.61499Z"/>
-                            </svg>
-                        </button>
-                    </div>`;
-                previewContainer.append(preview);
-            }
-            reader.readAsDataURL(file);
+        // Hapus item dari preview visual
+        item.remove();
+        
+        // Jika tidak ada lagi item dalam preview, sembunyikan container
+        if ($("#dokumentasiPreviewItems").children().length === 0) {
+            $("#dokumentasiPreviewContainer").hide();
         }
-    });
-    
-    $(document).on('click', '.btn-remove-preview', function() {
-        console.log("Remove preview clicked");
-        $(this).closest('.dokumentasi-item').remove();
-        const fileInput = $("#dokumentasi")[0];
-        if (fileInput.files.length > 0) {
-            console.log("Resetting file input with", fileInput.files.length, "files");
-            fileInput.value = '';
+        
+        // Kita tidak bisa langsung memodifikasi FileList, jadi kita perlu membuat
+        // workaround menggunakan DataTransfer dan file yang masih ingin kita pertahankan
+        const currentFiles = $("#dokumentasi")[0].files;
+        
+        // Jika tidak ada filename (data lama) atau tidak ada file tersisa, reset input
+        if (!filename || currentFiles.length === 0) {
+            $("#dokumentasi")[0].value = '';
+            return;
+        }
+        
+        // Gunakan DataTransfer untuk membuat FileList baru
+        const dt = new DataTransfer();
+        
+        // Tambahkan semua file kecuali yang ingin dihapus
+        for (let i = 0; i < currentFiles.length; i++) {
+            const file = currentFiles[i];
+            if (file.name !== filename) {
+                dt.items.add(file);
+            }
+        }
+        
+        // Perbarui FileList pada input
+        $("#dokumentasi")[0].files = dt.files;
+        
+        console.log("Files remaining:", $("#dokumentasi")[0].files.length);
+        
+        // Jika tidak ada file tersisa, sembunyikan container
+        if ($("#dokumentasi")[0].files.length === 0) {
+            $("#dokumentasiPreviewContainer").hide();
         }
     });
     
@@ -319,18 +355,20 @@ $(document).ready(function() {
     });
     
     // Fix poster modal event binding - make it more inclusive
-    $(document).on('click', 'a img.img-thumbnail, #posterPreview img, a img.img-fluid', function(e) {
+    $(document).on('click', '#posterPreview img', function(e) {
         e.preventDefault();
-        const src = $(this).attr('src');
-        console.log("Poster image clicked:", src);
+        e.stopPropagation();
         
-        // Set the image source in the modal
+        const src = $(this).attr('src');
+        console.log("Preview poster clicked:", src);
+        
+        // Set the image in the modal
         $("#posterPreviewImage").attr('src', src);
         
-        // Show the modal
+        // Open the modal
         $("#posterPreviewModal").modal('show');
         
-        return false; // Prevent default link behavior
+        return false;
     });
     
     // ===== POSTER PROYEK FUNCTIONS =====
@@ -344,21 +382,94 @@ $(document).ready(function() {
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     console.log("Poster image preview loaded");
-                    $("#posterPreview").html(`<img src="${e.target.result}" style="width:15%; height:15%">`);
+                    
+                    // Show the preview container
+                    $("#posterPreviewContainer").show();
+                    
+                    // Update preview with delete button
+                    $("#posterPreview").html(`
+                        <div class="poster-item position-relative">
+                            <img src="${e.target.result}" class="img-fluid">
+                            <button type="button" class="btn btn-hapus btn-remove-poster">
+                                <svg width="16" height="16" viewBox="0 0 19 19" fill="white" xmlns="http://www.w3.org/2000/svg">
+                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M18.7851 9.48484C18.7851 14.6563 14.6051 18.8486 9.44866 18.8486C4.29227 18.8486 0.112183 14.6563 0.112183 9.48484C0.112183 4.31339 4.29227 0.121094 9.44866 0.121094C14.6051 0.121094 18.7851 4.31339 18.7851 9.48484ZM12.8922 4.61499L12.968 4.54584C13.3602 4.22524 13.9388 4.24842 14.3043 4.61499C14.6698 4.98156 14.6929 5.56186 14.3733 5.9552L14.3043 6.03127L10.8608 9.48484L14.3043 12.9384C14.6942 13.3295 14.6942 13.9636 14.3043 14.3546C13.9143 14.7457 13.2821 14.7457 12.8921 14.3546L9.44866 10.9011L6.00519 14.3546C5.61524 14.7457 4.98299 14.7457 4.59304 14.3546C4.20309 13.9636 4.20309 13.3295 4.59304 12.9384L8.03651 9.48484L4.59299 6.03127L4.52404 5.9552C4.20437 5.56186 4.22749 4.98157 4.59299 4.61499C4.9585 4.24842 5.5371 4.22524 5.9293 4.54584L6.00514 4.61499L9.44866 8.06857L12.8922 4.61499Z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    `);
                 }
                 reader.readAsDataURL(file);
-            } else if (fileType === 'application/pdf') {
-                console.log("Poster PDF preview");
-                $("#posterPreview").html(`
-                    <div class="text-center p-3 border rounded">
-                        <i class="fas fa-file-pdf fs-3 text-danger"></i>
-                        <p class="mb-0 mt-2">${file.name}</p>
-                    </div>
-                `);
+            } else {
+                console.log("File bukan gambar yang didukung");
+                $("#posterPreview").empty();
+                if ($("#posterPreview").children().length === 0) {
+                    $("#posterPreviewContainer").hide();
+                }
             }
         } else {
             console.log("No poster file selected");
             $("#posterPreview").empty();
+            $("#posterPreviewContainer").hide();
+        }
+    });
+
+    $(document).on('click', '.btn-remove-poster', function(e) {
+        // Penting: Hentikan event propagation agar tidak memicu event click pada parent
+        e.stopPropagation();
+        
+        console.log("Remove poster preview clicked");
+        
+        // Hapus preview
+        $("#posterPreview").empty();
+        
+        // Reset input file
+        $("#poster_proyek").val('');
+        
+        // Sembunyikan container
+        $("#posterPreviewContainer").hide();
+    });
+
+    // Update file handler untuk dokumentasi
+    $("#dokumentasi").on('change', function() {
+        const files = this.files;
+        console.log("Files selected for dokumentasi:", files.length);
+        
+        const previewContainer = $("#dokumentasiPreviewItems");
+        
+        // Add new files to preview
+        if (files.length > 0) {
+            // Show container if it was hidden
+            $("#dokumentasiPreviewContainer").show();
+            
+            // Generate preview for each file
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                console.log("Processing file:", file.name, file.type);
+                
+                if (!file.type.match('image.*')) {
+                    console.warn("Skipping non-image file:", file.name);
+                    continue; // Skip non-image files
+                }
+                
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    console.log("File preview loaded:", file.name);
+                    const preview = `
+                        <div class="dokumentasi-item position-relative">
+                            <img src="${e.target.result}" 
+                                class="img-fluid rounded bg-light">
+                            
+                            <button type="button" class="btn btn-hapus btn-remove-preview" data-filename="${file.name}">
+                                <svg width="16" height="16" viewBox="0 0 19 19" fill="white" xmlns="http://www.w3.org/2000/svg">
+                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M18.7851 9.48484C18.7851 14.6563 14.6051 18.8486 9.44866 18.8486C4.29227 18.8486 0.112183 14.6563 0.112183 9.48484C0.112183 4.31339 4.29227 0.121094 9.44866 0.121094C14.6051 0.121094 18.7851 4.31339 18.7851 9.48484ZM12.8922 4.61499L12.968 4.54584C13.3602 4.22524 13.9388 4.24842 14.3043 4.61499C14.6698 4.98156 14.6929 5.56186 14.3733 5.9552L14.3043 6.03127L10.8608 9.48484L14.3043 12.9384C14.6942 13.3295 14.6942 13.9636 14.3043 14.3546C13.9143 14.7457 13.2821 14.7457 12.8921 14.3546L9.44866 10.9011L6.00519 14.3546C5.61524 14.7457 4.98299 14.7457 4.59304 14.3546C4.20309 13.9636 4.20309 13.3295 4.59304 12.9384L8.03651 9.48484L4.59299 6.03127L4.52404 5.9552C4.20437 5.56186 4.22749 4.98157 4.59299 4.61499C4.9585 4.24842 5.5371 4.22524 5.9293 4.54584L6.00514 4.61499L9.44866 8.06857L12.8922 4.61499Z"/>
+                                </svg>
+                            </button>
+                        </div>`;
+                    previewContainer.append(preview);
+                }
+                reader.readAsDataURL(file);
+            }
         }
     });
     
