@@ -1,4 +1,13 @@
 $(document).ready(function() {
+    const existingFiles = $("#dokumentasi")[0].files;
+    if (existingFiles && existingFiles.length > 0) {
+        accumualtedFiles = Array.from(existingFiles);
+        console.log("Initialized accumualtedFiles with", accumualtedFiles.length, "existing files");
+    }
+    // Make sure dokumentasiPreviewItems container exists
+    if ($("#dokumentasiPreviewContainer").length && !$("#dokumentasiPreviewItems").length) {
+        $("#dokumentasiPreviewContainer").append('<div id="dokumentasiPreviewItems"></div>');
+    }
 
     $(document).on('click', '.poster-item, .poster-item img', function(e) {
         e.preventDefault();
@@ -18,6 +27,7 @@ $(document).ready(function() {
         
         return false;
     });
+    
     // ===== DATA FETCHING FUNCTIONS =====
     
     // Function untuk mendapatkan data luaran dan dokumentasi proyek
@@ -74,7 +84,14 @@ $(document).ready(function() {
         // Clear dokumentasi gallery first
         $(".dokumentasi-gallery").empty();
         
-        // Reset form state
+        // Clear poster display before updating
+        $(".poster-item").remove();
+        
+        // Reset form state but DON'T reset the file inputs yet
+        // We want to keep the selected files until form is submitted
+        const posterFile = $("#poster_proyek")[0].files;
+        const dokumentasiFiles = $("#dokumentasi")[0].files;
+        
         $("#formLuaranProyek")[0].reset();
         $("#posterPreview").empty();
         
@@ -97,46 +114,17 @@ $(document).ready(function() {
                 // Fix the path to ensure it's absolute
                 const posterPath = ensureAbsolutePath(luaran.poster_proyek);
                 
-                // Show poster preview differently based on file type
-                // if (['jpg', 'jpeg', 'png', 'gif'].includes(extension)) {
-                //     // Image preview
-                //     const posterHtml = `
-                //         <div class="poster-item position-relative"">
-                //                 <img src="${posterPath}" class="img-fluid">
-                //         </div>
-                //     `;
-                //     $("#poster_proyek").before(posterHtml);
-                
-                // } else if (extension === 'pdf') {
-                //     // PDF preview
-                //     const posterHtml = `
-                //         <div class="poster-item position-relative">
-                //             <a href="${posterPath}" class="text-primary small">
-                //                 <i class="fas fa-file-pdf me-1"></i>
-                //                 Lihat poster (PDF)
-                //             </a>
-                //         </div>
-                //     `;
-                //     $("#poster_proyek").before(posterHtml);
-                // }
-
-                if (luaran.poster_proyek) {
-                    console.log("Found poster:", luaran.poster_proyek);
-                    const extension = luaran.poster_proyek.split('.').pop().toLowerCase();
-                    
-                    // Fix the path to ensure it's absolute
-                    const posterPath = ensureAbsolutePath(luaran.poster_proyek);
-                    
-                    // Show poster preview differently based on file type
-                    if (['jpg', 'jpeg', 'png', 'gif'].includes(extension)) {
-                        // Image preview
-                        const posterHtml = `
-                            <div class="poster-item">
-                                <img src="${posterPath}" class="img-fluid" alt="Poster Proyek">
-                            </div>
-                        `;
-                        $("#poster_proyek").before(posterHtml);
-                    }
+                // Show poster preview based on file type
+                if (['jpg', 'jpeg', 'png', 'gif'].includes(extension)) {
+                    // Image preview
+                    const posterHtml = `
+                        <div class="poster-item">
+                            <img src="${posterPath}?t=${new Date().getTime()}" class="img-fluid" alt="Poster Proyek">
+                        </div>
+                    `;
+                    // Make sure we're not attaching to the input but showing before it
+                    $(".poster-item").remove(); // Remove existing if any
+                    $("#poster_proyek").before(posterHtml);
                 }
             }
         } else {
@@ -155,11 +143,11 @@ $(document).ready(function() {
                 
                 const dokItem = `
                     <div class="dokumentasi-item position-relative">
-                        <img src="${dokPath}" 
+                        <img src="${dokPath}?t=${new Date().getTime()}" 
                             alt="${dok.nama_file}"
                             class="img-fluid rounded">
                         <button type="button" 
-                                class="btn btn-hapus btn-delete-dokumentasi" 
+                                class="btn btn-hapus-detail btn-delete-dokumentasi" 
                                 data-id="${dok.dokumentasi_proyek_id}">
                             <svg width="16" height="16" viewBox="0 0 19 19" fill="white" xmlns="http://www.w3.org/2000/svg">
                                 <path fill-rule="evenodd" clip-rule="evenodd" d="M18.7851 9.48484C18.7851 14.6563 14.6051 18.8486 9.44866 18.8486C4.29227 18.8486 0.112183 14.6563 0.112183 9.48484C0.112183 4.31339 4.29227 0.121094 9.44866 0.121094C14.6051 0.121094 18.7851 4.31339 18.7851 9.48484ZM12.8922 4.61499L12.968 4.54584C13.3602 4.22524 13.9388 4.24842 14.3043 4.61499C14.6698 4.98156 14.6929 5.56186 14.3733 5.9552L14.3043 6.03127L10.8608 9.48484L14.3043 12.9384C14.6942 13.3295 14.6942 13.9636 14.3043 14.3546C13.9143 14.7457 13.2821 14.7457 12.8921 14.3546L9.44866 10.9011L6.00519 14.3546C5.61524 14.7457 4.98299 14.7457 4.59304 14.3546C4.20309 13.9636 4.20309 13.3295 4.59304 12.9384L8.03651 9.48484L4.59299 6.03127L4.52404 5.9552C4.20437 5.56186 4.22749 4.98157 4.59299 4.61499C4.9585 4.24842 5.5371 4.22524 5.9293 4.54584L6.00514 4.61499L9.44866 8.06857L12.8922 4.61499Z"/>
@@ -171,8 +159,16 @@ $(document).ready(function() {
         } else {
             console.log("No dokumentasi found");
             // Add an empty dokumentasi preview container
-            $(".dokumentasi-gallery").append('<div id="dokumentasiPreviewContainer" class="d-flex flex-wrap gap-3"></div>');
+            $(".dokumentasi-gallery").append('<div id="dokumentasiGalleryContainer" class="d-flex flex-wrap gap-3"></div>');
         }
+        
+        // Add cache-busting timestamp to prevent browser caching old images
+        $(".dokumentasi-gallery img, .poster-item img").each(function() {
+            const currentSrc = $(this).attr('src');
+            if (currentSrc && !currentSrc.includes('data:image') && !currentSrc.includes('?t=')) {
+                $(this).attr('src', currentSrc + '?t=' + new Date().getTime());
+            }
+        });
     }
 
     function ensureAbsolutePath(path) {
@@ -213,58 +209,8 @@ $(document).ready(function() {
     });
     
     // ===== DOKUMENTASI PROYEK FUNCTIONS =====
-    $("#btnUploadDokumentasi").on('click', function() {
-        console.log("Upload dokumentasi button clicked");
+    $("#btnUploadDokumentasi").off('click').on('click', function() {
         $("#dokumentasi").click();
-    });
-    
-    $(document).on('click', '.btn-remove-preview', function(e) {
-        // Penting: Hentikan event propagation agar tidak memicu event click pada parent
-        e.stopPropagation();
-        
-        const item = $(this).closest('.dokumentasi-item');
-        const filename = $(this).data('filename');
-        
-        console.log("Remove preview clicked for file:", filename);
-        
-        // Hapus item dari preview visual
-        item.remove();
-        
-        // Jika tidak ada lagi item dalam preview, sembunyikan container
-        if ($("#dokumentasiPreviewItems").children().length === 0) {
-            $("#dokumentasiPreviewContainer").hide();
-        }
-        
-        // Kita tidak bisa langsung memodifikasi FileList, jadi kita perlu membuat
-        // workaround menggunakan DataTransfer dan file yang masih ingin kita pertahankan
-        const currentFiles = $("#dokumentasi")[0].files;
-        
-        // Jika tidak ada filename (data lama) atau tidak ada file tersisa, reset input
-        if (!filename || currentFiles.length === 0) {
-            $("#dokumentasi")[0].value = '';
-            return;
-        }
-        
-        // Gunakan DataTransfer untuk membuat FileList baru
-        const dt = new DataTransfer();
-        
-        // Tambahkan semua file kecuali yang ingin dihapus
-        for (let i = 0; i < currentFiles.length; i++) {
-            const file = currentFiles[i];
-            if (file.name !== filename) {
-                dt.items.add(file);
-            }
-        }
-        
-        // Perbarui FileList pada input
-        $("#dokumentasi")[0].files = dt.files;
-        
-        console.log("Files remaining:", $("#dokumentasi")[0].files.length);
-        
-        // Jika tidak ada file tersisa, sembunyikan container
-        if ($("#dokumentasi")[0].files.length === 0) {
-            $("#dokumentasiPreviewContainer").hide();
-        }
     });
     
     $(document).on('click', '.btn-delete-dokumentasi', function() {
@@ -390,7 +336,7 @@ $(document).ready(function() {
                     $("#posterPreview").html(`
                         <div class="poster-item position-relative">
                             <img src="${e.target.result}" class="img-fluid">
-                            <button type="button" class="btn btn-hapus btn-remove-poster">
+                            <button type="button" class="btn btn-hapus-detail btn-remove-poster">
                                 <svg width="16" height="16" viewBox="0 0 19 19" fill="white" xmlns="http://www.w3.org/2000/svg">
                                     <path fill-rule="evenodd" clip-rule="evenodd" d="M18.7851 9.48484C18.7851 14.6563 14.6051 18.8486 9.44866 18.8486C4.29227 18.8486 0.112183 14.6563 0.112183 9.48484C0.112183 4.31339 4.29227 0.121094 9.44866 0.121094C14.6051 0.121094 18.7851 4.31339 18.7851 9.48484ZM12.8922 4.61499L12.968 4.54584C13.3602 4.22524 13.9388 4.24842 14.3043 4.61499C14.6698 4.98156 14.6929 5.56186 14.3733 5.9552L14.3043 6.03127L10.8608 9.48484L14.3043 12.9384C14.6942 13.3295 14.6942 13.9636 14.3043 14.3546C13.9143 14.7457 13.2821 14.7457 12.8921 14.3546L9.44866 10.9011L6.00519 14.3546C5.61524 14.7457 4.98299 14.7457 4.59304 14.3546C4.20309 13.9636 4.20309 13.3295 4.59304 12.9384L8.03651 9.48484L4.59299 6.03127L4.52404 5.9552C4.20437 5.56186 4.22749 4.98157 4.59299 4.61499C4.9585 4.24842 5.5371 4.22524 5.9293 4.54584L6.00514 4.61499L9.44866 8.06857L12.8922 4.61499Z"/>
                                 </svg>
@@ -429,16 +375,25 @@ $(document).ready(function() {
         $("#posterPreviewContainer").hide();
     });
 
-    // Update file handler untuk dokumentasi
-    $("#dokumentasi").on('change', function() {
+    $("#dokumentasi").off('change').on('change', function() {
         const files = this.files;
         console.log("Files selected for dokumentasi:", files.length);
         
-        const previewContainer = $("#dokumentasiPreviewItems");
+        // DON'T clear existing previews
+        // $("#dokumentasiPreviewItems").empty(); -- remove this line
         
         // Add new files to preview
         if (files.length > 0) {
-            // Show container if it was hidden
+            // Ensure the preview container exists and is shown
+            if (!$("#dokumentasiPreviewItems").length) {
+                if (!$("#dokumentasiPreviewContainer").length) {
+                    $(".dokumentasi-gallery").after('<div id="dokumentasiPreviewContainer" class="dokumentasi-preview-container mt-3"><p class="dokumentasi-section-title">Preview Dokumentasi Baru</p><div id="dokumentasiPreviewItems"></div></div>');
+                } else {
+                    $("#dokumentasiPreviewContainer").append('<div id="dokumentasiPreviewItems"></div>');
+                }
+            }
+            
+            // Show the container
             $("#dokumentasiPreviewContainer").show();
             
             // Generate preview for each file
@@ -460,21 +415,31 @@ $(document).ready(function() {
                             <img src="${e.target.result}" 
                                 class="img-fluid rounded bg-light">
                             
-                            <button type="button" class="btn btn-hapus btn-remove-preview" data-filename="${file.name}">
+                            <button type="button" class="btn btn-hapus-detail btn-remove-preview" data-filename="${file.name}">
                                 <svg width="16" height="16" viewBox="0 0 19 19" fill="white" xmlns="http://www.w3.org/2000/svg">
                                     <path fill-rule="evenodd" clip-rule="evenodd" d="M18.7851 9.48484C18.7851 14.6563 14.6051 18.8486 9.44866 18.8486C4.29227 18.8486 0.112183 14.6563 0.112183 9.48484C0.112183 4.31339 4.29227 0.121094 9.44866 0.121094C14.6051 0.121094 18.7851 4.31339 18.7851 9.48484ZM12.8922 4.61499L12.968 4.54584C13.3602 4.22524 13.9388 4.24842 14.3043 4.61499C14.6698 4.98156 14.6929 5.56186 14.3733 5.9552L14.3043 6.03127L10.8608 9.48484L14.3043 12.9384C14.6942 13.3295 14.6942 13.9636 14.3043 14.3546C13.9143 14.7457 13.2821 14.7457 12.8921 14.3546L9.44866 10.9011L6.00519 14.3546C5.61524 14.7457 4.98299 14.7457 4.59304 14.3546C4.20309 13.9636 4.20309 13.3295 4.59304 12.9384L8.03651 9.48484L4.59299 6.03127L4.52404 5.9552C4.20437 5.56186 4.22749 4.98157 4.59299 4.61499C4.9585 4.24842 5.5371 4.22524 5.9293 4.54584L6.00514 4.61499L9.44866 8.06857L12.8922 4.61499Z"/>
                                 </svg>
                             </button>
                         </div>`;
-                    previewContainer.append(preview);
-                }
+                    $("#dokumentasiPreviewItems").append(preview);
+                };
+                
+                reader.onerror = function() {
+                    console.error("Error reading file:", file.name);
+                };
+                
                 reader.readAsDataURL(file);
+            }
+        } else {
+            // Only hide the container if NO files were selected and there are no previews
+            if ($("#dokumentasiPreviewItems").children().length === 0) {
+                $("#dokumentasiPreviewContainer").hide();
             }
         }
     });
     
     // ===== SAVE DATA FUNCTIONS =====
-    $("#btnSaveChanges").on('click', function() {
+    $("#btnSaveChanges").off('click').on('click', function() {
         console.log("Save changes button clicked");
         
         // Prepare form data
@@ -501,7 +466,7 @@ $(document).ready(function() {
         
         if (!updateLuaranUrl) {
             console.error("Missing luaran URL data attribute");
-            finishSaving(false, 'URL untuk menyimpan data luaran tidak ditemukan.');
+            finishSaving(false, 'URL untuk menyimpan data luaran tidak ditemukan.', button, originalText);
             return;
         }
         
@@ -528,14 +493,17 @@ $(document).ready(function() {
                     // Check if we have dokumentasi files to upload
                     if ($("#dokumentasi")[0].files.length > 0) {
                         console.log("Dokumentasi files present, uploading...");
-                        uploadDokumentasi(response.data.id);
+                        uploadDokumentasi(response.data.id, button, originalText);
                     } else {
                         console.log("No dokumentasi files to upload");
-                        finishSaving(true, 'Data luaran proyek berhasil disimpan.');
+                        // Reset the file input but keep the form data
+                        $("#dokumentasi").val('');
+                        $("#poster_proyek").val('');
+                        finishSaving(true, 'Data luaran proyek berhasil disimpan.', button, originalText);
                     }
                 } else {
                     console.error("Save luaran error:", response.message);
-                    finishSaving(false, response.message || 'Terjadi kesalahan saat menyimpan data.');
+                    finishSaving(false, response.message || 'Terjadi kesalahan saat menyimpan data.', button, originalText);
                 }
             },
             error: function(xhr) {
@@ -555,95 +523,230 @@ $(document).ready(function() {
                                 $(`#${field}_error`).text(errorMessage);
                             });
                             
-                            finishSaving(false, 'Mohon periksa kembali data yang diinput.');
+                            finishSaving(false, 'Mohon periksa kembali data yang diinput.', button, originalText);
                         } else {
-                            finishSaving(false, 'Terjadi kesalahan validasi data.');
+                            finishSaving(false, 'Terjadi kesalahan validasi data.', button, originalText);
                         }
                     } catch (e) {
                         console.error("Error parsing validation response:", e);
-                        finishSaving(false, 'Terjadi kesalahan saat validasi data.');
+                        finishSaving(false, 'Terjadi kesalahan saat validasi data.', button, originalText);
                     }
                 } else {
-                    finishSaving(false, 'Terjadi kesalahan saat menyimpan data.');
+                    finishSaving(false, 'Terjadi kesalahan saat menyimpan data.', button, originalText);
                 }
             }
         });
+    });
+    
+    // Function to upload dokumentasi
+    function uploadDokumentasi(luaranId, button, originalText) {
+        // Create a new FormData for dokumentasi
+        const dokFormData = new FormData();
+        dokFormData.append('luaran_proyek_id', luaranId);
         
-        // Function to upload dokumentasi
-        function uploadDokumentasi(luaranId) {
-            // Create a new FormData for dokumentasi
-            const dokFormData = new FormData();
-            dokFormData.append('luaran_proyek_id', luaranId);
-            
-            // Add all files
-            const files = $("#dokumentasi")[0].files;
-            for (let i = 0; i < files.length; i++) {
-                dokFormData.append('dokumentasi[]', files[i]);
-            }
-            
-            console.log("Uploading dokumentasi for luaran_id:", luaranId);
+        // Add all files
+        const files = $("#dokumentasi")[0].files;
+        for (let i = 0; i < files.length; i++) {
+            dokFormData.append('dokumentasi[]', files[i]);
+        }
+        
+        console.log("Uploading dokumentasi for luaran_id:", luaranId);
 
-            if (!addDokumentasiUrl) {
-                console.error("Missing dokumentasi URL data attribute");
-                finishSaving(false, 'URL untuk mengunggah dokumentasi tidak ditemukan.');
-                return;
+        const addDokumentasiUrl = $("#formLuaranProyek").data('dokumentasiUrl');
+        if (!addDokumentasiUrl) {
+            console.error("Missing dokumentasi URL data attribute");
+            finishSaving(false, 'URL untuk mengunggah dokumentasi tidak ditemukan.', button, originalText);
+            return;
+        }
+        
+        // Upload dokumentasi
+        $.ajax({
+            url: addDokumentasiUrl,
+            type: 'POST',
+            data: dokFormData,
+            processData: false,
+            contentType: false,
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(dokResponse) {
+                console.log("Upload dokumentasi response:", dokResponse);
+                
+                if (dokResponse.success) {
+                    // Reset the file input
+                    $("#dokumentasi").val('');
+                    $("#poster_proyek").val('');
+                    finishSaving(true, 'Data luaran dan dokumentasi proyek berhasil disimpan.', button, originalText);
+                } else {
+                    console.error("Upload dokumentasi error:", dokResponse.message);
+                    finishSaving(false, 'Data luaran berhasil disimpan, namun terjadi kesalahan saat mengunggah dokumentasi.', button, originalText);
+                }
+            },
+            error: function(xhr) {
+                console.error("Upload dokumentasi AJAX error:", xhr.responseText);
+                finishSaving(false, 'Data luaran berhasil disimpan, namun terjadi kesalahan saat mengunggah dokumentasi.', button, originalText);
             }
+        });
+    }
+    
+    // Function to finish saving process and show result
+    function finishSaving(success, message, button, originalText) {
+        console.log("Finishing save process:", success, message);
+        
+        // Reset button state
+        button.html(originalText);
+        button.prop('disabled', false);
+        
+        // Show result message
+        if (success) {
+            // Clear dokumentasi preview but don't reset the form
+            $("#posterPreview").empty();
+            $("#posterPreviewContainer").hide();
+            $("#dokumentasiPreviewItems").empty();
+            $("#dokumentasiPreviewContainer").hide();
             
-            // Upload dokumentasi
-            $.ajax({
-                url: addDokumentasiUrl,
-                type: 'POST',
-                data: dokFormData,
-                processData: false,
-                contentType: false,
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                },
-                success: function(dokResponse) {
-                    console.log("Upload dokumentasi response:", dokResponse);
-                    
-                    if (dokResponse.success) {
-                        finishSaving(true, 'Data luaran dan dokumentasi proyek berhasil disimpan.');
-                    } else {
-                        console.error("Upload dokumentasi error:", dokResponse.message);
-                        finishSaving(false, 'Data luaran berhasil disimpan, namun terjadi kesalahan saat mengunggah dokumentasi.');
-                    }
-                },
-                error: function(xhr) {
-                    console.error("Upload dokumentasi AJAX error:", xhr.responseText);
-                    finishSaving(false, 'Data luaran berhasil disimpan, namun terjadi kesalahan saat mengunggah dokumentasi.');
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil',
+                text: message,
+                confirmButtonText: 'OK'
+            }).then(() => {
+                console.log("Success confirmation clicked, refreshing data");
+                // Instead of reloading the page, just refresh the data
+                const proyekId = $('input[name="proyek_id"]').val();
+                if (proyekId) {
+                    // Force a refresh of data to update the UI with saved data
+                    getDataLuaranDokumentasi(proyekId);
+                } else {
+                    // Fallback to reload if no proyek_id found
+                    window.location.reload();
                 }
             });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal',
+                text: message,
+                confirmButtonText: 'OK'
+            });
         }
+    }
+
+    // Create a global variable to store all selected files
+    let accumualtedFiles = [];
+
+    // Modified upload dokumentasi button click handler
+    $("#btnUploadDokumentasi").off('click').on('click', function() {
+        console.log("Upload dokumentasi button clicked");
         
-        // Function to finish saving process and show result
-        function finishSaving(success, message) {
-            console.log("Finishing save process:", success, message);
-            
-            // Reset button state
-            button.html(originalText);
-            button.prop('disabled', false);
-            
-            // Show result message
-            if (success) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Berhasil',
-                    text: message,
-                    confirmButtonText: 'OK'
-                }).then(() => {
-                    console.log("Success confirmation clicked, reloading page");
-                    // Reload page to show updated data
-                    window.location.reload();
-                });
+        // Create a temporary input element
+        const tempFileInput = document.createElement('input');
+        tempFileInput.type = 'file';
+        tempFileInput.multiple = true;
+        tempFileInput.accept = ".jpg,.jpeg,.png";
+        
+        // Add change event listener
+        tempFileInput.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                // Add newly selected files to our accumualtedFiles array
+                const newFiles = Array.from(this.files);
+                console.log("New files selected:", newFiles.length);
+                
+                // Add these files to our accumulation
+                addFilesToAccumulation(newFiles);
+                
+                // Generate previews for the new files
+                generatePreviews(newFiles);
+                
+                // Update the hidden file input
+                updateHiddenInput();
+            }
+        });
+        
+        // Trigger file selection
+        tempFileInput.click();
+
+        // Function to add files to our accumulation
+    function addFilesToAccumulation(newFiles) {
+        newFiles.forEach(file => {
+            // Check if file with same name already exists
+            const duplicateIndex = accumualtedFiles.findIndex(f => f.name === file.name);
+            if (duplicateIndex === -1) {
+                // No duplicate, add to array
+                accumualtedFiles.push(file);
             } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Gagal',
-                    text: message,
-                    confirmButtonText: 'OK'
-                });
+                // Replace the existing file
+                accumualtedFiles[duplicateIndex] = file;
+                // Remove the preview for this file
+                $(`.btn-remove-preview[data-filename="${file.name}"]`).closest('.dokumentasi-item').remove();
+            }
+        });
+        
+        console.log("Total accumulated files:", accumualtedFiles.length);
+    }
+
+    // Function to generate previews for files
+    function generatePreviews(files) {
+        // Ensure the preview container exists and is shown
+        if (!$("#dokumentasiPreviewItems").length) {
+            if (!$("#dokumentasiPreviewContainer").length) {
+                $(".dokumentasi-gallery").after('<div id="dokumentasiPreviewContainer" class="dokumentasi-preview-container mt-3"><p class="dokumentasi-section-title">Preview Dokumentasi Baru</p><div id="dokumentasiPreviewItems"></div></div>');
+            } else {
+                $("#dokumentasiPreviewContainer").append('<div id="dokumentasiPreviewItems"></div>');
             }
         }
+        
+        // Show the container
+        $("#dokumentasiPreviewContainer").show();
+        
+        // Generate preview for each file
+        files.forEach(file => {
+            if (!file.type.match('image.*')) {
+                console.warn("Skipping non-image file:", file.name);
+                return; // Skip non-image files
+            }
+            
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                console.log("File preview loaded:", file.name);
+                const preview = `
+                    <div class="dokumentasi-item position-relative">
+                        <img src="${e.target.result}" 
+                            class="img-fluid rounded bg-light">
+                        
+                        <button type="button" class="btn btn-hapus-detail btn-remove-preview" data-filename="${file.name}">
+                            <svg width="16" height="16" viewBox="0 0 19 19" fill="white" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M18.7851 9.48484C18.7851 14.6563 14.6051 18.8486 9.44866 18.8486C4.29227 18.8486 0.112183 14.6563 0.112183 9.48484C0.112183 4.31339 4.29227 0.121094 9.44866 0.121094C14.6051 0.121094 18.7851 4.31339 18.7851 9.48484ZM12.8922 4.61499L12.968 4.54584C13.3602 4.22524 13.9388 4.24842 14.3043 4.61499C14.6698 4.98156 14.6929 5.56186 14.3733 5.9552L14.3043 6.03127L10.8608 9.48484L14.3043 12.9384C14.6942 13.3295 14.6942 13.9636 14.3043 14.3546C13.9143 14.7457 13.2821 14.7457 12.8921 14.3546L9.44866 10.9011L6.00519 14.3546C5.61524 14.7457 4.98299 14.7457 4.59304 14.3546C4.20309 13.9636 4.20309 13.3295 4.59304 12.9384L8.03651 9.48484L4.59299 6.03127L4.52404 5.9552C4.20437 5.56186 4.22749 4.98157 4.59299 4.61499C4.9585 4.24842 5.5371 4.22524 5.9293 4.54584L6.00514 4.61499L9.44866 8.06857L12.8922 4.61499Z"/>
+                            </svg>
+                        </button>
+                    </div>`;
+                $("#dokumentasiPreviewItems").append(preview);
+            };
+            
+            reader.onerror = function() {
+                console.error("Error reading file:", file.name);
+            };
+            
+            reader.readAsDataURL(file);
+        });
+    }
+
+    // Function to update the hidden file input with all accumulated files
+    function updateHiddenInput() {
+        // Create a DataTransfer object
+        const dataTransfer = new DataTransfer();
+        
+        // Add all files to it
+        accumualtedFiles.forEach(file => {
+            dataTransfer.items.add(file);
+        });
+        
+        // Set the files to the input element
+        $("#dokumentasi")[0].files = dataTransfer.files;
+        
+        console.log("Updated hidden input with", $("#dokumentasi")[0].files.length, "files");
+    }
+
     });
 });

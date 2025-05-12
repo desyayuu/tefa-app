@@ -504,7 +504,7 @@ body {
     cursor: pointer;
 }
 
-.btn-hapus {
+.btn-hapus-detail {
     position: absolute;
     top: -10px;
     right: -10px; /* Position it halfway off the right edge */
@@ -522,7 +522,7 @@ body {
     box-shadow: 0 2px 5px rgba(0,0,0,0.2); /* Add shadow for better visibility */
 }
 
-.btn-hapus:hover {
+.btn-hapus-detail:hover {
     background-color: rgba(220, 53, 69, 1);
     transform: scale(1.1); /* Slightly enlarge on hover */
 }
@@ -550,13 +550,6 @@ body {
     font-weight: 600;
 }
 
-#dokumentasiPreviewContainer {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-    margin-top: 15px;
-}
-
 .dokumentasi-item {
     width: 100px;
     height: 100px;
@@ -580,8 +573,6 @@ body {
     border-radius: 10px;
     border: 1px solid #ced4da;
     padding: 10px;
-    display: flex;
-    flex-wrap: wrap;
 }
 
 .dokumentasi-section-title {
@@ -629,11 +620,4 @@ body {
     object-fit: cover;
     border-radius: 8px;
     display: block;
-}
-
-.dokumentasi-preview-container {
-    gap: 15px;
-    border-radius: 10px;
-    border: 1px solid #ced4da;
-    padding: 10px;
 }
