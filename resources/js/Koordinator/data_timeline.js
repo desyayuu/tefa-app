@@ -20,7 +20,7 @@ $(document).ready(function() {
     });
 
     // Button 
-        $('#searchTimelineForm').on('submit', function(e) {
+    $('#searchTimelineForm').on('submit', function(e) {
         e.preventDefault();
         const searchValue = $('#searchTimeline').val();
         

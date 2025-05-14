@@ -1,6 +1,4 @@
-{{-- data_luaran_proyek.blade.php --}}
-
-<div id="dokumen-penunjang-section" class="detail-dokumen-penunjang flex-grow-1 pb-3">
+<div id="data-luaran-container" class="detail-dokumen-penunjang flex-grow-1 pb-3">
     <div class="card shadow-sm border-0 rounded-3 h-100">
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-4">
