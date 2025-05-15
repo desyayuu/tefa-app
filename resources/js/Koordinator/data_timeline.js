@@ -207,24 +207,17 @@ $(document).ready(function() {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },
             success: function(response) {
-                // First clear existing data again to be absolutely sure we don't get duplicates
                 $("#tableDataTimeline tbody").empty();
+            
                 
-                console.log("API Response:", response);
-                
-                // Check if we got HTML instead of JSON
                 if (typeof response === 'string' && response.indexOf('<!DOCTYPE html>') >= 0) {
                     console.error("Received HTML response instead of JSON");
                     showEmptyMessageTimeline(searchParam);
                     return;
                 }
                 
-                // Handle various response formats but focus on the main expected structure
                 if (response.success && response.data) {
                     if (Array.isArray(response.data) && response.data.length > 0) {
-                        console.log(`Rendering ${response.data.length} timeline items`);
-                        
-                        // Update pagination info if we have pagination data
                         if (response.pagination) {
                             updatePaginationTimelineInfo(
                                 response.pagination.current_page,
@@ -241,14 +234,10 @@ $(document).ready(function() {
                         // Render the timeline data
                         renderTimelineTable(response.data);
                     } else {
-                        console.log("No timeline data found in response");
-                        // No data found
                         showEmptyMessageTimeline(searchParam);
                         updatePaginationTimelineInfo(1, perPageTimeline, 0);
                     }
                 } else {
-                    console.log("Invalid or empty response structure");
-                    // Fallback for any other response format or empty data
                     showEmptyMessageTimeline(searchParam);
                     updatePaginationTimelineInfo(1, perPageTimeline, 0);
                 }
@@ -329,16 +318,12 @@ $(document).ready(function() {
     }
 
     function renderTimelineTable(data) {
-        console.log("Rendering timeline table with data:", data);
-        
-        // Get the table body and ensure it's empty
         const tableBody = $("#tableDataTimeline tbody");
         tableBody.empty();
         
         // Check if we have valid data
         if (!data || !Array.isArray(data) || data.length === 0) {
             const searchParam = $("#searchTimeline").val() || '';
-            console.log("No timeline data to render, showing empty message");
             showEmptyMessageTimeline(searchParam);
             return;
         }
@@ -393,8 +378,6 @@ $(document).ready(function() {
         
         // Attach event handlers after adding to DOM
         attachEventHandlers();
-        
-        console.log("Timeline table rendered successfully with", data.length, "items");
     }
     
     function formatDateForInput(dateString) {
@@ -648,7 +631,6 @@ $(document).ready(function() {
         
         // Prevent multiple submissions
         if ($(this).data('submitting')) {
-            console.log('Form is already being submitted - preventing duplicate submission');
             return false;
         }
         
@@ -660,9 +642,6 @@ $(document).ready(function() {
         const isSingle = $("#isSingleTimeline").val() === "1";
         const formData = new FormData(this);
         
-        // Debug what's being sent
-        console.log("Form submission - Is single timeline:", isSingle);
-        console.log("Proyek ID:", formData.get('proyek_id'));
         
         // Validate based on mode (single or multiple)
         if (isSingle) {
@@ -731,8 +710,6 @@ $(document).ready(function() {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },
             success: function(response) {
-                console.log("Add timeline success:", response);
-                
                 if (response.success) {
                     swal.successMessage(response.message).then(() => {
                         resetTimelineForm();

@@ -195,15 +195,10 @@ $(document).ready(function() {
                         html: `${successCount} dokumen berhasil disimpan<br>${errorCount} dokumen gagal disimpan`
                     });
                 }
-                
-                // Reset and reload
                 documentsToSave = [];
                 $("#previewDokumenSection").addClass("d-none");
                 
-                console.log("Documents saved, reloading data...");
-                
                 setTimeout(function() {
-                    // Kembali ke halaman pertama setelah menambahkan dokumen
                     currentPage = 1;
                     loadDokumenPenunjang(currentPage);
                 }, 500);
@@ -233,7 +228,6 @@ $(document).ready(function() {
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                 },
                 success: function(response) {
-                    console.log("Document saved response:", response);
                     if (response.success) {
                         successCount++;
                     } else {
@@ -260,8 +254,6 @@ $(document).ready(function() {
     function loadDokumenPenunjang(page = 1) {
         const proyekId = $('input[name="proyek_id"]').val();
         const searchParam = $("#searchDokumenPenunjang").val() || '';
-    
-        console.log("Loading dokumen penunjang, page:", page, "search:", searchParam);
     
         $("#tableDokumenPenunjang tbody").html(`
             <tr>
@@ -291,9 +283,6 @@ $(document).ready(function() {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },
             success: function(response) {
-                console.log("API Response:", response);
-                
-                // Periksa apakah response adalah objek dan memiliki properti data
                 if (response && response.success && response.data) {
                     
                     if (response.data.total !== undefined) {
@@ -310,11 +299,8 @@ $(document).ready(function() {
                         );
                     }
 
-                    // Periksa apakah response.data adalah objek paginator Laravel
                     if (response.data.data) {
-                        // Gunakan data dari paginator
                         const dokumenData = response.data.data;
-                        console.log("Dokumen data:", dokumenData);
                         
                         if (dokumenData && dokumenData.length > 0) {
                             renderDokumenTable(dokumenData);
@@ -369,7 +355,6 @@ $(document).ready(function() {
         const tableBody = $("#tableDokumenPenunjang tbody");
         tableBody.empty();
         
-        console.log("Rendering dokumen table with data:", data);
         
         if (!data || !Array.isArray(data) || data.length === 0) {
             showEmptyMessage();
@@ -391,13 +376,6 @@ $(document).ready(function() {
             const namaDokumen = dokumen.nama_dokumen_penunjang || 'Tidak ada nama';
             const jenisDokumen = dokumen.jenis_dokumen || 'Tidak diketahui';
             const createdAt = dokumen.created_at;
-            
-            console.log("Rendering dokumen:", {
-                id: dokumenId,
-                nama: namaDokumen,
-                jenis: jenisDokumen,
-                created: createdAt
-            });
             
             tableBody.append(`
                 <tr>

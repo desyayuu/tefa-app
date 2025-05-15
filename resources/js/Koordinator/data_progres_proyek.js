@@ -55,11 +55,6 @@ document.addEventListener('DOMContentLoaded', function () {
         const proyekId = $('input[name="proyek_id"]').val();
         const searchParam = $("#searchProgres").val() || '';
         
-        console.log("Loading progresProyek data for project ID:", proyekId);
-        console.log("Search parameter:", searchParam);
-        console.log("Current page:", page);
-        
-        // Clear any existing data first to prevent duplication
         $("#tableDataProgresProyek tbody").empty();
         
         $("#tableDataProgresProyek tbody").html(`
@@ -91,24 +86,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },
             success: function(response) {
-                // First clear existing data again to be absolutely sure we don't get duplicates
                 $("#tableDataProgresProyek tbody").empty();
-                
-                console.log("API Response:", response);
-                
-                // Check if we got HTML instead of JSON
                 if (typeof response === 'string' && response.indexOf('<!DOCTYPE html>') >= 0) {
                     console.error("Received HTML response instead of JSON");
                     showEmptyMessageProgresProyek(searchParam);
                     return;
                 }
                 
-                // Handle various response formats but focus on the main expected structure
                 if (response.success && response.data) {
                     if (Array.isArray(response.data) && response.data.length > 0) {
-                        console.log(`Rendering ${response.data.length} progresProyek items`);
-                        
-                        // Update pagination info if we have pagination data
                         if (response.pagination) {
                             updatePaginationProgresProyekInfo(
                                 response.pagination.current_page,
@@ -116,23 +102,16 @@ document.addEventListener('DOMContentLoaded', function () {
                                 response.pagination.total
                             );
                             
-                            // Update pagination links if available
                             if (response.pagination.html) {
                                 $("#progresProyekPagination").html(response.pagination.html);
                             }
                         }
-                        
-                        // Render the progresProyek data
                         renderProgresProyekTable(response.data);
                     } else {
-                        console.log("No progresProyek data found in response");
-                        // No data found
                         showEmptyMessageProgresProyek(searchParam);
                         updatePaginationProgresProyekInfo(1, perPageProgresProyek, 0);
                     }
                 } else {
-                    console.log("Invalid or empty response structure");
-                    // Fallback for any other response format or empty data
                     showEmptyMessageProgresProyek(searchParam);
                     updatePaginationProgresProyekInfo(1, perPageProgresProyek, 0);
                 }
@@ -222,10 +201,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             }
                         }
                     });
-                    
-                    console.log('Progress detail loaded successfully:', progres);
                 } else {
-                    // Show error message
                     $('#edit_form_error').removeClass('d-none').text(response.message || 'Gagal memuat data progres');
                     console.error('Failed to load progress detail:', response.message);
                 }
@@ -253,8 +229,6 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
         
-        console.log('Loading team members for edit form, project ID:', proyekId);
-        
         // Show loading indicator
         $('#edit_leder_assign_id, #edit_dosen_assign_id, #edit_profesional_assign_id, #edit_mahasiswa_assign_id').html('<option value="">Loading...</option>');
         
@@ -263,8 +237,6 @@ document.addEventListener('DOMContentLoaded', function () {
             method: 'GET',
             dataType: 'json',
             success: function(response) {
-                console.log('Team members API response for edit form:', response);
-                
                 if (response.success) {
                     const data = response.data;
                     
@@ -277,14 +249,12 @@ document.addEventListener('DOMContentLoaded', function () {
                     // Add leader if exists
                     if (data.leader) {
                         $('#edit_leder_assign_id').append(`<option value="${data.leader.project_leader_id}">${data.leader.nama}</option>`);
-                        console.log('Added leader option to edit form:', data.leader.nama);
                     }
                     
                     // Add dosen members
                     if (data.dosen && data.dosen.length > 0) {
                         data.dosen.forEach(dosen => {
                             $('#edit_dosen_assign_id').append(`<option value="${dosen.project_member_dosen_id}">${dosen.nama_dosen}</option>`);
-                            console.log('Added dosen option to edit form:', dosen.nama_dosen);
                         });
                     } else {
                         $('#edit_dosen_assign_id').append('<option value="" disabled>Tidak ada dosen</option>');
@@ -294,7 +264,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     if (data.profesional && data.profesional.length > 0) {
                         data.profesional.forEach(profesional => {
                             $('#edit_profesional_assign_id').append(`<option value="${profesional.project_member_profesional_id}">${profesional.nama_profesional}</option>`);
-                            console.log('Added profesional option to edit form:', profesional.nama_profesional);
                         });
                     } else {
                         $('#edit_profesional_assign_id').append('<option value="" disabled>Tidak ada profesional</option>');
@@ -306,7 +275,6 @@ document.addEventListener('DOMContentLoaded', function () {
                         
                         data.mahasiswa.forEach(mahasiswa => {
                             $('#edit_mahasiswa_assign_id').append(`<option value="${mahasiswa.project_member_mahasiswa_id}">${mahasiswa.nama_mahasiswa}</option>`);
-                            console.log('Added mahasiswa option to edit form:', mahasiswa.nama_mahasiswa);
                         });
                     } else {
                         $('#edit_mahasiswa_assign_id').empty().append('<option value="">Pilih Mahasiswa</option>');
@@ -327,7 +295,6 @@ document.addEventListener('DOMContentLoaded', function () {
             },
             error: function(xhr, status, error) {
                 console.error('Error fetching team members for edit form:', error);
-                console.log('Response:', xhr.responseText);
                 $('#edit_leder_assign_id, #edit_dosen_assign_id, #edit_profesional_assign_id, #edit_mahasiswa_assign_id').html('<option value="">Error loading data</option>');
             }
         });
@@ -360,8 +327,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     placeholder: 'Pilih Mahasiswa',
                     width: '100%'
                 });
-                
-                console.log('Edit form Select2 components initialized successfully');
             } catch (e) {
                 console.error('Error initializing Edit form Select2:', e);
             }
@@ -370,171 +335,154 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-// Handle assigned type change in edit form
-$('#edit_assigned_type').on('change', function() {
-    console.log('Edit form assigned type changed to:', $(this).val());
-    
-    // Hide all sections first
-    $('#edit_leader_section, #edit_dosen_section, #edit_profesional_section, #edit_mahasiswa_section').addClass('d-none');
-    
-    const selectedType = $(this).val();
-    
-    if (selectedType === 'leader') {
-        $('#edit_leader_section').removeClass('d-none');
-    } else if (selectedType === 'dosen') {
-        $('#edit_dosen_section').removeClass('d-none');
-    } else if (selectedType === 'profesional') {
-        $('#edit_profesional_section').removeClass('d-none');
-    } else if (selectedType === 'mahasiswa') {
-        $('#edit_mahasiswa_section').removeClass('d-none');
-    }
-    
-    // Clear hidden inputs
-    $('#edit_assigned_to').val('');
-    $('#edit_assigned_type_hidden').val(selectedType);
-});
 
-// Handle member selections in edit form
-$('#edit_leder_assign_id').on('change', function() {
-    $('#edit_assigned_to').val($(this).val());
-    console.log('Edit form leader selected:', $(this).val(), $(this).find('option:selected').text());
-});
+    $('#edit_assigned_type').on('change', function() {
+        $('#edit_leader_section, #edit_dosen_section, #edit_profesional_section, #edit_mahasiswa_section').addClass('d-none');
+        
+        const selectedType = $(this).val();
+        
+        if (selectedType === 'leader') {
+            $('#edit_leader_section').removeClass('d-none');
+        } else if (selectedType === 'dosen') {
+            $('#edit_dosen_section').removeClass('d-none');
+        } else if (selectedType === 'profesional') {
+            $('#edit_profesional_section').removeClass('d-none');
+        } else if (selectedType === 'mahasiswa') {
+            $('#edit_mahasiswa_section').removeClass('d-none');
+        }
+        
+        // Clear hidden inputs
+        $('#edit_assigned_to').val('');
+        $('#edit_assigned_type_hidden').val(selectedType);
+    });
 
-$('#edit_dosen_assign_id').on('change', function() {
-    $('#edit_assigned_to').val($(this).val());
-    console.log('Edit form dosen selected:', $(this).val(), $(this).find('option:selected').text());
-});
+    $('#edit_leder_assign_id').on('change', function() {
+        $('#edit_assigned_to').val($(this).val());
+    });
 
-$('#edit_profesional_assign_id').on('change', function() {
-    $('#edit_assigned_to').val($(this).val());
-    console.log('Edit form profesional selected:', $(this).val(), $(this).find('option:selected').text());
-});
+    $('#edit_dosen_assign_id').on('change', function() {
+        $('#edit_assigned_to').val($(this).val());
+    });
 
-$('#edit_mahasiswa_assign_id').on('change', function() {
-    $('#edit_assigned_to').val($(this).val());
-    console.log('Edit form mahasiswa selected:', $(this).val(), $(this).find('option:selected').text());
-});
+    $('#edit_profesional_assign_id').on('change', function() {
+        $('#edit_assigned_to').val($(this).val());
+    });
 
-// Handle edit form submission
-$('#formEditProgres').on('submit', function(e) {
-    e.preventDefault();
-    
-    // Store form reference
-    const form = this;
-    
-    // Prevent multiple submissions
-    if ($(form).data('submitting')) {
-        return;
-    }
-    
-    $(form).data('submitting', true);
-    
-    // Clear previous error messages
-    $('.invalid-feedback').text('');
-    $('#edit_form_error').addClass('d-none').text('');
-    $('.is-invalid').removeClass('is-invalid');
-    
-    // Get progres ID
-    const progresId = $('#edit_progres_id').val();
-    
-    if (!progresId) {
-        $('#edit_form_error').removeClass('d-none').text('ID progres tidak valid');
-        $(form).data('submitting', false);
-        return;
-    }
-    
-    // Get form data
-    const formData = new FormData(form);
-    
-    // Set loading state on submit button
-    const submitBtn = $('#btnUpdateProgres');
-    const originalBtnText = submitBtn.html();
-    submitBtn.html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Menyimpan...');
-    submitBtn.prop('disabled', true);
-    
-    $.ajax({
-        url: `/koordinator/proyek/progres-proyek/${progresId}`,
-        type: 'POST',
-        data: formData,
-        contentType: false,
-        processData: false,
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        },
-        success: function(response) {
-            // Reset button state
-            submitBtn.html(originalBtnText);
-            submitBtn.prop('disabled', false);
-            
-            if (response.success) {
-                // Close the modal
-                $('#modalEditProgres').modal('hide');
+    $('#edit_mahasiswa_assign_id').on('change', function() {
+        $('#edit_assigned_to').val($(this).val());
+    });
+
+
+    $('#formEditProgres').on('submit', function(e) {
+        e.preventDefault();
+        const form = this;
+        if ($(form).data('submitting')) {
+            return;
+        }
+        
+        $(form).data('submitting', true);
+        
+        // Clear previous error messages
+        $('.invalid-feedback').text('');
+        $('#edit_form_error').addClass('d-none').text('');
+        $('.is-invalid').removeClass('is-invalid');
+        
+        // Get progres ID
+        const progresId = $('#edit_progres_id').val();
+        
+        if (!progresId) {
+            $('#edit_form_error').removeClass('d-none').text('ID progres tidak valid');
+            $(form).data('submitting', false);
+            return;
+        }
+        
+        // Get form data
+        const formData = new FormData(form);
+        
+        // Set loading state on submit button
+        const submitBtn = $('#btnUpdateProgres');
+        const originalBtnText = submitBtn.html();
+        submitBtn.html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Menyimpan...');
+        submitBtn.prop('disabled', true);
+        
+        $.ajax({
+            url: `/koordinator/proyek/progres-proyek/${progresId}`,
+            type: 'POST',
+            data: formData,
+            contentType: false,
+            processData: false,
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                // Reset button state
+                submitBtn.html(originalBtnText);
+                submitBtn.prop('disabled', false);
                 
-                // Show success message
-                swal.successMessage('Data progres proyek berhasil diperbarui')
-                .then(() => {
-                    // Reload data to show the updated item
-                    loadDataProgresProyek(currentPageProgresProyek);
-                });
+                if (response.success) {
+                    // Close the modal
+                    $('#modalEditProgres').modal('hide');
+                    
+                    // Show success message
+                    swal.successMessage('Data progres proyek berhasil diperbarui')
+                    .then(() => {
+                        // Reload data to show the updated item
+                        loadDataProgresProyek(currentPageProgresProyek);
+                    });
+                    
+                    // Reset form state
+                    $(form).data('submitting', false);
+                } else {
+                    // Show error message
+                    $('#edit_form_error').removeClass('d-none').text(response.message || 'Gagal memperbarui data');
+                    $(form).data('submitting', false);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error updating progress:', error);
+                submitBtn.html(originalBtnText);
+                submitBtn.prop('disabled', false);
                 
-                // Reset form state
-                $(form).data('submitting', false);
-            } else {
-                // Show error message
-                $('#edit_form_error').removeClass('d-none').text(response.message || 'Gagal memperbarui data');
-                $(form).data('submitting', false);
-            }
-        },
-        error: function(xhr, status, error) {
-            console.error('Error updating progress:', error);
-            console.log('Error response:', xhr.responseJSON);
-            
-            // Reset button state
-            submitBtn.html(originalBtnText);
-            submitBtn.prop('disabled', false);
-            
-            const response = xhr.responseJSON;
-            
-            if (response && response.errors) {
-                // Display validation errors
-                for (const field in response.errors) {
-                    const errorField = `#edit_${field}_error`;
-                    $(errorField).text(response.errors[field][0]);
-                    $(`#edit_${field}`).addClass('is-invalid');
+                const response = xhr.responseJSON;
+                
+                if (response && response.errors) {
+                    // Display validation errors
+                    for (const field in response.errors) {
+                        const errorField = `#edit_${field}_error`;
+                        $(errorField).text(response.errors[field][0]);
+                        $(`#edit_${field}`).addClass('is-invalid');
+                    }
+                    
+                    $('#edit_form_error').removeClass('d-none').text('Mohon periksa kembali data yang dimasukkan.');
+                } else {
+                    // Display general error
+                    $('#edit_form_error').removeClass('d-none').text(response.message || 'Terjadi kesalahan saat memperbarui data.');
                 }
                 
-                $('#edit_form_error').removeClass('d-none').text('Mohon periksa kembali data yang dimasukkan.');
-            } else {
-                // Display general error
-                $('#edit_form_error').removeClass('d-none').text(response.message || 'Terjadi kesalahan saat memperbarui data.');
+                $(form).data('submitting', false);
             }
-            
-            $(form).data('submitting', false);
+        });
+    });
+
+
+    $('#modalEditProgres').on('hidden.bs.modal', function() {
+        $('#formEditProgres')[0].reset();
+        $('.invalid-feedback').text('');
+        $('#edit_form_error').addClass('d-none').text('');
+        $('.is-invalid').removeClass('is-invalid');
+        
+        // Hide all assignment sections
+        $('#edit_leader_section, #edit_dosen_section, #edit_profesional_section, #edit_mahasiswa_section').addClass('d-none');
+        
+        // Clear select2 selections
+        if (typeof $.fn.select2 !== 'undefined') {
+            try {
+                $('#edit_leder_assign_id, #edit_dosen_assign_id, #edit_profesional_assign_id, #edit_mahasiswa_assign_id').val(null).trigger('change');
+            } catch (e) {
+                console.log('Note: Could not reset Select2 instances in edit form:', e);
+            }
         }
     });
-});
-
-// Reset edit form when modal is closed
-$('#modalEditProgres').on('hidden.bs.modal', function() {
-    $('#formEditProgres')[0].reset();
-    $('.invalid-feedback').text('');
-    $('#edit_form_error').addClass('d-none').text('');
-    $('.is-invalid').removeClass('is-invalid');
-    
-    // Hide all assignment sections
-    $('#edit_leader_section, #edit_dosen_section, #edit_profesional_section, #edit_mahasiswa_section').addClass('d-none');
-    
-    // Clear select2 selections
-    if (typeof $.fn.select2 !== 'undefined') {
-        try {
-            $('#edit_leder_assign_id, #edit_dosen_assign_id, #edit_profesional_assign_id, #edit_mahasiswa_assign_id').val(null).trigger('change');
-        } catch (e) {
-            console.log('Note: Could not reset Select2 instances in edit form:', e);
-        }
-    }
-});
-
-
 
     function updatePaginationProgresProyekInfo(currentPage, perPage, total) {
         const from = total > 0 ? (currentPage - 1) * perPage + 1 : 0;
@@ -576,16 +524,12 @@ $('#modalEditProgres').on('hidden.bs.modal', function() {
     }
 
     function renderProgresProyekTable(data) {
-        console.log("Rendering progresProyek table with data:", data);
-        
-        // Get the table body and ensure it's empty
         const tableBody = $("#tableDataProgresProyek tbody");
         tableBody.empty();
         
         // Check if we have valid data
         if (!data || !Array.isArray(data) || data.length === 0) {
             const searchParam = $("#searchProgres").val() || '';
-            console.log("No progresProyek data to render, showing empty message");
             showEmptyMessageProgresProyek(searchParam);
             return;
         }
@@ -637,14 +581,8 @@ $('#modalEditProgres').on('hidden.bs.modal', function() {
                 </tr>
             `;
         });
-        
-        // Set the HTML content all at once (more efficient)
         tableBody.html(tableHtml);
-        
-        // Attach event handlers after adding to DOM
         attachEventHandlers();
-        
-        console.log("ProgresProyek table rendered successfully with", data.length, "items");
     }
 
     function attachEventHandlers() {
@@ -692,8 +630,6 @@ $('#modalEditProgres').on('hidden.bs.modal', function() {
 
     function initializeSelect2() {
         if (typeof $.fn.select2 !== 'undefined') {
-            console.log('Initializing Select2 components...');
-            
             try {
                 $('.select2-assign-leader').select2({
                     dropdownParent: $('#modalTambahProgresFromKoor'),
@@ -718,8 +654,6 @@ $('#modalEditProgres').on('hidden.bs.modal', function() {
                     placeholder: 'Pilih Mahasiswa',
                     width: '100%'
                 });
-                
-                console.log('All Select2 components initialized successfully');
             } catch (e) {
                 console.error('Error initializing Select2:', e);
             }
@@ -729,14 +663,10 @@ $('#modalEditProgres').on('hidden.bs.modal', function() {
     }
 
     $('#modalTambahProgresFromKoor').on('shown.bs.modal', function () {
-        console.log('Modal shown, loading team members...');
         loadTeamMembers(proyekId);
     });
 
     $('#assigned_type').on('change', function() {
-        console.log('Assigned type changed to:', $(this).val());
-        
-        // Hide all sections first
         $('#leader_section, #dosen_section, #profesional_section, #mahasiswa_section').addClass('d-none');
         
         const selectedType = $(this).val();
@@ -750,41 +680,33 @@ $('#modalEditProgres').on('hidden.bs.modal', function() {
         } else if (selectedType === 'mahasiswa') {
             $('#mahasiswa_section').removeClass('d-none');
         }
-        
-        // Clear hidden inputs
+
         $('#assigned_to').val('');
         $('#assigned_type_hidden').val(selectedType);
     });
 
     $('#leder_assign_id').on('change', function() {
         $('#assigned_to').val($(this).val());
-        console.log('Leader selected:', $(this).val(), $(this).find('option:selected').text());
     });
 
     $('#dosen_assign_id').on('change', function() {
         $('#assigned_to').val($(this).val());
-        console.log('Dosen selected:', $(this).val(), $(this).find('option:selected').text());
     });
 
     $('#profesional_assign_id').on('change', function() {
         $('#assigned_to').val($(this).val());
-        console.log('Profesional selected:', $(this).val(), $(this).find('option:selected').text());
     });
 
     $('#mahasiswa_assign_id').on('change', function() {
         $('#assigned_to').val($(this).val());
-        console.log('Mahasiswa selected:', $(this).val(), $(this).find('option:selected').text());
     });
 
 
-// Add validation for the percentage input before adding to table
     $('#btnTambahkanKeDaftarProgres').on('click', function() {
-        // Clear previous validation messages
         $('.invalid-feedback').text('');
         $('.is-invalid').removeClass('is-invalid');
         $('#form_progres_error').addClass('d-none').text('');
         
-        // Get form values
         const namaProgres = $('#nama_progres').val();
         const statusProgres = $('#status_progres').val();
         let persentaseProgres = $('#persentase_progres').val();
@@ -792,10 +714,8 @@ $('#modalEditProgres').on('hidden.bs.modal', function() {
         const assignedType = $('#assigned_type').val();
         const assignedTo = $('#assigned_to').val();
         
-        // Validation checks
         let isValid = true;
         
-        // Required fields validation
         if (!namaProgres) {
             $('#nama_progres').addClass('is-invalid');
             $('#nama_progres_error').text('Nama progres harus diisi');
@@ -814,7 +734,6 @@ $('#modalEditProgres').on('hidden.bs.modal', function() {
             isValid = false;
         }
         
-        // Validate persentase_progres is a number or empty
         if (persentaseProgres !== '') {
             if (isNaN(persentaseProgres)) {
                 $('#persentase_progres').addClass('is-invalid');
@@ -826,12 +745,10 @@ $('#modalEditProgres').on('hidden.bs.modal', function() {
                 isValid = false;
             }
         } else {
-            // Set default to 0 if empty
             persentaseProgres = '0';
             $('#persentase_progres').val('0');
         }
         
-        // If validation fails, stop here
         if (!isValid) {
             return;
         }
@@ -947,9 +864,6 @@ $('#modalEditProgres').on('hidden.bs.modal', function() {
             },
             error: function(xhr, status, error) {
                 console.error('Error in form submission:', error);
-                console.log('Error response:', xhr.responseJSON);
-                
-                // Reset button state
                 submitBtn.html(originalBtnText);
                 submitBtn.prop('disabled', false);
                 
@@ -1023,10 +937,7 @@ $('#modalEditProgres').on('hidden.bs.modal', function() {
             console.error('Project ID not found');
             return;
         }
-        
-        console.log('Loading team members for project ID:', proyekId);
-        
-        // Show loading indicator - corrected ID selectors to match HTML
+
         $('#leder_assign_id, #dosen_assign_id, #profesional_assign_id, #mahasiswa_assign_id').html('<option value="">Loading...</option>');
         
         $.ajax({
@@ -1034,8 +945,6 @@ $('#modalEditProgres').on('hidden.bs.modal', function() {
             method: 'GET',
             dataType: 'json',
             success: function(response) {
-                console.log('Team members API response:', response);
-                
                 if (response.success) {
                     const data = response.data;
                     
@@ -1047,15 +956,13 @@ $('#modalEditProgres').on('hidden.bs.modal', function() {
                     
                     // Add leader if exists
                     if (data.leader) {
-                        $('#leder_assign_id').append(`<option value="${data.leader.project_leader_id}">${data.leader.nama}</option>`);
-                        console.log('Added leader option:', data.leader.nama);
+                        $('#leder_assign_id').append(`<option value="${data.leader.project_leader_id}">${data.leader.nama}</option>`)
                     }
                     
                     // Add dosen members
                     if (data.dosen && data.dosen.length > 0) {
                         data.dosen.forEach(dosen => {
                             $('#dosen_assign_id').append(`<option value="${dosen.project_member_dosen_id}">${dosen.nama_dosen}</option>`);
-                            console.log('Added dosen option:', dosen.nama_dosen);
                         });
                     } else {
                         $('#dosen_assign_id').append('<option value="" disabled>Tidak ada dosen</option>');
@@ -1065,51 +972,34 @@ $('#modalEditProgres').on('hidden.bs.modal', function() {
                     if (data.profesional && data.profesional.length > 0) {
                         data.profesional.forEach(profesional => {
                             $('#profesional_assign_id').append(`<option value="${profesional.project_member_profesional_id}">${profesional.nama_profesional}</option>`);
-                            console.log('Added profesional option:', profesional.nama_profesional);
                         });
                     } else {
                         $('#profesional_assign_id').append('<option value="" disabled>Tidak ada profesional</option>');
                     }
-                    
-                    // Add mahasiswa members (with direct DOM approach)
-                    console.log('Processing mahasiswa data...');
-                    console.log('Mahasiswa data length:', data.mahasiswa ? data.mahasiswa.length : 0);
                     
                     if (data.mahasiswa && data.mahasiswa.length > 0) {
                         // First, empty the select element to ensure a clean state
                         $('#mahasiswa_assign_id').empty().append('<option value="">Pilih Mahasiswa</option>');
                         
                         data.mahasiswa.forEach((mahasiswa, index) => {
-                            console.log(`Processing mahasiswa ${index}:`, mahasiswa);
-                            
-                            // Use direct DOM manipulation for cleaner implementation
                             const option = document.createElement('option');
                             option.value = mahasiswa.project_member_mahasiswa_id;
                             option.textContent = mahasiswa.nama_mahasiswa;
                             document.getElementById('mahasiswa_assign_id').appendChild(option);
-                            
-                            console.log(`Added mahasiswa option: ${mahasiswa.nama_mahasiswa} with value ${mahasiswa.project_member_mahasiswa_id}`);
                         });
-                        
-                        // Log the HTML content after adding options
-                        console.log('Mahasiswa select HTML after adding options:', $('#mahasiswa_assign_id').html());
                     } else {
                         $('#mahasiswa_assign_id').empty().append('<option value="">Pilih Mahasiswa</option>');
                         $('#mahasiswa_assign_id').append('<option value="" disabled>Tidak ada mahasiswa</option>');
-                        console.log('No mahasiswa data found');
                     }
                     
-                    // Force destroy any existing Select2 instances first
                     try {
                         if (typeof $.fn.select2 !== 'undefined') {
                             $('.select2-assign-leader, .select2-assign-dosen, .select2-assign-profesional, .select2-assign-mahasiswa').select2('destroy');
-                            console.log('Successfully destroyed previous Select2 instances');
                         }
                     } catch (e) {
                         console.log('Note: Could not destroy Select2 instances, may not exist yet:', e);
                     }
-                    
-                    // Add delay before re-initializing Select2 to ensure DOM is ready
+
                     setTimeout(function() {
                         if (typeof $.fn.select2 !== 'undefined') {
                             try {
@@ -1144,27 +1034,23 @@ $('#modalEditProgres').on('hidden.bs.modal', function() {
                                     $('.select2-assign-mahasiswa').select2('close');
                                     $('.select2-assign-mahasiswa').select2('open');
                                     $('.select2-assign-mahasiswa').select2('close');
-                                    console.log('Forced mahasiswa Select2 refresh');
                                 } catch (e) {
                                     console.error('Error refreshing mahasiswa Select2:', e);
                                 }
-                                
-                                console.log('All Select2 instances successfully initialized');
                             } catch (e) {
                                 console.error('Error initializing Select2:', e);
                             }
                         } else {
                             console.warn('Select2 library not found');
                         }
-                    }, 100); // Short delay to ensure DOM is ready
+                    }, 100); 
                 } else {
                     console.error('Failed to get team data:', response.message);
                     $('#leder_assign_id, #dosen_assign_id, #profesional_assign_id, #mahasiswa_assign_id').html('<option value="">Error loading data</option>');
                 }
             },
-            error: function(xhr, status, error) {
+            error: function(error) {
                 console.error('Error fetching team members:', error);
-                console.log('Response:', xhr.responseText);
                 $('#leder_assign_id, #dosen_assign_id, #profesional_assign_id, #mahasiswa_assign_id').html('<option value="">Error loading data</option>');
                 alert('Gagal mengambil data tim proyek. Silakan coba lagi.');
             }
@@ -1189,8 +1075,6 @@ $('#modalEditProgres').on('hidden.bs.modal', function() {
 
 
     $('#modalTambahProgresFromKoor').on('hidden.bs.modal', function () {
-        console.log('Modal hidden, resetting form...');
-        
         $('#formTambahDataProgres')[0].reset();
         $('.invalid-feedback').text('');
         $('#form_progres_error').addClass('d-none').text('');
