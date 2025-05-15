@@ -1,3 +1,5 @@
+import swal from '../components';
+
 document.addEventListener('DOMContentLoaded', function () {
     const proyekId = document.getElementById('proyek_id').value;
     initializeSelect2();
@@ -33,7 +35,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 500);
     });
 
-    // Button 
     $('#searchProgresForm').on('submit', function(e) {
         e.preventDefault();
         const searchValue = $('#searchProgres').val();
@@ -49,7 +50,7 @@ document.addEventListener('DOMContentLoaded', function () {
         scrollToDataProgresProyekSection();
     });
 
-    // Load data progresProyek
+
     function loadDataProgresProyek(page = 1) {
         const proyekId = $('input[name="proyek_id"]').val();
         const searchParam = $("#searchProgres").val() || '';
@@ -61,7 +62,6 @@ document.addEventListener('DOMContentLoaded', function () {
         // Clear any existing data first to prevent duplication
         $("#tableDataProgresProyek tbody").empty();
         
-        // Show loading state
         $("#tableDataProgresProyek tbody").html(`
             <tr>
                 <td colspan="4" class="text-center py-4">
@@ -170,17 +170,6 @@ document.addEventListener('DOMContentLoaded', function () {
         // Disable form fields while loading
         $('#formEditProgres input, #formEditProgres select, #formEditProgres textarea').prop('disabled', true);
         
-        // Show a loading message
-        const loadingHtml = `
-            <div class="text-center py-4" id="edit-loading-indicator">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-                <p class="mt-2">Memuat data...</p>
-            </div>
-        `;
-        
-        $('#formEditProgres .modal-body').prepend(loadingHtml);
         
         // Fetch progress detail from the server
         $.ajax({
@@ -482,13 +471,8 @@ $('#formEditProgres').on('submit', function(e) {
                 $('#modalEditProgres').modal('hide');
                 
                 // Show success message
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Berhasil',
-                    text: response.message || 'Data progres berhasil diperbarui',
-                    timer: 1500,
-                    showConfirmButton: false
-                }).then(() => {
+                swal.successMessage('Data progres proyek berhasil diperbarui')
+                .then(() => {
                     // Reload data to show the updated item
                     loadDataProgresProyek(currentPageProgresProyek);
                 });
@@ -677,16 +661,7 @@ $('#modalEditProgres').on('hidden.bs.modal', function() {
     }
 
     function confirmDeleteProgresProyek(progresProyekId) {
-        Swal.fire({
-            title: 'Konfirmasi Hapus',
-            text: 'Apakah Anda yakin ingin menghapus progres ini?',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Ya, Hapus',
-            cancelButtonText: 'Batal'
-        }).then((result) => {
+        swal.confirmationDelete('Apakah Anda yakin ingin menghapus progres ini? ').then((result) => {
             if (result.isConfirmed) {
                 deleteProgresProyek(progresProyekId);
             }
@@ -702,33 +677,15 @@ $('#modalEditProgres').on('hidden.bs.modal', function() {
             },
             success: function(response) {
                 if (response.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Berhasil',
-                        text: response.message,
-                        confirmButtonText: 'OK'
-                    });
-                    
-                    // Refresh data
+                    swal.successMessage(response.message)
                     loadDataProgresProyek(currentPageProgresProyek);
                 } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Gagal',
-                        text: response.message || 'Gagal menghapus progresProyek',
-                        confirmButtonText: 'OK'
-                    });
+                    swal.errorMessage(response.message || 'Gagal menghapus progres proyek')
                 }
             },
             error: function(xhr) {
                 console.error("Error deleting progres proyek:", xhr.responseText);
-                
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Gagal',
-                    text: 'Terjadi kesalahan saat menghapus progres proyek',
-                    confirmButtonText: 'OK'
-                });
+                swal.errorMessage('Terjadi kesalahan saat menghapus progres proyek');
             }
         });
     }
@@ -820,23 +777,66 @@ $('#modalEditProgres').on('hidden.bs.modal', function() {
     });
 
 
+// Add validation for the percentage input before adding to table
     $('#btnTambahkanKeDaftarProgres').on('click', function() {
+        // Clear previous validation messages
+        $('.invalid-feedback').text('');
+        $('.is-invalid').removeClass('is-invalid');
+        $('#form_progres_error').addClass('d-none').text('');
+        
         // Get form values
         const namaProgres = $('#nama_progres').val();
         const statusProgres = $('#status_progres').val();
-        const persentaseProgres = $('#persentase_progres').val();
+        let persentaseProgres = $('#persentase_progres').val();
         const deskripsiProgres = $('#deskripsi_progres').val();
         const assignedType = $('#assigned_type').val();
         const assignedTo = $('#assigned_to').val();
         
-        // Basic validation
-        if (!namaProgres || !statusProgres || !persentaseProgres) {
-            // Show error message
-            $('#form_progres_error').removeClass('d-none').text('Mohon lengkapi data yang diperlukan.');
+        // Validation checks
+        let isValid = true;
+        
+        // Required fields validation
+        if (!namaProgres) {
+            $('#nama_progres').addClass('is-invalid');
+            $('#nama_progres_error').text('Nama progres harus diisi');
+            isValid = false;
+        }
+        
+        if (!statusProgres) {
+            $('#status_progres').addClass('is-invalid');
+            $('#status_progres_error').text('Status progres harus dipilih');
+            isValid = false;
+        }
+        
+        if (!assignedType || !assignedTo) {
+            $('#assigned_type').addClass('is-invalid');
+            $('#assigned_type_error').text('Pilih tipe dan nama penanggung jawab');
+            isValid = false;
+        }
+        
+        // Validate persentase_progres is a number or empty
+        if (persentaseProgres !== '') {
+            if (isNaN(persentaseProgres)) {
+                $('#persentase_progres').addClass('is-invalid');
+                $('#persentase_progres_error').text('Persentase harus berupa angka');
+                isValid = false;
+            } else if (persentaseProgres < 0 || persentaseProgres > 100) {
+                $('#persentase_progres').addClass('is-invalid');
+                $('#persentase_progres_error').text('Persentase harus antara 0-100');
+                isValid = false;
+            }
+        } else {
+            // Set default to 0 if empty
+            persentaseProgres = '0';
+            $('#persentase_progres').val('0');
+        }
+        
+        // If validation fails, stop here
+        if (!isValid) {
             return;
         }
         
-        // Get assigned name based on type - corrected ID selectors to match HTML
+        // Get assigned name for display
         let assignedName = 'Tidak ditugaskan';
         if (assignedType === 'leader') {
             assignedName = $('#leder_assign_id option:selected').text().trim();
@@ -848,9 +848,7 @@ $('#modalEditProgres').on('hidden.bs.modal', function() {
             assignedName = $('#mahasiswa_assign_id option:selected').text().trim();
         }
         
-        console.log('Adding progress item with assigned to:', assignedName);
-        
-        // Create progress object
+        // Create progress item object
         const progressItem = {
             nama_progres: namaProgres,
             status_progres: statusProgres,
@@ -863,15 +861,13 @@ $('#modalEditProgres').on('hidden.bs.modal', function() {
         
         // Add to progress list
         progressList.push(progressItem);
-        
-        // Update the hidden input with JSON data
         $('#progresJsonData').val(JSON.stringify(progressList));
         $('#isSingleProgres').val('0');
         
-        // Update the table
+        // Update the display table
         updateProgressTable();
         
-        // Clear form fields
+        // Reset form fields
         $('#nama_progres').val('');
         $('#status_progres').val('');
         $('#persentase_progres').val('');
@@ -881,11 +877,105 @@ $('#modalEditProgres').on('hidden.bs.modal', function() {
         $('#form_progres_error').addClass('d-none');
     });
 
-    // Function to update progress table
+    $('#formTambahDataProgres').on('submit', function(e) {
+        e.preventDefault();
+        
+        const self = this;
+        
+        // Prevent multiple submissions
+        if ($(self).data('submitting')) {
+            return;
+        }
+        
+        $(self).data('submitting', true);
+        
+        // Clear existing error messages
+        $('.invalid-feedback').text('');
+        $('#form_progres_error').addClass('d-none').text('');
+        
+        // Get form data
+        const formData = new FormData(this);
+        
+        // Check if any progress items are in the list when in multi mode
+        if ($('#isSingleProgres').val() === '0' && progressList.length === 0) {
+            $('#form_progres_error').removeClass('d-none').text('Belum ada progres yang ditambahkan ke daftar.');
+            $(self).data('submitting', false);
+            return;
+        }
+        
+        // Show loading indicator inside the submit button
+        const submitBtn = $('#btnSimpanProgres');
+        const originalBtnText = submitBtn.html();
+        submitBtn.html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Menyimpan...');
+        submitBtn.prop('disabled', true);
+        
+        $.ajax({
+            url: '/koordinator/proyek/progres-proyek',
+            method: 'POST',
+            data: formData,
+            contentType: false,
+            processData: false,
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                submitBtn.html(originalBtnText);
+                submitBtn.prop('disabled', false);
+
+                if (response.success) {
+                    $('#modalTambahProgresFromKoor').modal('hide');
+
+                    // Show success message
+                    swal.successMessage(response.message || 'Data progres berhasil disimpan').then(() => {
+                        resetProgresProyekForm();
+                        progressList = [];
+                        $("#progresJsonData").val('[]');
+                        $("#isSingleProgres").val("1");
+                        
+                        setTimeout(function() {
+                            currentPageProgresProyek = 1;
+                            loadDataProgresProyek(currentPageProgresProyek);
+                        }, 300);
+                    });
+                    
+                    $(self).data('submitting', false);
+    
+                } else {
+                    $("#form_progres_error").removeClass('d-none').text(response.message || 'Terjadi kesalahan');
+                    $(self).data('submitting', false);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error in form submission:', error);
+                console.log('Error response:', xhr.responseJSON);
+                
+                // Reset button state
+                submitBtn.html(originalBtnText);
+                submitBtn.prop('disabled', false);
+                
+                const response = xhr.responseJSON;
+                
+                if (response && response.errors) {
+                    for (const field in response.errors) {
+                        const errorField = `#${field}_error`;
+                        $(errorField).text(response.errors[field][0]);
+                        $(`#${field}`).addClass('is-invalid');
+                    }
+                    
+                    swal.errorMessage('Mohon periksa kembali data yang dimasukkan.');
+                } else {
+                    swal.errorMessage('Terjadi kesalahan saat menyimpan data.');
+                }
+                
+                $(self).data('submitting', false);
+            }
+        });
+    });
+
+
     function updateProgressTable() {
         const tableBody = $('#daftarProgres');
         
-        // Clear table body
         tableBody.empty();
         
         if (progressList.length === 0) {
@@ -1081,115 +1171,6 @@ $('#modalEditProgres').on('hidden.bs.modal', function() {
         });
     }
 
-    $('#formTambahDataProgres').on('submit', function(e) {
-        e.preventDefault();
-        
-        // Store a reference to the form
-        const self = this;
-        
-        // Prevent multiple submissions
-        if ($(self).data('submitting')) {
-            return;
-        }
-        
-        $(self).data('submitting', true);
-        
-        // Clear existing error messages
-        $('.invalid-feedback').text('');
-        $('#form_progres_error').addClass('d-none').text('');
-        
-        // Get form data
-        const formData = new FormData(this);
-        
-        // Check if any progress items are in the list when in multi mode
-        if ($('#isSingleProgres').val() === '0' && progressList.length === 0) {
-            $('#form_progres_error').removeClass('d-none').text('Belum ada progres yang ditambahkan ke daftar.');
-            $(self).data('submitting', false);
-            return;
-        }
-        
-        // Show loading indicator inside the submit button
-        const submitBtn = $('#btnSimpanProgres');
-        const originalBtnText = submitBtn.html();
-        submitBtn.html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Menyimpan...');
-        submitBtn.prop('disabled', true);
-        
-        $.ajax({
-            url: '/koordinator/proyek/progres-proyek',
-            method: 'POST',
-            data: formData,
-            contentType: false,
-            processData: false,
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            },
-            success: function(response) {
-                console.log('Form submission response:', response);
-                
-                // Reset button state
-                submitBtn.html(originalBtnText);
-                submitBtn.prop('disabled', false);
-
-
-                if (response.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Berhasil',
-                        text: response.message,
-                        confirmButtonText: 'OK'
-                    }).then(() => {
-                        // Reset form and collection
-                        resetProgresProyekForm();
-                        $("#progresProyekJsonData").val('[]');
-                        $("#isSingleProgresProyek").val("1");
-                        
-                        // Close modal first to prevent any race conditions
-                        $('#modalTambahProgresProyekFromKoor').modal('hide');
-                        
-                        // Reset the form state before reloading data
-                        $(self).data('submitting', false);
-                        
-                        // IMPORTANT: Wait a moment before reloading to avoid race conditions
-                        setTimeout(function() {
-                            // Reload data to first page to show the newly added item
-                            currentPageProgresProyek = 1;
-                            loadDataProgresProyek(currentPageProgresProyek);
-                        }, 300);
-                    });
-  
-                } else {
-                    $("#form_progres_error").removeClass('d-none').text(response.message || 'Terjadi kesalahan');
-                    $(self).data('submitting', false);
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error('Error in form submission:', error);
-                console.log('Error response:', xhr.responseJSON);
-                
-                // Reset button state
-                submitBtn.html(originalBtnText);
-                submitBtn.prop('disabled', false);
-                
-                const response = xhr.responseJSON;
-                
-                if (response && response.errors) {
-                    // Display validation errors
-                    for (const field in response.errors) {
-                        const errorField = `#${field}_error`;
-                        $(errorField).text(response.errors[field][0]);
-                        $(`#${field}`).addClass('is-invalid');
-                    }
-                    
-                    $('#form_progres_error').removeClass('d-none').text('Mohon periksa kembali data yang dimasukkan.');
-                } else {
-                    // Display general error
-                    $('#form_progres_error').removeClass('d-none').text(response.message || 'Terjadi kesalahan saat menyimpan data.');
-                }
-                
-                $(self).data('submitting', false);
-            }
-        });
-    });
 
     function resetProgresProyekForm() {
         $("#nama_progres").val('');
@@ -1207,7 +1188,6 @@ $('#modalEditProgres').on('hidden.bs.modal', function() {
     }
 
 
-    // Reset form and data when modal is closed
     $('#modalTambahProgresFromKoor').on('hidden.bs.modal', function () {
         console.log('Modal hidden, resetting form...');
         

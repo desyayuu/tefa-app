@@ -35,7 +35,7 @@ $(document).ready(function() {
         console.log("Fetching luaran dan dokumentasi data for proyek ID:", proyekId);
         
         // Show loading state
-        $("#dokumen-penunjang-section").append('<div class="loading-overlay"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>');
+        $("#luaran-section").append('<div class="loading-overlay"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>');
         
         $.ajax({
             url: `/koordinator/proyek/${proyekId}/luaran`,

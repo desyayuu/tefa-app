@@ -33,3 +33,11 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+    @vite('resources/js/Koordinator/data_proyek.js')
+    @vite('resources/js/Koordinator/data_dokumen_penunjang.js')
+    @vite('resources/js/Koordinator/data_timeline.js')
+    @vite('resources/js/Koordinator/data_luaran.js')
+    @vite('resources/js/Koordinator/data_progres_proyek.js')
+@endpush

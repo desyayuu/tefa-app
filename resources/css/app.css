@@ -677,8 +677,10 @@ select,
 
 .btn-action-download, 
 .btn-action-delete,
-.btn-action-detail, 
-.btn-action-delete-timeline{ 
+.btn-action-detail-timeline,
+.btn-action-detail-progres, 
+.btn-action-delete-timeline, 
+.btn-action-delete-progres{ 
     background: transparent;
     border: none;
     padding: 0.25rem;
@@ -690,14 +692,19 @@ select,
 
 .btn-action-download:hover,
 .btn-action-delete:hover,
-.btn-action-detail:hover,
+.btn-action-detail-progres:hover,
+.btn-action-detail-timeline:hover,
+.btn-action-delete-progres:hover,
 .btn-action-delete-timeline:hover{ 
     transform: scale(1.1);
 }
 
 .btn-action-download:active,
 .btn-action-delete:active,
-.btn-action-detail:active, 
+.btn-action-detail:active,
+.btn-action-detail-timeline:active,
+.btn-action-detail-progres:active,
+.btn-action-delete-progres:active, 
 .btn-action-delete-timeline:active{
     transform: scale(0.95);
 }

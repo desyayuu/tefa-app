@@ -1,4 +1,5 @@
-<div class="data-progres-container flex-grow-1 pb-3">
+
+<div class="data-progres-container flex-grow-1 pb-3" id="dataProgresContainer">
     <div class="card shadow-sm border-0 rounded-3 h-100">
         <div class="card-body">
             <div id="progres-proyek-section" class="title-table d-flex justify-content-between align-items-center mb-3">
@@ -95,7 +96,7 @@
                         
                         <!-- Persentase Progres -->
                         <div class="mb-3 col-md-6">
-                            <label for="persentase_progres" class="form-label">Persentase Pengerjaan <span class="text-danger">*</span></label>
+                            <label for="persentase_progres" class="form-label">Persentase Pengerjaan</label>
                             <div class="input-group">
                                 <input type="number" min="0" max="100" class="form-control" id="persentase_progres" name="persentase_progres" required>
                                 <span class="input-group-text">%</span>

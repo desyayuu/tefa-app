@@ -352,7 +352,7 @@ body {
     margin-bottom: 20px;
 }
 
-.detail-dokumen-penunjang{
+.detail-dokumen-penunjang, .detail-luaran{
     margin-top: 20px; 
     margin-left: 20px;
     font-size: 14px;

@@ -1,4 +1,4 @@
-<div id="data-luaran-container" class="detail-dokumen-penunjang flex-grow-1 pb-3">
+<div id="data-luaran-container" class="detail-luaran flex-grow-1 pb-3">
     <div class="card shadow-sm border-0 rounded-3 h-100">
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-4">
@@ -65,7 +65,7 @@
                 <div class="mb-3 row">
                     <label class="col-md-2 col-form-label">Dokumentasi Proyek</label>
                     <div class="col-md-10">
-                        <div class="mb-2 d-flex align-items-center">
+                        <div class="mb-2 d-flex align-items-center dokuemntasi-uploaded">
                             <!-- Hidden file input -->
                             <input type="file" class="d-none" id="dokumentasi" name="dokumentasi[]" accept=".jpg,.jpeg,.png" multiple>
                             <button type="button" class="btn btn-upload" id="btnUploadDokumentasi">Upload</button>
