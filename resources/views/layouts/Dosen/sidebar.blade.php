@@ -209,44 +209,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // CSS tambahan untuk tombol toggle
     const style = document.createElement('style');
-    style.textContent = `
-        .sidebar-toggle {
-            position: fixed;
-            top: 15px;
-            left: 15px;
-            z-index: 1001;
-            background-color: white;
-            border: none;
-            border-radius: 4px;
-            padding: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            display: none;
-        }
-        
-        @media (max-width: 992px) {
-            .sidebar-toggle {
-                display: block;
-            }
-            
-            .content-wrapper {
-                margin-left: 60px;
-            }
-            
-            .sidebar.expanded + .content-wrapper {
-                margin-left: 240px;
-            }
-        }
-        
-        @media (max-width: 576px) {
-            .content-wrapper {
-                margin-left: 50px;
-            }
-            
-            .sidebar.expanded + .content-wrapper {
-                margin-left: 220px;
-            }
-        }
-    `;
     document.head.appendChild(style);
     
     // Tambahkan event untuk menutup submenu saat klik di luar

@@ -233,30 +233,29 @@ html {
     padding-left: 2rem;
 }
 
-/* Mengubah warna latar belakang kotak pagination */
+
 .pagination .page-link {
-    background-color: #fff; /* Warna latar belakang kotak */
-    color: #3C21F7; /* Warna teks di dalam kotak */
+    background-color: #fff; 
+    color: #3C21F7; 
 }
 
-/* Mengubah warna latar belakang saat hover */
+
 .pagination .page-link:hover {
-    background-color: #b8b2ff; /* Warna latar belakang saat hover */
-    color: #fff; /* Warna teks saat hover */
+    background-color: #b8b2ff; 
+    color: #fff;
 }
 
-/* Warna latar belakang untuk halaman aktif */
+
 .pagination .page-item.active .page-link {
-    background-color: #b8b2ff; /* Warna latar belakang halaman aktif */
-    color: #3C21F7; /* Warna teks halaman aktif */
-    border-color: #b8b2ff; /* Warna border halaman aktif */
+    background-color: #b8b2ff;
+    color: #3C21F7;
+    border-color: #b8b2ff;
 }
 
-/* Warna latar belakang untuk halaman non-aktif */
 .pagination .page-item.disabled .page-link {
-    background-color: #f8f9fa; /* Warna latar belakang untuk halaman non-aktif */
-    color: #6c757d; /* Warna teks untuk halaman non-aktif */
-    border-color: #ddd; /* Warna border untuk halaman non-aktif */
+    background-color: #f8f9fa; 
+    color: #6c757d;
+    border-color: #ddd;
 }
 
 .pagination-links{
@@ -273,7 +272,6 @@ select,
     font-size: 14px;
 }
 
-/* Style untuk menu dengan submenu */
 .has-submenu .main-menu-item {
     cursor: pointer;
     padding: 12px 15px;
@@ -281,6 +279,7 @@ select,
     align-items: center;
     position: relative;
 }
+
 
 .submenu-arrow {
     position: absolute;
@@ -292,7 +291,7 @@ select,
     transform: rotate(180deg);
 }
 
-/* Styling untuk submenu */
+
 .submenu {
     max-height: 0;
     overflow: hidden;
@@ -301,10 +300,9 @@ select,
 }
 
 .has-submenu.open .submenu {
-    max-height: 200px; /* Sesuaikan sesuai jumlah submenu */
+    max-height: 200px;
 }
 
-/* Style untuk item submenu */
 .submenu li {
     margin: 8px 0;
 }
@@ -385,7 +383,51 @@ select,
     stroke: #3C21F7;
 }
 
-/* Base styles for sidebar */
+.nested-submenu-arrow svg path {
+    stroke: #878787;
+    transition: stroke 0.3s ease;
+}
+
+
+.has-nested-submenu:hover .nested-submenu-arrow svg path,
+.has-nested-submenu.open .nested-submenu-arrow svg path {
+    stroke: #3C21F7;
+}
+
+
+.submenu-arrow svg path {
+    stroke: #878787;
+    transition: stroke 0.3s ease;
+}
+
+
+.has-submenu:hover .submenu-arrow svg path,
+.has-submenu.open .submenu-arrow svg path {
+    stroke: #3C21F7;
+}
+
+.has-nested-submenu.open .submenu-item {
+    color: #3C21F7;
+}
+
+.nested-submenu-item:hover,
+.nested-submenu-item.active {
+    background-color: rgba(184, 178, 255, 0.1);
+    color: #3C21F7;
+}
+
+.nested-submenu-item:hover .nested-submenu-icon svg path,
+.nested-submenu-item.active .nested-submenu-icon svg path {
+    stroke: #3C21F7;
+}
+
+@media (max-width: 992px) {
+    .sidebar.expanded .nested-submenu-arrow,
+    .sidebar:hover .nested-submenu-arrow {
+        display: block;
+    }
+}
+
 .sidebar {
     width: 240px;
     height: 100vh;
