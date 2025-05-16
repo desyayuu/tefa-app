@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
             MitraProyekSeeder::class,
             BidangKeahlianSeeder::class,
             JenisDokumenPenunjangSeeder::class,
+            KeuanganSeeder::class,
         ]);
     }
 }

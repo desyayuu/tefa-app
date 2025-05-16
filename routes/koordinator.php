@@ -14,6 +14,7 @@ use App\Http\Controllers\Koordinator\DataTimelineController;
 use App\Http\Controllers\Koordinator\DataAnggotaProyekController;
 use App\Http\Controllers\Koordinator\DataLuaranController;
 use App\Http\Controllers\Koordinator\DataProgresProyekController;
+use App\Http\Controllers\Koordinator\DataKeuangan\DataKeuanganTefaController;
 
 
 Route::middleware([KoordinatorMiddleware::class])->prefix('koordinator')->group(function () {
@@ -90,13 +91,20 @@ Route::middleware([KoordinatorMiddleware::class])->prefix('koordinator')->group(
     Route::post('/proyek/dokumentasi', [DataLuaranController::class, 'uploadDokumentasi'])->name('koordinator.addDokumentasi');
     Route::delete('/proyek/dokumentasi/{id}', [DataLuaranController::class, 'deleteDokumentasi'])->name('koordinator.deleteDokumentasi');
 
+    //Data Progres Proyek
     Route::get('/proyek/{id}/progres-proyek', [DataProgresProyekController::class, 'getProgresByProyek'])->name('koordinator.getProgresByProyek');
     Route::get('/proyek/{id}/team-members', [DataProgresProyekController::class, 'getTeamMembers'])->name('getTeamMembers');
     Route::get('/proyek/progres-proyek/{id}', [DataProgresProyekController::class, 'getProgresDetail'])->name('getProgresDetail');
     Route::post('/proyek/progres-proyek', [DataProgresProyekController::class, 'store'])->name('addProgres');
-    // Route::post('/proyek/progres-proyek/{id}', [DataProgresProyekController::class, 'update'])->name('updateProgres');
     Route::get('/proyek/progres-proyek/{id}', [DataProgresProyekController::class, 'getProgresDetail'])->name('getProgresDetail');
     Route::put('/proyek/progres-proyek/{id}', [DataProgresProyekController::class, 'update'])->name('updateProgres');
     Route::delete('/proyek/progres-proyek/{id}', [DataProgresProyekController::class, 'deleteDataProgresProyek'])->name('koordinator.deleteDataProgres');
 
+    //Data Keuangan TEFA 
+    Route::get('/data-keuangan-tefa', [DataKeuanganTefaController::class, 'getDataKeuanganTefa'])->name('koordinator.dataKeuanganTefa');
+    Route::post('/keuangan-tefa/store', [DataKeuanganTefaController::class, 'store'])->name('koordinator.storeKeuanganTefa');
+    Route::get('/keuangan-tefa/data-proyek', [DataKeuanganTefaController::class, 'getProyek'])->name('koordinator.getProyekKeuanganTefa');
+    Route::get('/keuangan-tefa/jenis-keuangan-tefa', [DataKeuanganTefaController::class, 'getJenisKeuanganTefa'])->name('koordinator.getJenisKeuanganTefa');
+    Route::get('/get-sub-jenis-transaksi', [DataKeuanganTefaController::class, 'getSubJenisTransaksi'])->name('koordinator.getSubJenisTransaksi');
+    Route::get('/keuangan-tefa/jenis-transaksi', [DataKeuanganTefaController::class, 'getJenisTransaksi'])->name('koordinator.getJenisTransaksi');
 });

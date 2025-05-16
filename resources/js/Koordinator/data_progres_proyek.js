@@ -557,11 +557,21 @@ document.addEventListener('DOMContentLoaded', function () {
             // Use the assigned_name from our controller rather than just the ID
             const assignedTo = progresProyek.assigned_name || 'Not Assigned';
             
-            // Add row HTML
+            // Determine badge class based on status - FIXED: let instead of const
+            let badgeClass = '';
+            if (statusProgresProyek === 'Done') {
+                badgeClass = 'badge bg-done';
+            } else if (statusProgresProyek === 'In Progress') {
+                badgeClass = 'badge bg-primary';
+            } else if (statusProgresProyek === 'Inisiasi') {
+                badgeClass = 'badge bg-secondary';
+            }
+            
+            // Add row HTML - FIXED: Use ${badgeClass} instead of {badgeClass}
             tableHtml += `
                 <tr data-id="${progresProyekId}">
                     <td>${namaProgresProyek}</td>
-                    <td>${statusProgresProyek}</td>
+                    <td><span class="${badgeClass}">${statusProgresProyek}</span></td>
                     <td>${assignedTo}</td>
                     <td>
                         <div class="d-flex gap-2">
@@ -580,7 +590,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     </td>
                 </tr>
             `;
-        });
+        });            // Ensure we have valid progresProyek ID and other required fields
         tableBody.html(tableHtml);
         attachEventHandlers();
     }

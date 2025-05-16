@@ -772,3 +772,55 @@ select,
     width: 20px;
     height: 20px;
 }
+
+/* Tambahkan gaya CSS ini ke dalam file CSS Anda atau dalam tag <style> di halaman HTML */
+
+/* Gaya tambahan untuk badge */
+.badge {
+    font-weight: 500;
+    padding: 0.5em 0.75em;
+    border-radius: 1rem;
+}
+
+/* Badge untuk jenis transaksi */
+.badge.bg-success {
+    background-color: #22c55e !important;
+}
+
+.badge.bg-danger {
+    background-color: #F25F33 !important;
+}
+
+.badge.bg-done{
+    background-color: #E4F8EB !important;
+    color: #00BC39 !important;
+}
+.badge.bg-warning {
+    background-color: #fbbf24 !important;
+    color: white !important;
+}
+
+.badge.bg-info {
+    background-color: #38bdf8 !important;
+    color: #333 !important;
+}
+
+.badge.bg-secondary {
+    background-color: #94a3b8 !important;
+}
+
+/* Styles untuk tabel */
+#tableDataKeuanganTefa tbody tr td {
+    vertical-align: middle;
+}
+
+/* Memperbaiki ukuran dan spacing badge */
+#tableDataKeuanganTefa .badge {
+    display: inline-block;
+    min-width: 70px;
+    text-align: center;
+}
+
+.section-data-keuangan-tefa{
+    font-size: 14px;
+}

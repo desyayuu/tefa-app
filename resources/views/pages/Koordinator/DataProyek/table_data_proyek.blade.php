@@ -183,7 +183,13 @@
                         <td>{{ $proyek->nama_proyek }}</td>
                         <td>{{ $proyek->nama_project_leader }}</td>
                         <td>{{ $proyek->tanggal_selesai }}</td>
-                        <td>{{ $proyek->status_proyek}}</td>
+                        @if ($proyek->status_proyek == 'Initiation')
+                            <td><span class="badge bg-secondary">Inisiasi</span></td>
+                        @elseif ($proyek->status_proyek == 'In Progress')
+                            <td><span class="badge bg-primary">In Progres</span></td>
+                        @elseif ($proyek->status_proyek == 'Done')
+                            <td><span class="badge bg-done">Done</span></td>
+                        @endif
                         <td>
                             <div class="d-flex gap-2">
                                 <a href="{{ route('koordinator.detailDataProyek', ['id' => $proyek->proyek_id]) }}">
