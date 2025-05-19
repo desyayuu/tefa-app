@@ -57,27 +57,150 @@ class DataKeuanganTefaController extends Controller
         }
     }
 
+    
+    public function storeWithFiles(Request $request)
+    {
+        try {
+            // Log the request for debugging
+            \Log::info('Store with files request received', [
+                'has_file_main' => $request->hasFile('file_keuangan_tefa'),
+                'data_length' => $request->input('keuangan_tefa_data') ? strlen($request->input('keuangan_tefa_data')) : 0,
+                'request_keys' => array_keys($request->all())
+            ]);
+            
+            // Decode JSON data from input
+            $jsonData = $request->input('keuangan_tefa_data');
+            $keuanganTefaData = json_decode($jsonData, true);
+            
+            if (empty($keuanganTefaData)) {
+                throw new \Exception('Tidak ada data keuangan tefa untuk disimpan');
+            }
+            
+            // Log data to be processed
+            \Log::info('Multiple keuangan data to process:', ['count' => count($keuanganTefaData)]);
+            
+            // IMPORTANT: Sort the items by sequence to maintain the order they were added in the form
+            usort($keuanganTefaData, function($a, $b) {
+                return $a['sequence'] - $b['sequence'];
+            });
+            
+            // Array to store processed records
+            $processedRecords = [];
+            $currentTimestamp = now();
+            
+            // Process each keuangan item with its own file - in sequence order
+            foreach ($keuanganTefaData as $item) {
+                $itemId = $item['id'];
+                $nominal = str_replace('.', '', $item['nominal']);
+                $filePath = null;
+
+                // Check if there's a specific file for this item
+                $fileKey = "file_keuangan_tefa_{$itemId}";
+                
+                if ($request->hasFile($fileKey)) {
+                    $file = $request->file($fileKey);
+                    \Log::info("Processing file for item {$itemId}", [
+                        'name' => $file->getClientOriginalName(),
+                        'size' => $file->getSize(),
+                        'mime' => $file->getMimeType()
+                    ]);
+                    
+                    if ($file->isValid()) {
+                        // Create directory if needed
+                        $uploadPath = public_path('uploads/keuangan_tefa');
+                        if (!is_dir($uploadPath)) {
+                            mkdir($uploadPath, 0777, true);
+                        }
+                        
+                        // Generate unique filename
+                        $filename = 'bukti_transaksi_' . $itemId . '_' . time() . '.' . $file->getClientOriginalExtension();
+                        
+                        // Move file to destination
+                        if ($file->move($uploadPath, $filename)) {
+                            $filePath = 'uploads/keuangan_tefa/' . $filename;
+                            \Log::info("File for item {$itemId} saved to {$filePath}");
+                        } else {
+                            \Log::error("Failed to move file for item {$itemId}");
+                        }
+                    } else {
+                        \Log::error("Invalid file for item {$itemId}");
+                    }
+                } else {
+                    \Log::info("No file found for item {$itemId}");
+                }
+                
+                // Generate UUID for database record
+                $keuanganTefaId = Str::uuid()->toString();
+                
+                // Prepare data for database insertion
+                // We'll use a small timestamp offset to preserve order in the database
+                $createdAt = (clone $currentTimestamp)->addSeconds(isset($item['sequence']) ? $item['sequence'] : 0);
+                
+                $data = [
+                    'keuangan_tefa_id' => $keuanganTefaId,
+                    'tanggal_transaksi' => $item['tanggal_transaksi'],
+                    'jenis_transaksi_id' => $item['jenis_transaksi_id'],
+                    'jenis_keuangan_tefa_id' => $item['jenis_keuangan_tefa_id'],
+                    'proyek_id' => $item['proyek_id'],
+                    'sub_jenis_transaksi_id' => $item['sub_jenis_transaksi_id'],
+                    'nama_transaksi' => $item['nama_transaksi'],
+                    'nominal_transaksi' => $nominal,
+                    'deskripsi_transaksi' => $item['deskripsi_transaksi'] ?? null,
+                    'bukti_transaksi' => $filePath, // Each item gets its own file path
+                    'created_at' => $createdAt, // Use offset timestamps to preserve order
+                    'created_by' => auth()->id() ?? session('user_id') ?? 1,
+                    'entry_sequence' => isset($item['sequence']) ? $item['sequence'] : null, // Store sequence for reference
+                ];
+                
+                // Insert into database
+                DB::table('t_keuangan_tefa')->insert($data);
+                
+                $processedRecords[] = $keuanganTefaId;
+                \Log::info("Record inserted for item {$itemId} with keuangan_tefa_id {$keuanganTefaId} and sequence {$item['sequence']}");
+            }
+            
+            // Fetch the inserted records
+            $results = DB::table('t_keuangan_tefa')
+                ->whereIn('keuangan_tefa_id', $processedRecords)
+                ->get();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Data keuangan tefa berhasil disimpan',
+                'data' => $results,
+                'count' => count($results)
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error storing keuangan tefa with files: ' . $e->getMessage());
+            \Log::error('Error stack trace: ' . $e->getTraceAsString());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat menyimpan data: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function getDataKeuanganTefa(Request $request)
     {
         $jenisTransaksi = DB::table('m_jenis_transaksi')
             ->whereNull('deleted_at')
             ->orderBy('nama_jenis_transaksi')
             ->get();
-            
-        // Mengambil data jenis keuangan tefa (proyek/non-proyek)
+
         $jenisKeuangan = DB::table('m_jenis_keuangan_tefa')
             ->whereNull('deleted_at')
             ->orderBy('nama_jenis_keuangan_tefa')
             ->get();
             
-        // Mengambil data proyek (untuk dropdown proyek)
         $proyek = DB::table('m_proyek')
             ->whereNull('deleted_at')
             ->orderBy('nama_proyek')
             ->get();
             
-        // Mengambil data keuangan tefa untuk tabel utama
-        $keuanganTefa = DB::table('t_keuangan_tefa as kt')
+        // Build query with filters
+        $query = DB::table('t_keuangan_tefa as kt')
             ->leftJoin('m_jenis_transaksi as jt', 'kt.jenis_transaksi_id', '=', 'jt.jenis_transaksi_id')
             ->leftJoin('m_jenis_keuangan_tefa as jk', 'kt.jenis_keuangan_tefa_id', '=', 'jk.jenis_keuangan_tefa_id')
             ->leftJoin('m_proyek as p', 'kt.proyek_id', '=', 'p.proyek_id')
@@ -92,50 +215,98 @@ class DataKeuanganTefaController extends Controller
                 'kt.nama_transaksi',
                 'kt.nominal_transaksi',
                 'kt.bukti_transaksi',
-                'kt.created_at'
+                'kt.created_at',
+                'kt.entry_sequence'
             )
-            ->whereNull('kt.deleted_at')
-            ->orderBy('kt.created_at', 'desc')
-            ->paginate(10);
-            
-        // Dapatkan semua data untuk menghitung saldo secara kronologis
-        $allTransactions = DB::table('t_keuangan_tefa as kt')
+            ->whereNull('kt.deleted_at');
+        
+        // Apply date range filter
+        // if ($request->filled('tanggal_mulai')) {
+        //     $query->where('kt.tanggal_transaksi', '>=', $request->input('tanggal_mulai'));
+        // }
+        
+        // if ($request->filled('tanggal_akhir')) {
+        //     $query->where('kt.tanggal_transaksi', '<=', $request->input('tanggal_akhir'));
+        // }
+        
+        // Apply jenis transaksi filter
+        if ($request->filled('jenis_transaksi')) {
+            $query->where('jt.nama_jenis_transaksi', $request->input('jenis_transaksi'));
+        }
+        
+        // Apply jenis keuangan filter
+        if ($request->filled('jenis_keuangan')) {
+            $query->where('jk.nama_jenis_keuangan_tefa', $request->input('jenis_keuangan'));
+        }
+        
+        // Apply nama transaksi filter (using LIKE for partial matches)
+        if ($request->filled('nama_transaksi')) {
+            $query->where('kt.nama_transaksi', 'LIKE', '%' . $request->input('nama_transaksi') . '%');
+        }
+        
+        // Apply proyek filter
+        if ($request->filled('proyek_id')) {
+            $query->where('kt.proyek_id', $request->input('proyek_id'));
+        }
+        
+        // Apply nominal range filter
+        if ($request->filled('nominal_min')) {
+            $query->where('kt.nominal_transaksi', '>=', $request->input('nominal_min'));
+        }
+        
+        if ($request->filled('nominal_max')) {
+            $query->where('kt.nominal_transaksi', '<=', $request->input('nominal_max'));
+        }
+        
+        // Order by created_at DESC as the primary sort
+        $query->orderBy('kt.created_at', 'desc');
+        
+        // Execute the query with pagination
+        $keuanganTefa = $query->paginate(5);
+        
+        // Log query if debug mode is on
+        if (config('app.debug')) {
+            \Log::info('Keuangan Tefa Query', [
+                'sql' => $query->toSql(),
+                'bindings' => $query->getBindings(),
+                'filters' => $request->all()
+            ]);
+        }
+        
+        // Get all transactions to calculate running balance (saldo)
+        $allTransactionsQuery = DB::table('t_keuangan_tefa as kt')
             ->leftJoin('m_jenis_transaksi as jt', 'kt.jenis_transaksi_id', '=', 'jt.jenis_transaksi_id')
             ->select(
                 'kt.keuangan_tefa_id',
+                'kt.created_at',
                 'jt.nama_jenis_transaksi',
                 'kt.nominal_transaksi',
-                'kt.created_at'
+                'kt.entry_sequence'
             )
             ->whereNull('kt.deleted_at')
-            ->orderBy('kt.created_at', 'asc')
-            ->get();
+            ->orderBy('kt.created_at', 'asc');
         
-        // Hitung total saldo berdasarkan semua transaksi
+        $allTransactions = $allTransactionsQuery->get();
+        
+        // Calculate running total (saldo)
         $totalSaldo = 0;
         $saldoMap = [];
         
         foreach ($allTransactions as $transaction) {
-            // Jika pemasukan, tambahkan ke saldo
             if ($transaction->nama_jenis_transaksi === 'Pemasukan') {
                 $totalSaldo += $transaction->nominal_transaksi;
-            } 
-            // Jika pengeluaran, kurangi dari saldo
-            else {
+            } else {
                 $totalSaldo -= $transaction->nominal_transaksi;
             }
-            
-            // Simpan saldo untuk setiap ID transaksi
             $saldoMap[$transaction->keuangan_tefa_id] = $totalSaldo;
         }
         
-        // Terapkan saldo yang benar ke koleksi yang sudah diurutkan berdasarkan created_at desc
+        // Map saldo to each record
         $keuanganTefaCollection = collect($keuanganTefa->items())->map(function ($item) use ($saldoMap) {
             $item->saldo = $saldoMap[$item->keuangan_tefa_id];
             return $item;
         });
         
-        // Ubah item di keuanganTefa dengan koleksi yang sudah dihitung saldonya
         $keuanganTefa->setCollection($keuanganTefaCollection);
         
         // Check if this is an AJAX request
@@ -146,6 +317,14 @@ class DataKeuanganTefaController extends Controller
                 'jenisKeuangan' => $jenisKeuangan,
                 'proyek' => $proyek,
                 'keuanganTefa' => $keuanganTefa,
+                'filters_applied' => $request->has('tanggal_mulai') 
+                    || $request->has('tanggal_akhir') 
+                    || $request->has('jenis_transaksi') 
+                    || $request->has('jenis_keuangan')
+                    || $request->has('nama_transaksi')
+                    || $request->has('proyek_id')
+                    || $request->has('nominal_min')
+                    || $request->has('nominal_max')
             ]);
         }
             
@@ -229,15 +408,12 @@ class DataKeuanganTefaController extends Controller
             // Proses data berdasarkan mode (single atau multiple)
             $isSingle = $request->input('is_single') === '1';
             
-            // Khusus untuk mode multiple, cek apakah ada data JSON yang valid
             if (!$isSingle) {
                 $jsonData = $request->input('keuangan_tefa_data');
                 if ($jsonData) {
                     $keuanganTefaData = json_decode($jsonData, true);
                     
                     if (!empty($keuanganTefaData)) {
-                        // Ada data dalam mode multiple, bypass validasi field form
-                        \Log::info('Multiple mode dengan data yang valid, bypass validasi field form');
                         $keuanganTefaData = $this->processMultipleKeuanganTefa($request);
                         
                         return response()->json([
@@ -337,7 +513,7 @@ class DataKeuanganTefaController extends Controller
                 ]);
                 
                 // Generate unique filename
-                $filename = 'keuangan_tefa_' . time() . '_' . Str::random(10) . '.' . $file->getClientOriginalExtension();
+                $filename = 'bukti_transaksi_' . time() . '_' . '.' . $file->getClientOriginalExtension();
                 
                 try {
                     // Pindahkan file ke tujuan dengan langsung
@@ -432,7 +608,7 @@ class DataKeuanganTefaController extends Controller
                     ]);
                     
                     // Generate unique filename
-                    $filename = 'multiple_' . time() . '_' . Str::random(10) . '.' . $file->getClientOriginalExtension();
+                    $filename = 'bukti_transaksi_' . time() . '_' . '.' . $file->getClientOriginalExtension();
                     
                     // Pindahkan file ke tujuan
                     if ($file->move($uploadPath, $filename)) {
@@ -496,5 +672,211 @@ class DataKeuanganTefaController extends Controller
         \Log::info('Data hasil multiple insert, jumlah: ' . count($results));
         
         return $results;
+    }
+
+    public function getKeuanganTefaById($id)
+    {
+        try {
+            $keuanganTefa = DB::table('t_keuangan_tefa as kt')
+                ->leftJoin('m_jenis_transaksi as jt', 'kt.jenis_transaksi_id', '=', 'jt.jenis_transaksi_id')
+                ->leftJoin('m_jenis_keuangan_tefa as jk', 'kt.jenis_keuangan_tefa_id', '=', 'jk.jenis_keuangan_tefa_id')
+                ->leftJoin('m_proyek as p', 'kt.proyek_id', '=', 'p.proyek_id')
+                ->leftJoin('m_sub_jenis_transaksi as sjt', 'kt.sub_jenis_transaksi_id', '=', 'sjt.sub_jenis_transaksi_id')
+                ->select(
+                    'kt.*',
+                    'jt.nama_jenis_transaksi',
+                    'jk.nama_jenis_keuangan_tefa',
+                    'p.nama_proyek',
+                    'sjt.nama_sub_jenis_transaksi'
+                )
+                ->where('kt.keuangan_tefa_id', $id)
+                ->first();
+                
+            if (!$keuanganTefa) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data keuangan tefa tidak ditemukan'
+                ], 404);
+            }
+            
+            return response()->json([
+                'success' => true,
+                'data' => $keuanganTefa
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error getting keuangan tefa: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat mengambil data: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function update(Request $request, $id)
+    {
+        try {
+            \Log::info('Update keuangan tefa request:', $request->all());
+            
+            // Validate basic fields first
+            $rules = [
+                'edit_tanggal_transaksi' => 'required|date',
+                'edit_jenis_transaksi_id' => 'required|exists:m_jenis_transaksi,jenis_transaksi_id',
+                'edit_jenis_keuangan_tefa_id' => 'required|exists:m_jenis_keuangan_tefa,jenis_keuangan_tefa_id',
+                'edit_nama_transaksi' => 'required|string|max:255',
+                'edit_nominal' => 'required|string',
+                'edit_deskripsi_transaksi' => 'nullable|string',
+                'edit_file_keuangan_tefa' => 'nullable|file|max:10240|mimes:pdf,doc,docx,ppt,pptx,xls,xlsx,jpg,jpeg,png',
+            ];
+            
+            // Get jenis keuangan & jenis transaksi to determine conditional validation rules
+            $jenisTransaksiId = $request->input('edit_jenis_transaksi_id');
+            $jenisKeuanganId = $request->input('edit_jenis_keuangan_tefa_id');
+            
+            $jenisTransaksi = DB::table('m_jenis_transaksi')
+                ->where('jenis_transaksi_id', $jenisTransaksiId)
+                ->first();
+                
+            $jenisKeuanganTefa = DB::table('m_jenis_keuangan_tefa')
+                ->where('jenis_keuangan_tefa_id', $jenisKeuanganId)
+                ->first();
+            
+            // Add conditional validation rules
+            if ($jenisKeuanganTefa && $jenisKeuanganTefa->nama_jenis_keuangan_tefa === 'Proyek') {
+                $rules['edit_proyek_id_selected'] = 'required|exists:m_proyek,proyek_id';
+            } else {
+                $rules['edit_proyek_id_selected'] = 'nullable|exists:m_proyek,proyek_id';
+            }
+            
+            if ($jenisTransaksi && $jenisTransaksi->nama_jenis_transaksi === 'Pengeluaran') {
+                $rules['edit_sub_jenis_transaksi_id'] = 'required|exists:m_sub_jenis_transaksi,sub_jenis_transaksi_id';
+            } else {
+                $rules['edit_sub_jenis_transaksi_id'] = 'nullable|exists:m_sub_jenis_transaksi,sub_jenis_transaksi_id';
+            }
+            
+            $validator = Validator::make($request->all(), $rules);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            // Get current data
+            $currentData = DB::table('t_keuangan_tefa')->where('keuangan_tefa_id', $id)->first();
+            if (!$currentData) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data keuangan tefa tidak ditemukan'
+                ], 404);
+            }
+            
+            // Handle file upload if there's a new file
+            $filePath = $currentData->bukti_transaksi;
+            if ($request->hasFile('edit_file_keuangan_tefa')) {
+                $file = $request->file('edit_file_keuangan_tefa');
+                
+                if ($file->isValid()) {
+                    $uploadPath = public_path('uploads/keuangan_tefa');
+                    if (!is_dir($uploadPath)) {
+                        mkdir($uploadPath, 0777, true);
+                    }
+                    
+                    $filename = 'keuangan_tefa_' . time() . '_' . Str::random(10) . '.' . $file->getClientOriginalExtension();
+                    
+                    if ($file->move($uploadPath, $filename)) {
+                        $filePath = 'uploads/keuangan_tefa/' . $filename;
+                        
+                        if ($currentData->bukti_transaksi && file_exists(public_path($currentData->bukti_transaksi))) {
+                            unlink(public_path($currentData->bukti_transaksi));
+                        }
+                    }
+                }
+            }
+            
+            // Process nominal (remove thousand separators)
+            $nominal = str_replace('.', '', $request->input('edit_nominal'));
+            
+            // Prepare update data
+            $data = [
+                'tanggal_transaksi' => $request->input('edit_tanggal_transaksi'),
+                'jenis_transaksi_id' => $request->input('edit_jenis_transaksi_id'),
+                'jenis_keuangan_tefa_id' => $request->input('edit_jenis_keuangan_tefa_id'),
+                'nama_transaksi' => $request->input('edit_nama_transaksi'),
+                'nominal_transaksi' => $nominal,
+                'deskripsi_transaksi' => $request->input('edit_deskripsi_transaksi'),
+                'bukti_transaksi' => $filePath,
+                'updated_at' => now(),
+                'updated_by' => auth()->id() ?? session('user_id') ?? 1,
+            ];
+            
+            // Set proyek_id based on jenis keuangan
+            if ($jenisKeuanganTefa && $jenisKeuanganTefa->nama_jenis_keuangan_tefa === 'Proyek') {
+                $data['proyek_id'] = $request->input('edit_proyek_id_selected');
+            } else {
+                $data['proyek_id'] = null;
+            }
+            
+            // Set sub_jenis_transaksi_id based on jenis transaksi
+            if ($jenisTransaksi && $jenisTransaksi->nama_jenis_transaksi === 'Pengeluaran') {
+                $data['sub_jenis_transaksi_id'] = $request->input('edit_sub_jenis_transaksi_id');
+            } else {
+                $data['sub_jenis_transaksi_id'] = null;
+            }
+            
+            \Log::info('Data to update:', $data);
+            
+            // Update database
+            DB::table('t_keuangan_tefa')->where('keuangan_tefa_id', $id)->update($data);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Data keuangan tefa berhasil diperbarui'
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error updating keuangan tefa: ' . $e->getMessage());
+            \Log::error('Exception stack trace: ' . $e->getTraceAsString());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat memperbarui data: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getSummary()
+    {
+        try {
+            // Hitung total pemasukan
+            $totalPemasukan = DB::table('t_keuangan_tefa as kt')
+                ->join('m_jenis_transaksi as jt', 'kt.jenis_transaksi_id', '=', 'jt.jenis_transaksi_id')
+                ->where('jt.nama_jenis_transaksi', 'Pemasukan')
+                ->whereNull('kt.deleted_at')
+                ->sum('kt.nominal_transaksi');
+            
+            // Hitung total pengeluaran
+            $totalPengeluaran = DB::table('t_keuangan_tefa as kt')
+                ->join('m_jenis_transaksi as jt', 'kt.jenis_transaksi_id', '=', 'jt.jenis_transaksi_id')
+                ->where('jt.nama_jenis_transaksi', 'Pengeluaran')
+                ->whereNull('kt.deleted_at')
+                ->sum('kt.nominal_transaksi');
+            
+            // Hitung saldo (pemasukan - pengeluaran)
+            $saldo = $totalPemasukan - $totalPengeluaran;
+            
+            return response()->json([
+                'success' => true,
+                'total_pemasukan' => $totalPemasukan,
+                'total_pengeluaran' => $totalPengeluaran,
+                'saldo' => $saldo
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

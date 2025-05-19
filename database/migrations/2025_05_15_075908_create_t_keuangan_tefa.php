@@ -23,6 +23,7 @@ return new class extends Migration
             $table->decimal('nominal_transaksi', 15, 2);
             $table->string('deskripsi_transaksi')->nullable();
             $table->string('bukti_transaksi')->nullable();
+            $table->integer('entry_sequence')->nullable();
 
             $table->dateTime('created_at')->nullable();
             $table->string('created_by', 36)->nullable();

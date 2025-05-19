@@ -103,8 +103,12 @@ Route::middleware([KoordinatorMiddleware::class])->prefix('koordinator')->group(
     //Data Keuangan TEFA 
     Route::get('/data-keuangan-tefa', [DataKeuanganTefaController::class, 'getDataKeuanganTefa'])->name('koordinator.dataKeuanganTefa');
     Route::post('/keuangan-tefa/store', [DataKeuanganTefaController::class, 'store'])->name('koordinator.storeKeuanganTefa');
+    Route::post('/keuangan-tefa/store-with-files', [DataKeuanganTefaController::class, 'storeWithFiles']);
     Route::get('/keuangan-tefa/data-proyek', [DataKeuanganTefaController::class, 'getProyek'])->name('koordinator.getProyekKeuanganTefa');
     Route::get('/keuangan-tefa/jenis-keuangan-tefa', [DataKeuanganTefaController::class, 'getJenisKeuanganTefa'])->name('koordinator.getJenisKeuanganTefa');
-    Route::get('/get-sub-jenis-transaksi', [DataKeuanganTefaController::class, 'getSubJenisTransaksi'])->name('koordinator.getSubJenisTransaksi');
+    Route::get('/keuangan-tefa/get-sub-jenis-transaksi', [DataKeuanganTefaController::class, 'getSubJenisTransaksi'])->name('koordinator.getSubJenisTransaksi');
     Route::get('/keuangan-tefa/jenis-transaksi', [DataKeuanganTefaController::class, 'getJenisTransaksi'])->name('koordinator.getJenisTransaksi');
+    Route::get('/keuangan-tefa/get-summary', [DataKeuanganTefaController::class, 'getSummary']);
+    Route::get('/keuangan-tefa/{id}', [DataKeuanganTefaController::class, 'getKeuanganTefaById']);
+    Route::post('/keuangan-tefa/update/{id}', [DataKeuanganTefaController::class, 'update']);
 });

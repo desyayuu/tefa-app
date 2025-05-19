@@ -3,6 +3,7 @@ import './Koordinator/data_mitra';
 import './Koordinator/data_dosen';
 import './Koordinator/data_profesional';
 import './Koordinator/data_mahasiswa';
+// import './Koordinator/data_proyek';
 
 document.addEventListener('DOMContentLoaded', function() {
     const currentPath = window.location.pathname;

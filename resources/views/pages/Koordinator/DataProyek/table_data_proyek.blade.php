@@ -257,3 +257,6 @@
     </div>
 </div>
 @endsection
+@push('scripts')
+    @vite('resources/js/Koordinator/data_proyek.js')
+@endpush

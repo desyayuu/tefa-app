@@ -621,7 +621,37 @@ body {
     display: block;
 }
 
+.filter-data-keuangan-tefa-container{
+    padding: 20px 5px 0px 5px;
+    margin: 70px 10px 0px 10px;
+}
+
 .data-keuangan-tefa-container{
     padding: 20px 5px 20px 5px;
-    margin: 70px 10px 70px 10px;
+    margin: 0px 10px 0px 10px;
 }
+
+.data-total-keuangan-tefa-container{
+    padding: 0px 5px 20px 5px;
+    margin: 0px 10px 0px 10px;
+}
+
+    /* You can modify these styles to match your application's theme */
+    #filterContainer {
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+    
+    .filter-collapsed {
+        max-height: 0;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+        opacity: 0;
+    }
+    
+    /* Optional: styling for the nominal fields to match your existing format */
+    #filter_nominal_min, #filter_nominal_max {
+        text-align: right;
+    }

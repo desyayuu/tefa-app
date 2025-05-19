@@ -88,7 +88,7 @@
                     </a>
                     <ul class="nested-submenu">
                         <li>
-                            <a href="" class="nested-submenu-item" style="margin-left: 40px;">
+                            <a href="" style="margin-left: 40px;" class="nested-submenu-item">
                                 <span class="nested-submenu-icon">
                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                         <path d="M12 20V4m0 16l-6-6m6 6l6-6" stroke="#878787" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -208,22 +208,31 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
         
+        // Event listener khusus untuk nested submenu toggle
+        const nestedMenuToggle = dataKeuanganMenu.querySelector('.nested-menu-toggle');
+        if (nestedMenuToggle) {
+            nestedMenuToggle.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Pastikan parent menu tetap terbuka
+                dataKeuanganMenu.classList.add('open');
+                
+                // Toggle nested submenu
+                const parentLi = this.closest('.has-nested-submenu');
+                if (parentLi) {
+                    parentLi.classList.toggle('open');
+                }
+            });
+        }
+        
         // Tambahkan event listener untuk submenu items
-        const submenuItems = dataKeuanganMenu.querySelectorAll('.submenu-item');
+        const submenuItems = dataKeuanganMenu.querySelectorAll('.submenu-item:not(.nested-menu-toggle)');
         submenuItems.forEach(function(item) {
             item.addEventListener('click', function(e) {
                 e.stopPropagation();
                 // Pastikan menu tetap terbuka saat mengklik item submenu
-                if (!dataKeuanganMenu.classList.contains('open')) {
-                    dataKeuanganMenu.classList.add('open');
-                }
-                
-                // Handle nested submenu
-                const nestedSubmenu = this.nextElementSibling;
-                if (nestedSubmenu && nestedSubmenu.classList.contains('nested-submenu')) {
-                    e.preventDefault();
-                    this.parentElement.classList.toggle('open');
-                }
+                dataKeuanganMenu.classList.add('open');
             });
         });
         
@@ -233,6 +242,8 @@ document.addEventListener('DOMContentLoaded', function() {
             // Ketika hover di Keuangan Proyek
             nestedMenuParent.addEventListener('mouseenter', function() {
                 this.classList.add('open');
+                // Pastikan parent menu juga terbuka
+                dataKeuanganMenu.classList.add('open');
             });
             
             // Ketika meninggalkan Keuangan Proyek tapi tidak ke submenu-nya
@@ -249,49 +260,60 @@ document.addEventListener('DOMContentLoaded', function() {
                     ) {
                         // Hanya tutup nested submenu jika bukan mengarah ke submenu-nya
                         if (!nestedSubmenu.contains(e.relatedTarget)) {
-                            this.classList.remove('open');
+                            // Cek apakah ada item aktif di dalam nested submenu
+                            const hasActiveNestedItem = this.querySelector('.nested-submenu-item.active');
+                            if (!hasActiveNestedItem) {
+                                this.classList.remove('open');
+                            }
                         }
                     }
                 }
             });
         }
         
-        // Tambahkan event untuk meninggalkan menu utama
-        dataKeuanganMenu.addEventListener('mouseleave', function(e) {
-            // Jangan tutup jika cursor mengarah ke submenu
-            const submenu = this.querySelector('.submenu');
-            if (submenu && !submenu.contains(e.relatedTarget)) {
-                // Jangan tutup jika ada item aktif
-                const hasActiveItem = this.querySelector('.submenu-item.active') || 
-                                     this.querySelector('.nested-submenu-item.active');
-                if (!hasActiveItem) {
-                    this.classList.remove('open');
-                    
-                    // Juga tutup semua nested submenu
-                    const nestedMenus = this.querySelectorAll('.has-nested-submenu');
-                    nestedMenus.forEach(function(menu) {
-                        menu.classList.remove('open');
-                    });
-                }
-            }
-        });
-        
         // Event khusus untuk nested submenu items
         const nestedSubmenuItems = document.querySelectorAll('.nested-submenu-item');
         nestedSubmenuItems.forEach(function(item) {
             item.addEventListener('click', function(e) {
                 e.stopPropagation();
-                // Pastikan parent menu tetap terbuka
+                
+                // Pastikan seluruh hierarki menu tetap terbuka
                 const parentLi = this.closest('.has-nested-submenu');
-                if (parentLi && !parentLi.classList.contains('open')) {
+                if (parentLi) {
                     parentLi.classList.add('open');
                 }
-                // Pastikan main menu tetap terbuka
+                
                 const mainMenu = this.closest('.has-submenu');
-                if (mainMenu && !mainMenu.classList.contains('open')) {
+                if (mainMenu) {
                     mainMenu.classList.add('open');
                 }
             });
+        });
+        
+        // Tambahkan event listener untuk menutup submenu saat klik di luar
+        document.addEventListener('click', function(e) {
+            // Periksa apakah klik di luar submenu
+            if (
+                !e.target.closest('.has-submenu') && 
+                !e.target.closest('.submenu') && 
+                !e.target.closest('.main-menu-item') &&
+                !e.target.closest('.nested-submenu-item') &&
+                !e.target.closest('.nested-menu-toggle')
+            ) {
+                // Tutup semua submenu jika tidak ada item aktif
+                if (!dataKeuanganMenu.querySelector('.submenu-item.active') && 
+                    !dataKeuanganMenu.querySelector('.nested-submenu-item.active')) {
+                    dataKeuanganMenu.classList.remove('open');
+                    
+                    // Tutup juga semua nested submenu
+                    const nestedSubmenus = dataKeuanganMenu.querySelectorAll('.has-nested-submenu');
+                    nestedSubmenus.forEach(function(menu) {
+                        if (!menu.querySelector('.nested-submenu-item.active')) {
+                            menu.classList.remove('open');
+                        }
+                    });
+                }
+            }
         });
     }
     
@@ -324,166 +346,38 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Auto-expand submenu berdasarkan URL
-    if (window.location.href.includes('dataKeuanganTefa') || 
-        window.location.href.includes('danaMasuk') || 
-        window.location.href.includes('danaKeluar')) {
-        const keuanganMenu = document.getElementById('dataKeuanganMenu');
-        if (keuanganMenu) {
-            keuanganMenu.classList.add('open');
-            
-            // Jika URL terkait nested menu, buka juga nested menu
-            if (window.location.href.includes('danaMasuk') || window.location.href.includes('danaKeluar')) {
-                const nestedMenu = keuanganMenu.querySelector('.has-nested-submenu');
-                if (nestedMenu) {
-                    nestedMenu.classList.add('open');
-                }
-            }
-        }
-    }
-
     // Fungsi toggle submenu
     function toggleSubmenu(menu) {
         menu.classList.toggle('open');
-    }
-    
-    // Toggle sidebar pada tampilan mobile
-    const sidebar = document.querySelector('.sidebar');
-    
-    // Tambahkan tombol toggle sidebar jika belum ada
-    if (!document.querySelector('.sidebar-toggle') && window.matchMedia('(max-width: 992px)').matches) {
-        const toggleBtn = document.createElement('button');
-        toggleBtn.className = 'sidebar-toggle';
-        toggleBtn.innerHTML = `
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M3 12h18M3 6h18M3 18h18" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-        `;
-        document.body.appendChild(toggleBtn);
         
-        toggleBtn.addEventListener('click', function() {
-            sidebar.classList.toggle('expanded');
-        });
-    }
-    
-    // Tambahkan event untuk menutup submenu saat klik di luar
-    document.addEventListener('click', function(e) {
-        // Periksa apakah klik di luar submenu
-        if (
-            !e.target.closest('.has-submenu') && 
-            !e.target.closest('.submenu') && 
-            !e.target.closest('.main-menu-item')
-        ) {
-            // Tutup semua submenu
-            const submenus = document.querySelectorAll('.has-submenu');
-            submenus.forEach(submenu => {
-                if (submenu.classList.contains('open')) {
-                    // Jangan tutup jika menu saat ini aktif
-                    const hasActiveItem = submenu.querySelector('.submenu-item.active') || 
-                                          submenu.querySelector('.nested-submenu-item.active');
-                    if (!hasActiveItem) {
-                        submenu.classList.remove('open');
-                    }
-                }
-            });
-            
-            // Tutup nested submenus
-            const nestedSubmenus = document.querySelectorAll('.has-nested-submenu');
-            nestedSubmenus.forEach(submenu => {
-                if (submenu.classList.contains('open')) {
-                    // Jangan tutup jika menu saat ini aktif
-                    const hasActiveItem = submenu.querySelector('.nested-submenu-item.active');
-                    if (!hasActiveItem) {
-                        submenu.classList.remove('open');
-                    }
-                }
-            });
-        }
-    });
-    
-    // Tambahkan event untuk menutup sidebar saat klik di luar sidebar pada mode mobile
-    document.body.addEventListener('click', function(e) {
-        if (window.innerWidth <= 992 && sidebar && sidebar.classList.contains('expanded') && !sidebar.contains(e.target) && !e.target.closest('.sidebar-toggle')) {
-            sidebar.classList.remove('expanded');
-        }
-    });
-    
-    // Responsive handling
-    function handleResponsive() {
-        const isMobile = window.matchMedia('(max-width: 992px)').matches;
-        
-        // Pada mode mobile, tambahkan toggle sidebar saat klik ikon
-        if (isMobile && sidebar) {
-            const icons = document.querySelectorAll('.sidebar-menu > li > a > .icon');
-            icons.forEach(icon => {
-                icon.addEventListener('click', function(e) {
-                    if (!sidebar.classList.contains('expanded')) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        sidebar.classList.add('expanded');
-                    }
-                });
-            });
-            
-            // Tambahkan hover event untuk menampilkan teks pada mode mobile
-            sidebar.addEventListener('mouseenter', function() {
-                this.classList.add('expanded');
-            });
-            
-            sidebar.addEventListener('mouseleave', function() {
-                // Jangan tutup jika ada interaksi yang sedang berlangsung
-                if (!this.querySelector('.has-submenu.open')) {
-                    this.classList.remove('expanded');
-                }
+        // Jika menu utama ditutup, tutup juga semua nested submenu
+        if (!menu.classList.contains('open')) {
+            const nestedMenus = menu.querySelectorAll('.has-nested-submenu');
+            nestedMenus.forEach(function(nestedMenu) {
+                nestedMenu.classList.remove('open');
             });
         }
     }
     
-    // Panggil saat halaman dimuat
-    handleResponsive();
-    
-    // Ketika window resize, update UI
-    window.addEventListener('resize', function() {
-        handleResponsive();
-        
-        // Reset expanded class pada sidebar jika layar menjadi besar
-        if (window.innerWidth > 992 && sidebar) {
-            sidebar.classList.remove('expanded');
-        }
-    });
-
-    // Tambahkan CSS untuk memastikan nested submenu tetap terbuka ketika di-hover
+    // CSS untuk memastikan nested submenu tetap terbuka ketika diklik
     const style = document.createElement('style');
     style.textContent = `
-        /* Menu utama hover styles */
-        .has-submenu:hover > .submenu {
+        /* Forcefully keep submenu open when child is toggled */
+        .nested-menu-toggle:focus + .nested-submenu,
+        .nested-menu-toggle:active + .nested-submenu {
             display: block !important;
         }
         
-        /* Nested submenu hover styles */
-        .has-nested-submenu:hover > .nested-submenu {
+        /* Ensure parent menu stays open when nested submenu is active */
+        .has-submenu.open .has-nested-submenu.open .nested-submenu {
             display: block !important;
         }
         
-        /* Submenu dan nested submenu display */
-        .submenu, .nested-submenu {
-            display: none;
-        }
-        
-        /* Tampilkan submenu saat parent open */
-        .has-submenu.open > .submenu {
+        /* Make nested menu toggle more clickable */
+        .nested-menu-toggle {
+            cursor: pointer;
             display: block;
-        }
-        
-        /* Tampilkan nested submenu saat parent open */
-        .has-nested-submenu.open > .nested-submenu {
-            display: block;
-        }
-        
-        /* Styling untuk hover effect */
-        .submenu > li.has-nested-submenu:hover {
-            shadow: 0 4px 8px;
-            transition: background-color 0.3s ease;
+            width: 100%;
         }
     `;
     document.head.appendChild(style);

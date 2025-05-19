@@ -1,4 +1,4 @@
-<div class="data-keuangan-tefa-container flex-grow-1 mt-5">
+<div class="data-keuangan-tefa-container flex-grow-1">
     <div class="card shadow-sm border-0 rounded-3 h-100">
         <div class="card-body">
             <div id="keuangan-tefa-section" class="title-table d-flex justify-content-between align-items-center mb-3">
@@ -90,16 +90,16 @@
                         <!-- Proyek -->
                         <div class="col-md-6 mb-3" id="proyekContainer" style="display: none;">
                             <label for="proyek_id_selected" class="form-label">Proyek</label>
-                            <select class="form-select" id="proyek_id_selected" name="proyek_id_selected">
-                                <option value="" disabled selected>Pilih Proyek</option>
-                            </select>
+                                <select class="form-select select2-dropdown" id="proyek_id_selected" name="proyek_id_selected">
+                                    <option value="" disabled selected>Pilih Proyek</option>
+                                </select>
                             <div class="invalid-feedback" id="proyek_id_selected_error"></div>
                         </div>
 
                         <!-- Kategori Pengeluaran -->
                         <div class="col-md-6 mb-3" id="kategoriPengeluaranContainer" style="display: none;">
                             <label for="sub_jenis_transaksi_id" class="form-label">Kategori Pengeluaran</label>
-                            <select class="form-select" id="sub_jenis_transaksi_id" name="sub_jenis_transaksi_id">
+                            <select class="form-select select2-dropdown" id="sub_jenis_transaksi_id" name="sub_jenis_transaksi_id">
                                 <option value="" disabled selected>Pilih Kategori Pengeluaran</option>
                             </select>
                             <div class="invalid-feedback" id="sub_jenis_transaksi_id_error"></div>
@@ -172,6 +172,96 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-tutup" id="btnCancelKeuanganTefa" data-bs-dismiss="modal">Batal</button>
                     <button type="submit" class="btn btn-add" id="btnSimpanKeuanganTefa">Simpan Data</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Edit Data Keuangan TEFA -->
+<div class="modal fade" id="modalEditKeuanganTefa" aria-hidden="true" aria-labelledby="modalEditKeuanganTefaLabel" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <form id="formEditDataKeuanganTefa" novalidate enctype="multipart/form-data">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="modalEditKeuanganTefaLabel">Edit Data Keuangan TEFA</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body label-form">
+                    <!-- Alert untuk error keseluruhan form -->
+                    <div class="alert alert-danger d-none" id="form_keuangan_tefa_edit_error"></div>
+                    
+                    <div class="row">
+                        <!-- Tanggal Transaksi -->
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_tanggal_transaksi" class="form-label">Tanggal Transaksi <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="edit_tanggal_transaksi" name="edit_tanggal_transaksi" required>
+                            <div class="invalid-feedback" id="edit_tanggal_transaksi_error"></div>
+                        </div>
+                        <!-- Jenis Transaksi -->
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_jenis_transaksi_id" class="form-label">Jenis Transaksi <span class="text-danger">*</span></label>
+                            <select class="form-select" id="edit_jenis_transaksi_id" name="edit_jenis_transaksi_id" required>
+                                <option value="" disabled selected>Pilih Jenis Transaksi</option>
+                            </select>
+                            <div class="invalid-feedback" id="edit_jenis_transaksi_id_error"></div>
+                        </div>
+                        <!-- Keperluan Transaksi -->
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_jenis_keuangan_tefa_id" class="form-label">Keperluan Transaksi <span class="text-danger">*</span></label>
+                            <select class="form-select" id="edit_jenis_keuangan_tefa_id" name="edit_jenis_keuangan_tefa_id" required>
+                                <option value="" disabled selected>Pilih Keperluan Transaksi</option>
+                            </select>
+                            <div class="invalid-feedback" id="edit_jenis_keuangan_tefa_id_error"></div>
+                        </div>
+                        <!-- Proyek -->
+                        <div class="col-md-6 mb-3" id="edit_proyekContainer" style="display: none;">
+                            <label for="edit_proyek_id_selected" class="form-label">Proyek</label>
+                            <select class="form-select select2-dropdown" id="edit_proyek_id_selected" name="edit_proyek_id_selected">
+                                <option value="" disabled selected>Pilih Proyek</option>
+                            </select>
+                            <div class="invalid-feedback" id="edit_proyek_id_selected_error"></div>
+                        </div>
+                        <!-- Kategori Pengeluaran -->
+                        <div class="col-md-6 mb-3" id="edit_kategoriPengeluaranContainer" style="display: none;">
+                            <label for="edit_sub_jenis_transaksi_id" class="form-label">Kategori Pengeluaran</label>
+                            <select class="form-select select2-dropdown" id="edit_sub_jenis_transaksi_id" name="edit_sub_jenis_transaksi_id">
+                                <option value="" disabled selected>Pilih Kategori Pengeluaran</option>
+                            </select>
+                            <div class="invalid-feedback" id="edit_sub_jenis_transaksi_id_error"></div>
+                        </div>
+                        <!-- Nama Transaksi -->
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_nama_transaksi" class="form-label">Nama Transaksi <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="edit_nama_transaksi" name="edit_nama_transaksi" required>
+                            <div class="invalid-feedback" id="edit_nama_transaksi_error"></div>
+                        </div>
+                        <!-- Nominal -->
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_nominal" class="form-label">Nominal <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="edit_nominal" name="edit_nominal" required>
+                            <div class="invalid-feedback" id="edit_nominal_error"></div>
+                        </div>
+                        <!-- Deskripsi -->
+                        <div class="col-6 mb-3">
+                            <label for="edit_deskripsi_transaksi" class="form-label">Deskripsi</label>
+                            <textarea class="form-control" id="edit_deskripsi_transaksi" name="edit_deskripsi_transaksi" rows="3"></textarea>
+                            <div class="invalid-feedback" id="edit_deskripsi_transaksi_error"></div>
+                        </div>
+                        <!-- Dokumen Bukti -->
+                        <div class="col-6 mb-3">
+                            <label for="edit_file_keuangan_tefa" class="form-label">Dokumen Bukti</label>
+                            <input type="file" class="form-control form-selection" id="edit_file_keuangan_tefa" name="edit_file_keuangan_tefa" 
+                                accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.jpg,.jpeg,.png">
+                            <div class="invalid-feedback" id="edit_file_keuangan_tefa_error"></div>
+                            <small class="form-text text-muted">Format: pdf, doc, .docx, .ppt, .pptx, .xls, .xlsx, .jpg, .jpeg. png</small>
+                        </div>
+                    </div>
+                    <input type="hidden" name="keuangan_tefa_id" id="keuangan_tefa_id">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-tutup" id="btnCancelEditKeuanganTefa" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-add" id="btnSimpanEditKeuanganTefa">Simpan Data</button>
                 </div>
             </form>
         </div>

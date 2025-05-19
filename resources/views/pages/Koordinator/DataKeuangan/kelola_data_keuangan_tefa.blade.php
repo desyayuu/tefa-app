@@ -11,10 +11,13 @@
         @include('layouts.Koordinator.header')
         
         <div class="section-filter-data-keuangan">
-            @include('pages.Koordinator.DataKeuangan.filter')
+            @include('pages.Koordinator.DataKeuangan.filter_data_keuangan_tefa')
         </div>
         <div class="section-data-keuangan-tefa">
             @include('pages.Koordinator.DataKeuangan.table_keuangan_tefa')
+        </div>
+        <div class="section-total-data-keuangan-tefa">
+            @include('pages.Koordinator.DataKeuangan.total_keuangan_tefa')
         </div>
     </div>
 </div>

@@ -307,7 +307,8 @@ select,
     margin: 8px 0;
 }
 
-.submenu-item {
+.submenu-item, 
+.nested-submenu-item{
     display: block;
     padding: 8px 15px;
     color: #878787;
@@ -316,7 +317,9 @@ select,
 }
 
 .submenu-item:hover,
-.submenu-item.active {
+.nested-submenu-item:hover,
+.submenu-item.active, 
+.nested-submenu-item.active {
     background-color: rgba(116, 118, 237, 0.1);
     color: #7476ED;
 }
@@ -719,6 +722,7 @@ select,
 
 .btn-action-download, 
 .btn-action-delete,
+.btn-action-detail-keuangan,
 .btn-action-detail-timeline,
 .btn-action-detail-progres, 
 .btn-action-delete-timeline, 
@@ -737,7 +741,8 @@ select,
 .btn-action-detail-progres:hover,
 .btn-action-detail-timeline:hover,
 .btn-action-delete-progres:hover,
-.btn-action-delete-timeline:hover{ 
+.btn-action-delete-timeline:hover, 
+.btn-action-detail-keuangan:hover{ 
     transform: scale(1.1);
 }
 
@@ -747,7 +752,8 @@ select,
 .btn-action-detail-timeline:active,
 .btn-action-detail-progres:active,
 .btn-action-delete-progres:active, 
-.btn-action-delete-timeline:active{
+.btn-action-delete-timeline:active
+.btn-action-detail-keuangan:active{
     transform: scale(0.95);
 }
 
