@@ -1048,4 +1048,44 @@ class DataKeuanganTefaController extends Controller
             ], 500);
         }
     }
+
+    public function destroy($id)
+    {
+        try {
+            // Buscar el registro
+            $keuanganTefa = DB::table('t_keuangan_tefa')
+                ->where('keuangan_tefa_id', $id)
+                ->whereNull('deleted_at')
+                ->first();
+                
+            if (!$keuanganTefa) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data keuangan tefa tidak ditemukan'
+                ], 404);
+            }
+            
+            // Soft delete: actualizar el campo deleted_at
+            DB::table('t_keuangan_tefa')
+                ->where('keuangan_tefa_id', $id)
+                ->update([
+                    'deleted_at' => now(),
+                    'deleted_by' => auth()->id() ?? session('user_id') ?? 1
+                ]);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Data keuangan tefa berhasil dihapus'
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error deleting keuangan tefa: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat menghapus data: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
 }

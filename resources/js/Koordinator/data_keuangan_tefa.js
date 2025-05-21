@@ -344,6 +344,12 @@ $(document).ready(function() {
         // Re-initialize Select2 after reset
         setTimeout(initializeFilterSelect2, 100);
     });
+
+    $(document).on('click', '.btn-action-delete', function() {
+        const id = $(this).data('id');
+        deleteKeuanganTefa(id);
+    });
+
 });
 
 function initializeSelect2() {
@@ -2291,11 +2297,10 @@ function loadDataKeuanganTefa(page = 1, filters = {}) {
                                                 </svg>
                                         </button>
                                         <button type="button" class="btn btn-action-delete" 
-                                                data-id="${item.keuangan_tefa_id}" 
-                                                onclick="deleteKeuanganTefa('${item.keuangan_tefa_id}')">
-                                                <svg width="20" height="20" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M21.5896 12.4848C21.5896 17.6563 17.459 21.8486 12.3636 21.8486C7.26829 21.8486 3.1377 17.6563 3.1377 12.4848C3.1377 7.31339 7.26829 3.12109 12.3636 3.12109C17.459 3.12109 21.5896 7.31339 21.5896 12.4848ZM7.56137 17.3588C7.17375 16.9654 7.17375 16.3276 7.56137 15.9342L10.9599 12.4848L7.56137 9.03551C7.17375 8.6421 7.17375 8.00426 7.56137 7.61085C7.94899 7.21744 8.57744 7.21744 8.96506 7.61085L12.3636 11.0602L15.7622 7.61085C16.1498 7.21744 16.7783 7.21744 17.1659 7.61085C17.5535 8.00426 17.5535 8.6421 17.1659 9.03551L13.7673 12.4848L17.1659 15.9342C17.5535 16.3276 17.5535 16.9654 17.1659 17.3588C16.7783 17.7522 16.1498 17.7522 15.7622 17.3588L12.3636 13.9095L8.96506 17.3588C8.57744 17.7522 7.94899 17.7522 7.56137 17.3588Z" fill="#E56F8C"/>
-                                                </svg>
+                                                data-id="${item.keuangan_tefa_id}">
+                                            <svg width="20" height="20" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path fill-rule="evenodd" clip-rule="evenodd" d="M21.5896 12.4848C21.5896 17.6563 17.459 21.8486 12.3636 21.8486C7.26829 21.8486 3.1377 17.6563 3.1377 12.4848C3.1377 7.31339 7.26829 3.12109 12.3636 3.12109C17.459 3.12109 21.5896 7.31339 21.5896 12.4848ZM7.56137 17.3588C7.17375 16.9654 7.17375 16.3276 7.56137 15.9342L10.9599 12.4848L7.56137 9.03551C7.17375 8.6421 7.17375 8.00426 7.56137 7.61085C7.94899 7.21744 8.57744 7.21744 8.96506 7.61085L12.3636 11.0602L15.7622 7.61085C16.1498 7.21744 16.7783 7.21744 17.1659 7.61085C17.5535 8.00426 17.5535 8.6421 17.1659 9.03551L13.7673 12.4848L17.1659 15.9342C17.5535 16.3276 17.5535 16.9654 17.1659 17.3588C16.7783 17.7522 16.1498 17.7522 15.7622 17.3588L12.3636 13.9095L8.96506 17.3588C8.57744 17.7522 7.94899 17.7522 7.56137 17.3588Z" fill="#E56F8C"/>
+                                            </svg>
                                         </button>
                                     </div>
                                 </td>
@@ -2518,4 +2523,95 @@ function loadSubJenisTransaksiForFilter() {
         // Reset dropdown if either jenis transaksi or jenis keuangan is not selected
         $('#filter_sub_jenis_transaksi').html('<option value="">Semua</option>');
     }
+}
+
+// function deleteKeuanganTefa(id) {
+//     Swal.fire({
+//         title: 'Konfirmasi',
+//         text: 'Apakah Anda yakin ingin menghapus data keuangan ini?',
+//         icon: 'warning',
+//         showCancelButton: true,
+//         confirmButtonColor: '#3085d6',
+//         cancelButtonColor: '#d33',
+//         confirmButtonText: 'Ya, hapus!',
+//         cancelButtonText: 'Batal'
+//     }).then((result) => {
+//         if (result.isConfirmed) {
+//             // Ejecutar la eliminación si el usuario confirma
+//             $.ajax({
+//                 url: `/koordinator/keuangan-tefa/delete/${id}`,
+//                 type: 'DELETE',
+//                 dataType: 'json',
+//                 beforeSend: function() {
+//                     // Mostrar indicador de carga o deshabilitar el botón si es necesario
+//                     $(`button[data-id="${id}"]`).prop('disabled', true);
+//                 },
+//                 success: function(response) {
+//                     if (response.success) {
+//                         // Mostrar mensaje de éxito
+//                         swal.successMessage(response.message || 'Data keuangan TEFA berhasil dihapus.');
+                        
+//                         // Recargar la tabla
+//                         loadDataKeuanganTefa();
+                        
+//                         // Actualizar el resumen financiero
+//                         updateFinancialSummary();
+//                     } else {
+//                         // Mostrar mensaje de error
+//                         swal.errorMessage(response.message || 'Gagal menghapus data.');
+//                         $(`button[data-id="${id}"]`).prop('disabled', false);
+//                     }
+//                 },
+//                 error: function(xhr, status, error) {
+//                     // Manejar error de AJAX
+//                     console.error('Error deleting data:', error);
+//                     const errorMsg = xhr.responseJSON?.message || 'Terjadi kesalahan saat menghapus data.';
+                    
+//                     swal.errorMessage('Error', errorMsg);
+//                     $(`button[data-id="${id}"]`).prop('disabled', false);
+//                 }
+//             });
+//         }
+//     });
+// }
+
+// Define function in global scope (outside the document.ready)
+function deleteKeuanganTefa(id) {
+    Swal.fire({
+        title: 'Konfirmasi',
+        text: 'Apakah Anda yakin ingin menghapus data keuangan ini?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Ya, hapus!',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: `/koordinator/keuangan-tefa/delete/${id}`,
+                type: 'DELETE',
+                dataType: 'json',
+                beforeSend: function() {
+                    $(`button[data-id="${id}"]`).prop('disabled', true);
+                },
+                success: function(response) {
+                    if (response.success) {
+                        swal.successMessage(response.message || 'Data keuangan TEFA berhasil dihapus.');
+                        loadDataKeuanganTefa();
+                        updateFinancialSummary();
+                    } else {
+                        swal.errorMessage(response.message || 'Gagal menghapus data.');
+                        $(`button[data-id="${id}"]`).prop('disabled', false);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error deleting data:', error);
+                    const errorMsg = xhr.responseJSON?.message || 'Terjadi kesalahan saat menghapus data.';
+                    swal.errorMessage('Error', errorMsg);
+                    $(`button[data-id="${id}"]`).prop('disabled', false);
+                }
+            });
+        }
+    });
 }

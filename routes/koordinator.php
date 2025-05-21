@@ -113,6 +113,7 @@ Route::middleware([KoordinatorMiddleware::class])->prefix('koordinator')->group(
     Route::get('/keuangan-tefa/get-summary', [DataKeuanganTefaController::class, 'getSummary']);
     Route::get('/keuangan-tefa/{id}', [DataKeuanganTefaController::class, 'getKeuanganTefaById']);
     Route::post('/keuangan-tefa/update/{id}', [DataKeuanganTefaController::class, 'update']);
+    Route::delete('/keuangan-tefa/delete/{id}', [DataKeuanganTefaController::class, 'destroy']);
 
     // Data Masuk Keuangan Proyek
     // Route::get('/keuangan-proyek/dana-masuk', [DataMasukKeuanganProyekController::class, 'getDataProyek'])->name('koordinator.dataMasukKeuanganProyek');
