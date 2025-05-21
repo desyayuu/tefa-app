@@ -46,12 +46,21 @@
                             <input type="text" class="form-control" id="filter_nama_transaksi" name="filter_nama_transaksi" placeholder="Cari nama transaksi...">
                         </div>
                         
-                        <!-- Proyek (optional) -->
-                        <div class="col-md-3 mb-3">
+                        <!-- Wrap the Proyek dropdown in a container that can be shown/hidden -->
+                        <div class="col-md-3 mb-3" id="filterProyekContainer" style="display: none;">
                             <label for="filter_proyek" class="form-label">Proyek</label>
                             <select class="form-select" id="filter_proyek" name="filter_proyek">
                                 <option value="">Semua Proyek</option>
                                 <!-- Options will be loaded via AJAX -->
+                            </select>
+                        </div>
+
+                        <!-- Wrap the Sub Jenis Transaksi dropdown in a container that can be shown/hidden -->
+                        <div class="col-md-3 mb-3" id="filterSubJenisTransaksiContainer" style="display: none;">
+                            <label for="filter_sub_jenis_transaksi" class="form-label">Kategori Pengeluaran</label>
+                            <select class="form-select" id="filter_sub_jenis_transaksi" name="filter_sub_jenis_transaksi">
+                                <option value="">Semua</option>
+                                <!-- Options will be loaded via AJAX based on selected jenis_transaksi and jenis_keuangan -->
                             </select>
                         </div>
                     </div>

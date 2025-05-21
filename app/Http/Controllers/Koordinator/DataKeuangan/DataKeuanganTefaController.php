@@ -182,161 +182,330 @@ class DataKeuanganTefaController extends Controller
         }
     }
 
-    public function getDataKeuanganTefa(Request $request)
-    {
-        $jenisTransaksi = DB::table('m_jenis_transaksi')
-            ->whereNull('deleted_at')
-            ->orderBy('nama_jenis_transaksi')
-            ->get();
+    // public function getDataKeuanganTefa(Request $request){
+    //     $jenisTransaksi = DB::table('m_jenis_transaksi')
+    //         ->whereNull('deleted_at')
+    //         ->orderBy('nama_jenis_transaksi')
+    //         ->get();
 
-        $jenisKeuangan = DB::table('m_jenis_keuangan_tefa')
-            ->whereNull('deleted_at')
-            ->orderBy('nama_jenis_keuangan_tefa')
-            ->get();
+    //     $jenisKeuangan = DB::table('m_jenis_keuangan_tefa')
+    //         ->whereNull('deleted_at')
+    //         ->orderBy('nama_jenis_keuangan_tefa')
+    //         ->get();
             
-        $proyek = DB::table('m_proyek')
-            ->whereNull('deleted_at')
-            ->orderBy('nama_proyek')
-            ->get();
+    //     $proyek = DB::table('m_proyek')
+    //         ->whereNull('deleted_at')
+    //         ->orderBy('nama_proyek')
+    //         ->get();
             
-        // Build query with filters
-        $query = DB::table('t_keuangan_tefa as kt')
-            ->leftJoin('m_jenis_transaksi as jt', 'kt.jenis_transaksi_id', '=', 'jt.jenis_transaksi_id')
-            ->leftJoin('m_jenis_keuangan_tefa as jk', 'kt.jenis_keuangan_tefa_id', '=', 'jk.jenis_keuangan_tefa_id')
-            ->leftJoin('m_proyek as p', 'kt.proyek_id', '=', 'p.proyek_id')
-            ->leftJoin('m_sub_jenis_transaksi as sjt', 'kt.sub_jenis_transaksi_id', '=', 'sjt.sub_jenis_transaksi_id')
-            ->select(
-                'kt.keuangan_tefa_id',
-                'kt.tanggal_transaksi',
-                'jt.nama_jenis_transaksi',
-                'jk.nama_jenis_keuangan_tefa',
-                'p.nama_proyek',
-                'sjt.nama_sub_jenis_transaksi',
-                'kt.nama_transaksi',
-                'kt.nominal_transaksi',
-                'kt.bukti_transaksi',
-                'kt.created_at',
-                'kt.entry_sequence'
-            )
-            ->whereNull('kt.deleted_at');
+    //     // Build query with filters
+    //     $query = DB::table('t_keuangan_tefa as kt')
+    //         ->leftJoin('m_jenis_transaksi as jt', 'kt.jenis_transaksi_id', '=', 'jt.jenis_transaksi_id')
+    //         ->leftJoin('m_jenis_keuangan_tefa as jk', 'kt.jenis_keuangan_tefa_id', '=', 'jk.jenis_keuangan_tefa_id')
+    //         ->leftJoin('m_proyek as p', 'kt.proyek_id', '=', 'p.proyek_id')
+    //         ->leftJoin('m_sub_jenis_transaksi as sjt', 'kt.sub_jenis_transaksi_id', '=', 'sjt.sub_jenis_transaksi_id')
+    //         ->select(
+    //             'kt.keuangan_tefa_id',
+    //             'kt.tanggal_transaksi',
+    //             'jt.nama_jenis_transaksi',
+    //             'jk.nama_jenis_keuangan_tefa',
+    //             'p.nama_proyek',
+    //             'sjt.nama_sub_jenis_transaksi',
+    //             'kt.nama_transaksi',
+    //             'kt.nominal_transaksi',
+    //             'kt.bukti_transaksi',
+    //             'kt.created_at',
+    //             'kt.entry_sequence'
+    //         )
+    //         ->whereNull('kt.deleted_at');
         
-        // Apply date range filter
-        // if ($request->filled('tanggal_mulai')) {
-        //     $query->where('kt.tanggal_transaksi', '>=', $request->input('tanggal_mulai'));
-        // }
+    //     // Apply date range filter
+    //     if ($request->filled('tanggal_mulai')) {
+    //         $query->where('kt.tanggal_transaksi', '>=', $request->input('tanggal_mulai'));
+    //     }
         
-        // if ($request->filled('tanggal_akhir')) {
-        //     $query->where('kt.tanggal_transaksi', '<=', $request->input('tanggal_akhir'));
-        // }
+    //     if ($request->filled('tanggal_akhir')) {
+    //         $query->where('kt.tanggal_transaksi', '<=', $request->input('tanggal_akhir'));
+    //     }
         
-        // Apply jenis transaksi filter
-        if ($request->filled('jenis_transaksi')) {
-            $query->where('jt.nama_jenis_transaksi', $request->input('jenis_transaksi'));
+    //     // Apply jenis transaksi filter
+    //     if ($request->filled('jenis_transaksi')) {
+    //         $query->where('jt.nama_jenis_transaksi', $request->input('jenis_transaksi'));
+    //     }
+        
+    //     // Apply jenis keuangan filter
+    //     if ($request->filled('jenis_keuangan')) {
+    //         $query->where('jk.nama_jenis_keuangan_tefa', $request->input('jenis_keuangan'));
+    //     }
+
+    //     if ($request->filled('sub_jenis_transaksi_id')) {
+    //         $query->where('kt.sub_jenis_transaksi_id', $request->input('sub_jenis_transaksi_id'));
+    //     }
+
+        
+    //     // Apply nama transaksi filter (using LIKE for partial matches)
+    //     if ($request->filled('nama_transaksi')) {
+    //         $query->where('kt.nama_transaksi', 'LIKE', '%' . $request->input('nama_transaksi') . '%');
+    //     }
+        
+    //     // Apply proyek filter
+    //     if ($request->filled('proyek_id')) {
+    //         $query->where('kt.proyek_id', $request->input('proyek_id'));
+    //     }
+        
+    //     // Apply nominal range filter
+    //     if ($request->filled('nominal_min')) {
+    //         $query->where('kt.nominal_transaksi', '>=', $request->input('nominal_min'));
+    //     }
+        
+    //     if ($request->filled('nominal_max')) {
+    //         $query->where('kt.nominal_transaksi', '<=', $request->input('nominal_max'));
+    //     }
+        
+    //     // Order by created_at DESC as the primary sort
+    //     $query->orderBy('kt.created_at', 'desc');
+        
+    //     // Execute the query with pagination
+    //     $keuanganTefa = $query->paginate(10);
+        
+    //     // Log query if debug mode is on
+    //     if (config('app.debug')) {
+    //         \Log::info('Keuangan Tefa Query', [
+    //             'sql' => $query->toSql(),
+    //             'bindings' => $query->getBindings(),
+    //             'filters' => $request->all()
+    //         ]);
+    //     }
+        
+    //     $allTransactionsQuery = clone $query;
+
+    //     // Modify the select clause for the saldo calculation query
+    //     $allTransactionsQuery->select(
+    //         'kt.keuangan_tefa_id',
+    //         'kt.tanggal_transaksi', // Include for proper chronological ordering
+    //         'kt.created_at',
+    //         'jt.nama_jenis_transaksi',
+    //         'kt.nominal_transaksi'
+    //     );
+
+    //     // Make sure transactions are ordered chronologically for running balance calculation
+    //     $allTransactionsQuery->orderBy('kt.tanggal_transaksi', 'asc')
+    //                         ->orderBy('kt.created_at', 'asc');
+
+    //     // Execute this query to get all filtered transactions for saldo calculation
+    //     $allTransactions = $allTransactionsQuery->get();
+
+    //     // Calculate running total (saldo) only for filtered transactions
+    //     $totalSaldo = 0;
+    //     $saldoMap = [];
+
+    //     foreach ($allTransactions as $transaction) {
+    //         if ($transaction->nama_jenis_transaksi === 'Pemasukan') {
+    //             $totalSaldo += $transaction->nominal_transaksi;
+    //         } else {
+    //             $totalSaldo -= $transaction->nominal_transaksi;
+    //         }
+    //         $saldoMap[$transaction->keuangan_tefa_id] = $totalSaldo;
+    //     }
+
+    //     // Now execute the main query with pagination
+    //     $keuanganTefa = $query->paginate(10);
+
+    //     // Map saldo to each record in the paginated results
+    //     $keuanganTefaCollection = collect($keuanganTefa->items())->map(function ($item) use ($saldoMap) {
+    //         $item->saldo = $saldoMap[$item->keuangan_tefa_id] ?? 0; // Use null coalescing operator to handle edge cases
+    //         return $item;
+    //     });
+
+    //     $keuanganTefa->setCollection($keuanganTefaCollection);
+                
+    //             // Check if this is an AJAX request
+    //             if ($request->ajax() || $request->wantsJson()) {
+    //                 return response()->json([
+    //                     'success' => true,
+    //                     'jenisTransaksi' => $jenisTransaksi,
+    //                     'jenisKeuangan' => $jenisKeuangan,
+    //                     'proyek' => $proyek,
+    //                     'keuanganTefa' => $keuanganTefa,
+    //                     'filters_applied' => $request->has('tanggal_mulai') 
+    //                         || $request->has('tanggal_akhir') 
+    //                         || $request->has('jenis_transaksi') 
+    //                         || $request->has('jenis_keuangan')
+    //                         || $request->has('nama_transaksi')
+    //                         || $request->has('proyek_id')
+    //                         || $request->has('nominal_min')
+    //                         || $request->has('nominal_max')
+    //                         || $request->has('sub_jenis_transaksi_id')
+    //                 ]);
+    //             }
+                    
+    //             return view('pages.Koordinator.DataKeuangan.kelola_data_keuangan_tefa', [
+    //                 'titleSidebar' => 'Data Keuangan TEFA',
+    //                 'active' => 'data-keuangan-tefa',
+    //                 'jenisTransaksi' => $jenisTransaksi,
+    //                 'jenisKeuangan' => $jenisKeuangan,
+    //                 'proyek' => $proyek,
+    //                 'keuanganTefa' => $keuanganTefa,
+    //             ]);
+    // }
+    public function getDataKeuanganTefa(Request $request)
+{
+    $jenisTransaksi = DB::table('m_jenis_transaksi')
+        ->whereNull('deleted_at')
+        ->orderBy('nama_jenis_transaksi')
+        ->get();
+
+    $jenisKeuangan = DB::table('m_jenis_keuangan_tefa')
+        ->whereNull('deleted_at')
+        ->orderBy('nama_jenis_keuangan_tefa')
+        ->get();
+        
+    $proyek = DB::table('m_proyek')
+        ->whereNull('deleted_at')
+        ->orderBy('nama_proyek')
+        ->get();
+        
+    // Build query with filters
+    $query = DB::table('t_keuangan_tefa as kt')
+        ->leftJoin('m_jenis_transaksi as jt', 'kt.jenis_transaksi_id', '=', 'jt.jenis_transaksi_id')
+        ->leftJoin('m_jenis_keuangan_tefa as jk', 'kt.jenis_keuangan_tefa_id', '=', 'jk.jenis_keuangan_tefa_id')
+        ->leftJoin('m_proyek as p', 'kt.proyek_id', '=', 'p.proyek_id')
+        ->leftJoin('m_sub_jenis_transaksi as sjt', 'kt.sub_jenis_transaksi_id', '=', 'sjt.sub_jenis_transaksi_id')
+        ->select(
+            'kt.keuangan_tefa_id',
+            'kt.tanggal_transaksi',
+            'jt.nama_jenis_transaksi',
+            'jk.nama_jenis_keuangan_tefa',
+            'p.nama_proyek',
+            'sjt.nama_sub_jenis_transaksi',
+            'kt.nama_transaksi',
+            'kt.nominal_transaksi',
+            'kt.bukti_transaksi',
+            'kt.created_at',
+            'kt.entry_sequence'
+        )
+        ->whereNull('kt.deleted_at');
+    
+    // Apply date range filter
+    if ($request->filled('tanggal_mulai')) {
+        $query->where('kt.tanggal_transaksi', '>=', $request->input('tanggal_mulai'));
+    }
+    
+    if ($request->filled('tanggal_akhir')) {
+        $query->where('kt.tanggal_transaksi', '<=', $request->input('tanggal_akhir'));
+    }
+    
+    // Apply jenis transaksi filter
+    if ($request->filled('jenis_transaksi')) {
+        $query->where('jt.nama_jenis_transaksi', $request->input('jenis_transaksi'));
+    }
+    
+    // Apply jenis keuangan filter
+    if ($request->filled('jenis_keuangan')) {
+        $query->where('jk.nama_jenis_keuangan_tefa', $request->input('jenis_keuangan'));
+    }
+
+    if ($request->filled('sub_jenis_transaksi_id')) {
+        $query->where('kt.sub_jenis_transaksi_id', $request->input('sub_jenis_transaksi_id'));
+    }
+    
+    // Apply nama transaksi filter (using LIKE for partial matches)
+    if ($request->filled('nama_transaksi')) {
+        $query->where('kt.nama_transaksi', 'LIKE', '%' . $request->input('nama_transaksi') . '%');
+    }
+    
+    // Apply proyek filter
+    if ($request->filled('proyek_id')) {
+        $query->where('kt.proyek_id', $request->input('proyek_id'));
+    }
+    
+    // Apply nominal range filter
+    if ($request->filled('nominal_min')) {
+        $query->where('kt.nominal_transaksi', '>=', $request->input('nominal_min'));
+    }
+    
+    if ($request->filled('nominal_max')) {
+        $query->where('kt.nominal_transaksi', '<=', $request->input('nominal_max'));
+    }
+    
+    // Log query if debug mode is on
+    if (config('app.debug')) {
+        \Log::info('Keuangan Tefa Query', [
+            'sql' => $query->toSql(),
+            'bindings' => $query->getBindings(),
+            'filters' => $request->all()
+        ]);
+    }
+    
+    // Clone the query for saldo calculation
+    $saldoQuery = clone $query;
+    
+    // Get all transactions for saldo calculation in chronological order
+    $allTransactions = $saldoQuery->select(
+            'kt.keuangan_tefa_id',
+            'kt.tanggal_transaksi',
+            'jt.nama_jenis_transaksi',
+            'kt.nominal_transaksi'
+        )
+        ->orderBy('kt.tanggal_transaksi', 'asc')  // Sort by date ascending for correct saldo calculation
+        ->orderBy('kt.created_at', 'asc')         // Then by creation time if multiple on same date
+        ->get();
+    
+    // Calculate saldo for each transaction in chronological order
+    $saldos = [];
+    $runningTotal = 0;
+    
+    foreach ($allTransactions as $transaction) {
+        if ($transaction->nama_jenis_transaksi === 'Pemasukan') {
+            $runningTotal += $transaction->nominal_transaksi;
+        } else {
+            $runningTotal -= $transaction->nominal_transaksi;
         }
-        
-        // Apply jenis keuangan filter
-        if ($request->filled('jenis_keuangan')) {
-            $query->where('jk.nama_jenis_keuangan_tefa', $request->input('jenis_keuangan'));
-        }
-        
-        // Apply nama transaksi filter (using LIKE for partial matches)
-        if ($request->filled('nama_transaksi')) {
-            $query->where('kt.nama_transaksi', 'LIKE', '%' . $request->input('nama_transaksi') . '%');
-        }
-        
-        // Apply proyek filter
-        if ($request->filled('proyek_id')) {
-            $query->where('kt.proyek_id', $request->input('proyek_id'));
-        }
-        
-        // Apply nominal range filter
-        if ($request->filled('nominal_min')) {
-            $query->where('kt.nominal_transaksi', '>=', $request->input('nominal_min'));
-        }
-        
-        if ($request->filled('nominal_max')) {
-            $query->where('kt.nominal_transaksi', '<=', $request->input('nominal_max'));
-        }
-        
-        // Order by created_at DESC as the primary sort
-        $query->orderBy('kt.created_at', 'desc');
-        
-        // Execute the query with pagination
-        $keuanganTefa = $query->paginate(5);
-        
-        // Log query if debug mode is on
-        if (config('app.debug')) {
-            \Log::info('Keuangan Tefa Query', [
-                'sql' => $query->toSql(),
-                'bindings' => $query->getBindings(),
-                'filters' => $request->all()
-            ]);
-        }
-        
-        // Get all transactions to calculate running balance (saldo)
-        $allTransactionsQuery = DB::table('t_keuangan_tefa as kt')
-            ->leftJoin('m_jenis_transaksi as jt', 'kt.jenis_transaksi_id', '=', 'jt.jenis_transaksi_id')
-            ->select(
-                'kt.keuangan_tefa_id',
-                'kt.created_at',
-                'jt.nama_jenis_transaksi',
-                'kt.nominal_transaksi',
-                'kt.entry_sequence'
-            )
-            ->whereNull('kt.deleted_at')
-            ->orderBy('kt.created_at', 'asc');
-        
-        $allTransactions = $allTransactionsQuery->get();
-        
-        // Calculate running total (saldo)
-        $totalSaldo = 0;
-        $saldoMap = [];
-        
-        foreach ($allTransactions as $transaction) {
-            if ($transaction->nama_jenis_transaksi === 'Pemasukan') {
-                $totalSaldo += $transaction->nominal_transaksi;
-            } else {
-                $totalSaldo -= $transaction->nominal_transaksi;
-            }
-            $saldoMap[$transaction->keuangan_tefa_id] = $totalSaldo;
-        }
-        
-        // Map saldo to each record
-        $keuanganTefaCollection = collect($keuanganTefa->items())->map(function ($item) use ($saldoMap) {
-            $item->saldo = $saldoMap[$item->keuangan_tefa_id];
-            return $item;
-        });
-        
-        $keuanganTefa->setCollection($keuanganTefaCollection);
-        
-        // Check if this is an AJAX request
-        if ($request->ajax() || $request->wantsJson()) {
-            return response()->json([
-                'success' => true,
-                'jenisTransaksi' => $jenisTransaksi,
-                'jenisKeuangan' => $jenisKeuangan,
-                'proyek' => $proyek,
-                'keuanganTefa' => $keuanganTefa,
-                'filters_applied' => $request->has('tanggal_mulai') 
-                    || $request->has('tanggal_akhir') 
-                    || $request->has('jenis_transaksi') 
-                    || $request->has('jenis_keuangan')
-                    || $request->has('nama_transaksi')
-                    || $request->has('proyek_id')
-                    || $request->has('nominal_min')
-                    || $request->has('nominal_max')
-            ]);
-        }
-            
-        return view('pages.Koordinator.DataKeuangan.kelola_data_keuangan_tefa', [
-            'titleSidebar' => 'Data Keuangan TEFA',
-            'active' => 'data-keuangan-tefa',
+        $saldos[$transaction->keuangan_tefa_id] = $runningTotal;
+    }
+    
+    // Now get paginated data in reverse chronological order for display
+    $keuanganTefa = $query->orderBy('kt.tanggal_transaksi', 'desc')  // Newest first
+                          ->orderBy('kt.created_at', 'desc')          // Then by creation time
+                          ->paginate(10);
+    
+    // Attach saldo to each record
+    $keuanganTefaCollection = collect($keuanganTefa->items())->map(function ($item) use ($saldos) {
+        $item->saldo = $saldos[$item->keuangan_tefa_id] ?? 0;
+        return $item;
+    });
+    
+    $keuanganTefa->setCollection($keuanganTefaCollection);
+    
+    // Check if this is an AJAX request
+    if ($request->ajax() || $request->wantsJson()) {
+        return response()->json([
+            'success' => true,
             'jenisTransaksi' => $jenisTransaksi,
             'jenisKeuangan' => $jenisKeuangan,
             'proyek' => $proyek,
             'keuanganTefa' => $keuanganTefa,
+            'filters_applied' => $request->has('tanggal_mulai') 
+                || $request->has('tanggal_akhir') 
+                || $request->has('jenis_transaksi') 
+                || $request->has('jenis_keuangan')
+                || $request->has('nama_transaksi')
+                || $request->has('proyek_id')
+                || $request->has('nominal_min')
+                || $request->has('nominal_max')
+                || $request->has('sub_jenis_transaksi_id')
         ]);
     }
+        
+    return view('pages.Koordinator.DataKeuangan.kelola_data_keuangan_tefa', [
+        'titleSidebar' => 'Data Keuangan TEFA',
+        'active' => 'data-keuangan-tefa',
+        'jenisTransaksi' => $jenisTransaksi,
+        'jenisKeuangan' => $jenisKeuangan,
+        'proyek' => $proyek,
+        'keuanganTefa' => $keuanganTefa,
+    ]);
+}
     
     public function getSubJenisTransaksi(Request $request)
     {

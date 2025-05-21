@@ -178,27 +178,27 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse ($proyek as $proyek)
+                    @forelse ($proyek as $dataProyek)
                     <tr>
-                        <td>{{ $proyek->nama_proyek }}</td>
-                        <td>{{ $proyek->nama_project_leader }}</td>
-                        <td>{{ $proyek->tanggal_selesai }}</td>
-                        @if ($proyek->status_proyek == 'Initiation')
+                        <td>{{ $dataProyek->nama_proyek }}</td>
+                        <td>{{ $dataProyek->nama_project_leader }}</td>
+                        <td>{{ $dataProyek->tanggal_selesai }}</td>
+                        @if ($dataProyek->status_proyek == 'Initiation')
                             <td><span class="badge bg-secondary">Inisiasi</span></td>
-                        @elseif ($proyek->status_proyek == 'In Progress')
+                        @elseif ($dataProyek->status_proyek == 'In Progress')
                             <td><span class="badge bg-primary">In Progres</span></td>
-                        @elseif ($proyek->status_proyek == 'Done')
+                        @elseif ($dataProyek->status_proyek == 'Done')
                             <td><span class="badge bg-done">Done</span></td>
                         @endif
                         <td>
                             <div class="d-flex gap-2">
-                                <a href="{{ route('koordinator.detailDataProyek', ['id' => $proyek->proyek_id]) }}">
+                                <a href="{{ route('koordinator.detailDataProyek', ['id' => $dataProyek->proyek_id]) }}">
                                     <svg width="20" height="20" viewBox="0 0 26 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                         <path d="M21.0571 10.9056C21.4729 11.3872 21.6808 11.628 21.6808 12C21.6808 12.372 21.4729 12.6128 21.0571 13.0944C19.5628 14.8252 16.307 18 12.5313 18C8.7555 18 5.49977 14.8252 4.00541 13.0944C3.58961 12.6128 3.38171 12.372 3.38171 12C3.38171 11.628 3.58961 11.3872 4.00541 10.9056C5.49977 9.17485 8.7555 6 12.5313 6C16.307 6 19.5628 9.17485 21.0571 10.9056Z" fill="#3C21F7"/>
                                         <path d="M15.6641 12C15.6641 13.6569 14.2615 15 12.5313 15C10.801 15 9.39844 13.6569 9.39844 12C9.39844 10.3431 10.801 9 12.5313 9C14.2615 9 15.6641 10.3431 15.6641 12Z" fill="white"/>
                                     </svg>
                                 </a>
-                                <a href="" data-bs-toggle="modal" data-bs-target="#modalDelete{{ $proyek->proyek_id }}">
+                                <a href="" data-bs-toggle="modal" data-bs-target="#modalDelete{{ $dataProyek->proyek_id }}">
                                     <svg width="20" height="20" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path fill-rule="evenodd" clip-rule="evenodd" d="M21.5896 12.4848C21.5896 17.6563 17.459 21.8486 12.3636 21.8486C7.26829 21.8486 3.1377 17.6563 3.1377 12.4848C3.1377 7.31339 7.26829 3.12109 12.3636 3.12109C17.459 3.12109 21.5896 7.31339 21.5896 12.4848ZM7.56137 17.3588C7.17375 16.9654 7.17375 16.3276 7.56137 15.9342L10.9599 12.4848L7.56137 9.03551C7.17375 8.6421 7.17375 8.00426 7.56137 7.61085C7.94899 7.21744 8.57744 7.21744 8.96506 7.61085L12.3636 11.0602L15.7622 7.61085C16.1498 7.21744 16.7783 7.21744 17.1659 7.61085C17.5535 8.00426 17.5535 8.6421 17.1659 9.03551L13.7673 12.4848L17.1659 15.9342C17.5535 16.3276 17.5535 16.9654 17.1659 17.3588C16.7783 17.7522 16.1498 17.7522 15.7622 17.3588L12.3636 13.9095L8.96506 17.3588C8.57744 17.7522 7.94899 17.7522 7.56137 17.3588Z" fill="#E56F8C"/>
                                     </svg>
@@ -208,18 +208,18 @@
                     </tr>
 
                     <!-- Modal Delete untuk Proyek -->
-                    <div class="modal fade" id="modalDelete{{ $proyek->proyek_id }}" tabindex="-1" aria-labelledby="deleteLabel{{ $proyek->proyek_id }}" aria-hidden="true">
+                    <div class="modal fade" id="modalDelete{{ $dataProyek->proyek_id }}" tabindex="-1" aria-labelledby="deleteLabel{{ $dataProyek->proyek_id }}" aria-hidden="true">
                         <div class="modal-dialog modal-dialog-centered">
                             <div class="modal-content">
-                                <form action="{{ route('koordinator.deleteDataProyek', $proyek->proyek_id) }}" method="POST">
+                                <form action="{{ route('koordinator.deleteDataProyek', $dataProyek->proyek_id) }}" method="POST">
                                     @csrf
                                     @method('DELETE')
                                     <div class="modal-header">
-                                        <h5 class="modal-title" id="deleteLabel{{ $proyek->proyek_id }}">Konfirmasi Hapus</h5>
+                                        <h5 class="modal-title" id="deleteLabel{{ $dataProyek->proyek_id }}">Konfirmasi Hapus</h5>
                                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
                                     </div>
                                     <div class="modal-body">
-                                        <p>Apakah Anda yakin ingin menghapus proyek <strong>{{ $proyek->nama_proyek }}</strong>?</p>
+                                        <p>Apakah Anda yakin ingin menghapus proyek <strong>{{ $dataProyek->nama_proyek }}</strong>?</p>
                                         <div class="alert alert-warning">
                                             <i class="bi bi-exclamation-triangle-fill me-2"></i> Tindakan ini akan menghapus:
                                             <ul class="mb-0 mt-2">
@@ -253,6 +253,14 @@
                     @endforelse
                 </tbody>
             </table>
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="showing-text">
+                    Showing {{ $proyek->firstItem() }} to {{ $proyek->lastItem() }} of {{ $proyek->total() }} entries
+                </div>
+                <div class="pagination-links">
+                    {{ $proyek->appends(['search' => request('search')])->links('vendor.pagination.custom_master') }}
+                </div>
+            </div>
         </div>
     </div>
 </div>

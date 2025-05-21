@@ -15,6 +15,8 @@ use App\Http\Controllers\Koordinator\DataAnggotaProyekController;
 use App\Http\Controllers\Koordinator\DataLuaranController;
 use App\Http\Controllers\Koordinator\DataProgresProyekController;
 use App\Http\Controllers\Koordinator\DataKeuangan\DataKeuanganTefaController;
+use App\Http\Controllers\Koordinator\DataKeuangan\DataMasukKeuanganProyekController;
+use App\Http\Controllers\Koordinator\DataKeuangan\DataKeluarKeuanganProyekController;
 
 
 Route::middleware([KoordinatorMiddleware::class])->prefix('koordinator')->group(function () {
@@ -111,4 +113,16 @@ Route::middleware([KoordinatorMiddleware::class])->prefix('koordinator')->group(
     Route::get('/keuangan-tefa/get-summary', [DataKeuanganTefaController::class, 'getSummary']);
     Route::get('/keuangan-tefa/{id}', [DataKeuanganTefaController::class, 'getKeuanganTefaById']);
     Route::post('/keuangan-tefa/update/{id}', [DataKeuanganTefaController::class, 'update']);
+
+    // Data Masuk Keuangan Proyek
+    // Route::get('/keuangan-proyek/dana-masuk', [DataMasukKeuanganProyekController::class, 'getDataProyek'])->name('koordinator.dataMasukKeuanganProyek');
+    Route::get('/data-masuk-keuangan-proyek', [DataMasukKeuanganProyekController::class, 'getDataProyek'])->name('koordinator.dataMasukKeuanganProyek');
+
+    // Project details and transactions
+    Route::get('/data-masuk-keuangan-proyek/{proyekId}', [DataMasukKeuanganProyekController::class, 'getDataMasukKeuanganProyek'])->name('koordinator.detailDataMasukKeuanganProyek');
+    Route::get('/data-masuk-keuangan-proyek/{proyekId}/transaksi', [DataMasukKeuanganProyekController::class, 'getDataTransaksiProyek'])->name('koordinator.getDataTransaksiProyek');
+    Route::post('/data-masuk-keuangan-proyek/tambah-transaksi', [DataMasukKeuanganProyekController::class, 'tambahTransaksiPemasukan'])->name('koordinator.tambahTransaksiPemasukan');
+    Route::delete('/data-masuk-keuangan-proyek/hapus-transaksi/{transaksiId}', [DataMasukKeuanganProyekController::class, 'hapusTransaksi'])->name('koordinator.hapusTransaksi');
+    Route::get('/bukti-transaksi/{fileName}', [DataMasukKeuanganProyekController::class, 'downloadBuktiTransaksi'])->name('koordinator.downloadBuktiTransaksi');
+
 });

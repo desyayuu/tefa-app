@@ -324,6 +324,26 @@ $(document).ready(function() {
         const filters = $(this).data('filters') || {};
         loadDataKeuanganTefa(page, filters);
     });
+
+    $("#filter_jenis_keuangan").on('change', function() {
+        toggleFilterProyekContainer();
+        // Also update sub jenis transaksi visibility
+        toggleFilterSubJenisTransaksiContainer();
+    });
+    
+    // Add event handler for jenis_transaksi changes to toggle Sub Jenis Transaksi filter
+    $("#filter_jenis_transaksi").on('change', function() {
+        toggleFilterSubJenisTransaksiContainer();
+    });
+
+        initializeFilterSelect2();
+    
+    // Tambahkan kode ini setelah event handler btnResetFilter
+    $("#btnResetFilter").off('click').on('click', function() {
+        resetFilters();
+        // Re-initialize Select2 after reset
+        setTimeout(initializeFilterSelect2, 100);
+    });
 });
 
 function initializeSelect2() {
@@ -384,11 +404,48 @@ function initializeSelect2() {
     }
 }
 
+
+
 function initializeNominalFormatting() {
     setupNominalFormatting("#nominal");
     setupNominalFormatting("#edit_nominal");
 }
 
+function initializeFilterSelect2() {
+    // Initialize Select2 for the project filter dropdown
+    if ($.fn.select2) {
+        try {
+            // First destroy any existing instances to prevent duplicates
+            if ($('#filter_proyek').hasClass('select2-hidden-accessible')) {
+                $('#filter_proyek').select2('destroy');
+            }
+            
+            if ($('#filter_sub_jenis_transaksi').hasClass('select2-hidden-accessible')) {
+                $('#filter_sub_jenis_transaksi').select2('destroy');
+            }
+            
+            // Initialize Select2 for project filter
+            $('#filter_proyek').select2({
+                theme: 'bootstrap-5',
+                width: '100%',
+                placeholder: 'Pilih Proyek',
+                allowClear: true
+            });
+            
+            // Initialize Select2 for sub jenis transaksi filter
+            $('#filter_sub_jenis_transaksi').select2({
+                theme: 'bootstrap-5',
+                width: '100%',
+                placeholder: 'Pilih Kategori Pengeluaran',
+                allowClear: true
+            });
+        } catch (e) {
+            console.warn('Error initializing Select2 for filters:', e);
+        }
+    } else {
+        console.warn('Select2 library not loaded. Searchable dropdowns will not be available.');
+    }
+}
 
 function setupNominalFormatting(selector) {
     // Remove any existing handler first to prevent duplicates
@@ -1395,8 +1452,19 @@ function populateEditForm(data) {
     $("#keuangan_tefa_id").val(data.keuangan_tefa_id);
     
     // Format date for input
-    const dateObj = new Date(data.tanggal_transaksi);
-    const formattedDate = dateObj.toISOString().split('T')[0]; // YYYY-MM-DD format
+    const rawDate = data.tanggal_transaksi;
+    let formattedDate;
+
+    if (rawDate.includes('T')) {
+        formattedDate = rawDate.split('T')[0];
+    } else if (rawDate.includes(' ')) {
+        formattedDate = rawDate.split(' ')[0];
+    } else {
+        formattedDate = rawDate;
+    }
+
+// Fill basic form fields
+$("#edit_tanggal_transaksi").val(formattedDate);
     
     // Fill basic form fields
     $("#edit_tanggal_transaksi").val(formattedDate);
@@ -1924,11 +1992,13 @@ function initializeFilters() {
     };
     
     // Set default date range (can be commented out if not desired)
-    // $("#filter_tanggal_mulai").val(formatDate(firstDay));
-    // $("#filter_tanggal_akhir").val(formatDate(lastDay));
+    $("#filter_tanggal_mulai").val(formatDate(firstDay));
+    $("#filter_tanggal_akhir").val(formatDate(lastDay));
     
     // Load project data for the filter dropdown
     loadProyekForFilter();
+    toggleFilterProyekContainer();
+    toggleFilterSubJenisTransaksiContainer();
 }
 
 function loadProyekForFilter() {
@@ -1936,6 +2006,18 @@ function loadProyekForFilter() {
         url: '/koordinator/keuangan-tefa/data-proyek',
         type: 'GET',
         dataType: 'json',
+        beforeSend: function() {
+            // Destroy previous Select2 instance if exists
+            try {
+                if ($.fn.select2 && $('#filter_proyek').hasClass('select2-hidden-accessible')) {
+                    $('#filter_proyek').select2('destroy');
+                }
+            } catch(e) {
+                console.warn('Error destroying Select2:', e);
+            }
+            
+            $('#filter_proyek').html('<option value="">Loading...</option>');
+        },
         success: function(response) {
             if (response.success && response.data) {
                 let options = '<option value="">Semua Proyek</option>';
@@ -1949,10 +2031,23 @@ function loadProyekForFilter() {
                 if (savedValue) {
                     $('#filter_proyek').val(savedValue);
                 }
+                
+                // Initialize Select2 after populating options
+                if ($.fn.select2) {
+                    $('#filter_proyek').select2({
+                        theme: 'bootstrap-5',
+                        width: '100%',
+                        placeholder: 'Pilih Proyek',
+                        allowClear: true
+                    });
+                }
+            } else {
+                $('#filter_proyek').html('<option value="">Error loading data</option>');
             }
         },
         error: function(xhr, status, error) {
             console.error('Error loading proyek data for filter:', error);
+            $('#filter_proyek').html('<option value="">Error loading data</option>');
         }
     });
 }
@@ -2009,6 +2104,18 @@ function loadSavedFilters() {
             }
         }
     });
+
+    toggleFilterProyekContainer();
+    toggleFilterSubJenisTransaksiContainer();
+
+    // Load dependent options if needed
+    if ($("#filter_jenis_keuangan").val() === 'Proyek') {
+        loadProyekForFilter();
+    }
+    
+    if ($("#filter_jenis_transaksi").val() && $("#filter_jenis_keuangan").val()) {
+        loadSubJenisTransaksiForFilter();
+    }
     
     // Apply filters automatically if any were saved
     if ($("#filter_tanggal_mulai").val() || 
@@ -2050,15 +2157,36 @@ function resetFilters() {
 }
 
 function applyFilters() {
+    // Validate date range
+    const startDate = $("#filter_tanggal_mulai").val();
+    const endDate = $("#filter_tanggal_akhir").val();
+    
+    // Only validate if both dates are provided
+    if (startDate && endDate) {
+        const startDateObj = new Date(startDate);
+        const endDateObj = new Date(endDate);
+        
+        // Compare dates
+        if (endDateObj < startDateObj) {
+            // Show SweetAlert notification
+            swal.errorMessage('Tanggal Akhir tidak boleh lebih awal dari Tanggal Mulai');
+            return; // Stop filter application
+        }
+    }
+    
     // Collect filter values
     const filters = {
-        tanggal_mulai: $("#filter_tanggal_mulai").val(),
-        tanggal_akhir: $("#filter_tanggal_akhir").val(),
+        tanggal_mulai: startDate,
+        tanggal_akhir: endDate,
         jenis_transaksi: $("#filter_jenis_transaksi").val(),
         jenis_keuangan: $("#filter_jenis_keuangan").val(),
         nama_transaksi: $("#filter_nama_transaksi").val(),
-        proyek_id: $("#filter_proyek").val()
+        proyek_id: $("#filter_proyek").val(),
+        sub_jenis_transaksi_id: $("#filter_sub_jenis_transaksi").val()
     };
+    
+    // Log the filters for debugging
+    console.log("Applied filters:", filters);
     
     // Save filters for future use
     saveFiltersToLocalStorage();
@@ -2253,3 +2381,141 @@ function updatePaginationWithFilters(data, filters) {
     }
 }
 
+function toggleFilterProyekContainer() {
+    const jenisKeuangan = $("#filter_jenis_keuangan").val();
+    
+    if (jenisKeuangan === 'Proyek') {
+        $("#filterProyekContainer").show();
+        // Load proyek options if not already loaded
+        if ($("#filter_proyek option").length <= 1) {
+            loadProyekForFilter();
+        }
+    } else {
+        $("#filterProyekContainer").hide();
+        // Reset proyek selection when hidden
+        $("#filter_proyek").val('');
+    }
+}
+
+function toggleFilterSubJenisTransaksiContainer() {
+    const jenisTransaksi = $("#filter_jenis_transaksi").val();
+    const jenisKeuangan = $("#filter_jenis_keuangan").val();
+    
+    // Only show Kategori Pengeluaran filter if Jenis Transaksi is "Pengeluaran" AND Keperluan Transaksi is "Proyek"
+    if (jenisTransaksi === 'Pengeluaran' && jenisKeuangan === 'Proyek') {
+        $("#filterSubJenisTransaksiContainer").show();
+        
+        // Load sub jenis transaksi options
+        loadSubJenisTransaksiForFilter();
+    } else {
+        $("#filterSubJenisTransaksiContainer").hide();
+        // Reset sub jenis transaksi selection when hidden
+        $("#filter_sub_jenis_transaksi").val('');
+    }
+}
+
+function loadSubJenisTransaksiForFilter() {
+    const jenisTransaksiValue = $("#filter_jenis_transaksi").val();
+    const jenisKeuanganValue = $("#filter_jenis_keuangan").val();
+    
+    // Only load options if both jenis transaksi and jenis keuangan are selected
+    if (jenisTransaksiValue && jenisKeuanganValue) {
+        // Get the IDs from the select elements instead of assuming them
+        let jenisTransaksiId;
+        let jenisKeuanganId;
+        
+        // Get the actual DB IDs from the AJAX endpoints
+        $.ajax({
+            url: '/koordinator/keuangan-tefa/jenis-transaksi',
+            type: 'GET',
+            dataType: 'json',
+            async: false, // Use synchronous request to ensure we have IDs before proceeding
+            success: function(response) {
+                if (response.success && response.data) {
+                    // Find the jenis_transaksi_id that matches the selected value
+                    const found = response.data.find(item => item.nama_jenis_transaksi === jenisTransaksiValue);
+                    if (found) {
+                        jenisTransaksiId = found.jenis_transaksi_id;
+                    }
+                }
+            }
+        });
+        
+        $.ajax({
+            url: '/koordinator/keuangan-tefa/jenis-keuangan-tefa',
+            type: 'GET',
+            dataType: 'json',
+            async: false, // Use synchronous request to ensure we have IDs before proceeding
+            success: function(response) {
+                if (response.success && response.results) {
+                    // Find the jenis_keuangan_tefa_id that matches the selected value
+                    const found = response.results.find(item => item.nama_jenis_keuangan_tefa === jenisKeuanganValue);
+                    if (found) {
+                        jenisKeuanganId = found.jenis_keuangan_tefa_id;
+                    }
+                }
+            }
+        });
+        
+        // If we have both IDs, load the sub jenis transaksi options
+        if (jenisTransaksiId && jenisKeuanganId) {
+            $.ajax({
+                url: '/koordinator/keuangan-tefa/get-sub-jenis-transaksi',
+                type: 'GET',
+                data: {
+                    jenis_transaksi_id: jenisTransaksiId,
+                    jenis_keuangan_tefa_id: jenisKeuanganId
+                },
+                dataType: 'json',
+                beforeSend: function() {
+                    // Destroy previous Select2 instance if exists
+                    try {
+                        if ($.fn.select2 && $('#filter_sub_jenis_transaksi').hasClass('select2-hidden-accessible')) {
+                            $('#filter_sub_jenis_transaksi').select2('destroy');
+                        }
+                    } catch(e) {
+                        console.warn('Error destroying Select2:', e);
+                    }
+                    
+                    $('#filter_sub_jenis_transaksi').html('<option value="">Loading...</option>');
+                },
+                success: function(response) {
+                    if (response.success && response.results && response.results.length > 0) {
+                        let options = '<option value="">Semua</option>';
+                        $.each(response.results, function(key, item) {
+                            options += `<option value="${item.id}">${item.text}</option>`;
+                        });
+                        $('#filter_sub_jenis_transaksi').html(options);
+                        
+                        // Restore selected value if exists
+                        const savedValue = localStorage.getItem('filter_sub_jenis_transaksi');
+                        if (savedValue) {
+                            $('#filter_sub_jenis_transaksi').val(savedValue);
+                        }
+                        
+                        // Initialize Select2 after populating options
+                        if ($.fn.select2) {
+                            $('#filter_sub_jenis_transaksi').select2({
+                                theme: 'bootstrap-5',
+                                width: '100%',
+                                placeholder: 'Pilih Kategori Pengeluaran',
+                                allowClear: true
+                            });
+                        }
+                    } else {
+                        $('#filter_sub_jenis_transaksi').html('<option value="">Tidak ada kategori tersedia</option>');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error loading sub jenis transaksi for filter:', error);
+                    $('#filter_sub_jenis_transaksi').html('<option value="">Error loading data</option>');
+                }
+            });
+        } else {
+            $('#filter_sub_jenis_transaksi').html('<option value="">Tidak dapat memuat data</option>');
+        }
+    } else {
+        // Reset dropdown if either jenis transaksi or jenis keuangan is not selected
+        $('#filter_sub_jenis_transaksi').html('<option value="">Semua</option>');
+    }
+}

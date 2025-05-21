@@ -47,7 +47,6 @@ class DataProyekController extends Controller
                     ->where('t_project_leader.leader_type', '=', 'Profesional');
             });
         
-        // Apply search if provided
         if ($request->has('search') && !empty($request->search)) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
@@ -58,8 +57,6 @@ class DataProyekController extends Controller
         
         // Gunakan paginate untuk menghasilkan objek paginasi yang benar
         $proyek = $query->orderBy('m_proyek.created_at', 'desc')->paginate(10);
-        
-        // Tambahkan search parameter ke variable untuk ditampilkan di view
         $search = $request->search;
         
         return view('pages.Koordinator.DataProyek.table_data_proyek', compact(

@@ -88,7 +88,7 @@
                     </a>
                     <ul class="nested-submenu">
                         <li>
-                            <a href="" style="margin-left: 40px;" class="nested-submenu-item">
+                            <a href="{{ route('koordinator.dataMasukKeuanganProyek') }}" style="margin-left: 40px;" class="nested-submenu-item {{ request()->routeIs('koordinator.dataMasukKeuanganProyek') || request()->routeIs('koordinator.detailDataMasukKeuanganProyek') ? 'active' : '' }}">
                                 <span class="nested-submenu-icon">
                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                         <path d="M12 20V4m0 16l-6-6m6 6l6-6" stroke="#878787" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>

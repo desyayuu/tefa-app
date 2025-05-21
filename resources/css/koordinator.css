@@ -352,7 +352,8 @@ body {
     margin-bottom: 20px;
 }
 
-.detail-dokumen-penunjang{
+.detail-dokumen-penunjang,
+.detail-luaran{
     margin-top: 20px; 
     margin-left: 20px;
     font-size: 14px;
@@ -629,6 +630,11 @@ body {
 .data-keuangan-tefa-container{
     padding: 20px 5px 20px 5px;
     margin: 0px 10px 0px 10px;
+}
+
+.data-masuk-keuangan-proyek-container{
+    padding: 20px 5px 20px 5px;
+    margin: 50px 10px 0px 10px;
 }
 
 .data-total-keuangan-tefa-container{
