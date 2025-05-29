@@ -86,7 +86,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <!-- Data dosen yang dipilih akan ditampilkan di sini -->
+                                <!-- Data dosen yang dipilih -->
                                 <tr id="emptyRow">
                                     <td colspan="3" class="text-center">Belum ada dosen yang dipilih</td>
                                 </tr>
@@ -94,7 +94,7 @@
                         </table>
                     </div>
                     
-                    <!-- Input tersembunyi untuk menyimpan data dosen terakhir yang dipilih (agar backward compatible) -->
+                    <!-- Input tersembunyi untuk menyimpan data dosen terakhir yang dipilih -->
                     <input type="hidden" name="dosen_id" id="dosen_id">
                     
                     <!-- Hidden input untuk menyimpan data dosen yang dipilih -->

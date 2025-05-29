@@ -1,4 +1,4 @@
-<div class="anggota-proyek-container flex-grow-1 me-3 pb-3">
+<div class="anggota-proyek-container flex-grow-1 me-3">
     <div class="card shadow-sm border-0 rounded-3 h-100">
         <div class="card-body">
             <h5 class="fw-bold mb-4">Anggota Proyek</h5>

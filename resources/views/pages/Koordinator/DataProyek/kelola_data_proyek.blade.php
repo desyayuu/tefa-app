@@ -9,15 +9,33 @@
     
     <div class="main-content">
         @include('layouts.Koordinator.header')
+        
+        <div class="breadcrumb-container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item">
+                        <a href="{{ route('koordinator.dataProyek') }}">
+                            <i class="fas fa-project-diagram me-1"></i>
+                            Data Proyek
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Detail Data Proyek
+                    </li>
+                </ol>
+            </nav>
+        </div>
 
-        <div style="display: flex; align-items: stretch;">
-            <div style="flex: 9;">
+        <div style="display: grid; grid-template-columns: 3fr 1fr; align-items: stretch;">
+            <div style="display: flex; flex-direction: column;">
                 @include('pages.Koordinator.DataProyek.data_proyek')
             </div>
-            <div style="flex: 3;">
+            <div style="display: flex; flex-direction: column;">
                 @include('pages.Koordinator.DataProyek.data_anggota_proyek')
             </div>
         </div>
+
         <div class="section-dokumen-penunjang">
             @include('pages.Koordinator.DataProyek.data_dokumen_penunjang')
         </div>

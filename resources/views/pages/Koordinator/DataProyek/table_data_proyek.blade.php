@@ -9,6 +9,18 @@
     
     <div class="main-content">
         @include('layouts.Koordinator.header')
+        <div class="breadcrumb-container">
+            <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item">
+                            <a href="{{ route('koordinator.dataProyek') }}" class="breadcrumb-item active" aria-current="page">
+                                <i class="fas fa-project-diagram me-1"></i>
+                                Data Proyek
+                            </a>
+                        </li>
+                    </ol>
+            </nav>
+        </div>
 
         <div class="content-table">
             <!-- Handling Error and Success -->
@@ -19,7 +31,7 @@
                 <div class="d-flex gap-2 align-items-center">
                     <div class="position-relative">
                         <form action="{{ route('koordinator.dataProyek') }}" method="GET">
-                            <input type="text" name="search" class="form-control pe-5 form-search" placeholder="Cari mitra..." value="{{$search ?? '' }}">
+                            <input type="text" name="search" class="form-control pe-5 form-search" placeholder="Cari proyek..." value="{{$search ?? '' }}">
                             <button type="submit" class="btn position-absolute top-50 end-0 translate-middle-y pe-2 py-2 border-0 bg-transparent">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <circle cx="11.7664" cy="11.7669" r="8.98856" stroke="#130F26" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -35,127 +47,6 @@
                         Hapus Filter
                     </a>
                     @endif
-                    
-                    <!-- Modal Tambah Data Proyek -->
-                    <div class="modal fade" id="exampleModalToggle" aria-hidden="true" aria-labelledby="exampleModalToggleLabel" tabindex="-1">
-                        <div class="modal-dialog modal-dialog-centered modal-lg">
-                            <div class="modal-content">
-                                <form action="{{ route('koordinator.tambahDataProyek') }}" method="POST">
-                                    @csrf
-                                    <div class="modal-header">
-                                        <h1 class="modal-title fs-5" id="exampleModalToggleLabel">Tambah Data Proyek</h1>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                    <div class="row">
-                                        <!-- Jenis Proyek -->
-                                        <div class="col-md-6 mb-3">
-                                            <label for="jenis_proyek" class="form-label label-form">Jenis Proyek</label>
-                                            <select class="form-select form-selection" id="jenis_proyek" name="jenis_proyek" required>
-                                                <option value="" disabled selected >Pilih Jenis Proyek</option>
-                                                @foreach($jenisProyek as $jenis)
-                                                    <option value="{{ $jenis->jenis_proyek_id }}" class="form-selection">{{ $jenis->nama_jenis_proyek }}</option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-
-                                        <!-- Mitra Proyek -->
-                                        <div class="col-md-6 mb-3">
-                                            <label for="mitra_id" class="form-label label-form">Mitra Proyek</label>
-                                            <select class="form-select form-selection" id="mitra_id" name="mitra_id" required>
-                                                <option value="" disabled selected>Pilih Mitra</option>
-                                                @foreach($daftarMitra as $mitra)
-                                                    <option value="{{ $mitra->mitra_proyek_id }}" class="form-selection">{{ $mitra->nama_mitra }}</option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-                                    </div>
-
-                                    <!-- Baris 2: Project Leader -->
-                                    <div class="mb-3">
-                                        <label class="form-label label-form">Project Leader</label>
-                                        <select class="form-select form-selection mb-2" id="leader_type" name="leader_type" required>
-                                            <option value="" disabled selected>Pilih Tipe Project Leader</option>
-                                            <option value="Dosen">Dosen</option>
-                                            <option value="Profesional">Profesional</option>
-                                        </select>
-
-                                        <!-- Dosen Leader Options -->
-                                        <div id="dosen_leader_section" style="display:none;">
-                                            <select class="form-select form-selection select2-dosen" id="dosen_leader_id" name="leader_id">
-                                                <option value="" disabled selected>Pilih Dosen</option>
-                                                @foreach($dataDosen as $dosen)
-                                                    <option value="{{ $dosen->dosen_id }}">{{ $dosen->nama_dosen }}</option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-
-                                        <!-- Profesional Leader Options -->
-                                        <div id="profesional_leader_section" style="display:none;">
-                                            <select class="form-select form-selection select2-profesional" id="profesional_leader_id" name="leader_id">
-                                                <option value="" disabled selected>Pilih Profesional</option>
-                                                @foreach($dataProfesional as $profesional)
-                                                    <option value="{{ $profesional->profesional_id }}">{{ $profesional->nama_profesional }}</option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-                                    </div>
-
-                                    <!-- Baris 3: Nama Proyek -->
-                                    <div class="mb-3">
-                                        <label for="nama_proyek" class="form-label label-form">Nama Proyek</label>
-                                        <input type="text" class="form-control form-selection" id="nama_proyek" name="nama_proyek" required>
-                                    </div>
-
-                                    <!-- Baris 4: Status dan Dana -->
-                                    <div class="row">
-                                        <div class="col-md-6 mb-3">
-                                            <label for="status_proyek" class="form-label label-form">Status Proyek</label>
-                                            <select class="form-select form-selection" id="status_proyek" name="status_proyek" required>
-                                                <option value="Initiation" selected>Initiation</option>
-                                                <option value="In Progress">In Progress</option>
-                                                <option value="Done">Done</option>
-                                            </select>
-                                        </div>
-
-                                        <div class="col-md-6 mb-3">
-                                            <label for="dana_pendanaan" class="form-label label-form">Dana Pendanaan</label>
-                                            <div class="input-group">
-                                                <span class="input-group-text">Rp</span>
-                                                <input type="text" class="form-control form-selection currency-format" id="dana_pendanaan" name="dana_pendanaan" required>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Baris 5: Tanggal Mulai & Selesai -->
-                                    <div class="row">
-                                        <div class="col-md-6 mb-3">
-                                            <label for="tanggal_mulai" class="form-label label-form">Tanggal Mulai</label>
-                                            <input type="date" class="form-control form-selection" id="tanggal_mulai" name="tanggal_mulai" required>
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label for="tanggal_selesai" class="form-label label-form">Tanggal Selesai</label>
-                                            <input type="date" class="form-control form-selection" id="tanggal_selesai" name="tanggal_selesai" required>
-                                        </div>
-                                    </div>
-
-                                    <!-- Baris 6: Deskripsi -->
-                                    <div class="mb-3">
-                                        <label for="deskripsi_proyek" class="form-label label-form">Deskripsi</label>
-                                        <textarea class="form-control form-selection" id="deskripsi_proyek" name="deskripsi_proyek" rows="3" placeholder="Tuliskan deskripsi proyek..."></textarea>
-                                    </div>
-                                </div>
-
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-tutup" data-bs-dismiss="modal">Batal</button>
-                                        <button type="submit" class="btn btn-add">Tambah</button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-
-
                     <button class="btn btn-add" data-bs-target="#exampleModalToggle" data-bs-toggle="modal">Tambah Data</button>
                 </div>
             </div>
@@ -206,40 +97,6 @@
                             </div>
                         </td>
                     </tr>
-
-                    <!-- Modal Delete untuk Proyek -->
-                    <div class="modal fade" id="modalDelete{{ $dataProyek->proyek_id }}" tabindex="-1" aria-labelledby="deleteLabel{{ $dataProyek->proyek_id }}" aria-hidden="true">
-                        <div class="modal-dialog modal-dialog-centered">
-                            <div class="modal-content">
-                                <form action="{{ route('koordinator.deleteDataProyek', $dataProyek->proyek_id) }}" method="POST">
-                                    @csrf
-                                    @method('DELETE')
-                                    <div class="modal-header">
-                                        <h5 class="modal-title" id="deleteLabel{{ $dataProyek->proyek_id }}">Konfirmasi Hapus</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <p>Apakah Anda yakin ingin menghapus proyek <strong>{{ $dataProyek->nama_proyek }}</strong>?</p>
-                                        <div class="alert alert-warning">
-                                            <i class="bi bi-exclamation-triangle-fill me-2"></i> Tindakan ini akan menghapus:
-                                            <ul class="mb-0 mt-2">
-                                                <li>Data proyek</li>
-                                                <li>Project leader</li>
-                                                <li>Semua anggota dosen</li>
-                                                <li>Semua anggota mahasiswa</li>
-                                                <li>Semua anggota profesional</li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-tutup" data-bs-dismiss="modal">Batal</button>
-                                        <button type="submit" class="btn btn-hapus">Hapus</button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-
                     @empty
                     <tr>
                         <td colspan="5" class="text-center">
@@ -261,6 +118,159 @@
                     {{ $proyek->appends(['search' => request('search')])->links('vendor.pagination.custom_master') }}
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Tambah Data Proyek -->
+<div class="modal fade" id="exampleModalToggle" aria-hidden="true" aria-labelledby="exampleModalToggleLabel" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <form action="{{ route('koordinator.tambahDataProyek') }}" method="POST">
+                @csrf
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalToggleLabel">Tambah Data Proyek</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+
+                        <!-- Jenis Proyek -->
+                        <div class="col-md-6 mb-3">
+                            <label for="jenis_proyek" class="form-label label-form">Jenis Proyek <span class="text-danger">*</span></label>
+                            <select class="form-select form-selection" id="jenis_proyek" name="jenis_proyek" required>
+                                <option value="" disabled selected >Pilih Jenis Proyek</option>
+                                @foreach($jenisProyek as $jenis)
+                                    <option value="{{ $jenis->jenis_proyek_id }}" class="form-selection">{{ $jenis->nama_jenis_proyek }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <!-- Mitra Proyek -->
+                        <div class="col-md-6 mb-3">
+                            <label for="mitra_id" class="form-label label-form">Mitra Proyek <span class="text-danger">*</span></label>
+                            <select class="form-select form-selection" id="mitra_id" name="mitra_id" required>
+                                <option value="" disabled selected>Pilih Mitra</option>
+                                @foreach($daftarMitra as $mitra)
+                                    <option value="{{ $mitra->mitra_proyek_id }}" class="form-selection">{{ $mitra->nama_mitra }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Baris 2: Project Leader -->
+                    <div class="mb-3">
+                        <label class="form-label label-form">Project Leader <span class="text-danger">*</span></label>
+                        <select class="form-select form-selection mb-2" id="leader_type" name="leader_type" required>
+                            <option value="" disabled selected>Pilih Tipe Project Leader</option>
+                            <option value="Dosen">Dosen</option>
+                            <option value="Profesional">Profesional</option>
+                        </select>
+
+                        <!-- Dosen Leader Options -->
+                        <div id="dosen_leader_section" style="display:none;">
+                            <select class="form-select form-selection select2-dosen" id="dosen_leader_id" name="leader_id">
+                                <option value="" disabled selected>Pilih Dosen <span class="text-danger">*</span></option>
+                                @foreach($dataDosen as $dosen)
+                                    <option value="{{ $dosen->dosen_id }}">{{ $dosen->nama_dosen }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <!-- Profesional Leader Options -->
+                        <div id="profesional_leader_section" style="display:none;">
+                            <select class="form-select form-selection select2-profesional" id="profesional_leader_id" name="leader_id">
+                                <option value="" disabled selected>Pilih Profesional <span class="text-danger">*</span></option>
+                                @foreach($dataProfesional as $profesional)
+                                    <option value="{{ $profesional->profesional_id }}">{{ $profesional->nama_profesional }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Baris 3: Nama Proyek -->
+                    <div class="mb-3">
+                        <label for="nama_proyek" class="form-label label-form">Nama Proyek <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control form-selection" id="nama_proyek" name="nama_proyek" required>
+                    </div>
+
+                    <!-- Baris 4: Status dan Dana -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="status_proyek" class="form-label label-form">Status Proyek <span class="text-danger">*</span></label>
+                            <select class="form-select form-selection" id="status_proyek" name="status_proyek" required>
+                                <option value="Initiation" selected>Initiation</option>
+                                <option value="In Progress">In Progress</option>
+                                <option value="Done">Done</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="dana_pendanaan" class="form-label label-form">Dana Pendanaan <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text">Rp</span>
+                                <input type="text" class="form-control form-selection currency-format" id="dana_pendanaan" name="dana_pendanaan" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Baris 5: Tanggal Mulai & Selesai -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="tanggal_mulai" class="form-label label-form">Tanggal Mulai <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control form-selection" id="tanggal_mulai" name="tanggal_mulai" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="tanggal_selesai" class="form-label label-form">Tanggal Selesai <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control form-selection" id="tanggal_selesai" name="tanggal_selesai" required>
+                        </div>
+                    </div>
+
+                    <!-- Baris 6: Deskripsi -->
+                    <div class="mb-3">
+                        <label for="deskripsi_proyek" class="form-label label-form">Deskripsi</label>
+                        <textarea class="form-control form-selection" id="deskripsi_proyek" name="deskripsi_proyek" rows="3" placeholder="Tuliskan deskripsi proyek..."></textarea>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-tutup" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-add">Tambah</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Delete untuk Proyek -->
+<div class="modal fade" id="modalDelete{{ $dataProyek->proyek_id }}" tabindex="-1" aria-labelledby="deleteLabel{{ $dataProyek->proyek_id }}" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form action="{{ route('koordinator.deleteDataProyek', $dataProyek->proyek_id) }}" method="POST">
+                @csrf
+                @method('DELETE')
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteLabel{{ $dataProyek->proyek_id }}">Konfirmasi Hapus</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Apakah Anda yakin ingin menghapus proyek <strong>{{ $dataProyek->nama_proyek }}</strong>?</p>
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i> Tindakan ini akan menghapus:
+                        <ul class="mb-0 mt-2">
+                            <li>Data proyek</li>
+                            <li>Project leader</li>
+                            <li>Semua anggota dosen</li>
+                            <li>Semua anggota mahasiswa</li>
+                            <li>Semua anggota profesional</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-tutup" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-hapus">Hapus</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

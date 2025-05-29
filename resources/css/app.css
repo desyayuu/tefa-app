@@ -22,6 +22,21 @@ body {
     }
 }
 
+.breadcrumb-item.active {
+    color: #3C21F7 !important;
+    font-weight: 600;
+}
+
+.breadcrumb-item a {
+    color: #6c757d;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.breadcrumb-item a:hover {
+    color: #3C21F7;
+}
+
 .card-info{
     background-color: #E2DEFF;
     color: #3C21F7;
@@ -829,4 +844,10 @@ select,
 
 .section-data-keuangan-tefa{
     font-size: 14px;
+}
+
+.breadcrumb-container{
+    margin-top: 80px;
+    margin-left: 30px;
+    font-size: 12px;
 }

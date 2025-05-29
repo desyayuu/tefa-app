@@ -144,6 +144,10 @@ body {
 }
 
 
+.main-color{
+    color: #3C21F7;
+}
+
 .main-content {
     flex-grow: 1;
     margin-left: 260px;
@@ -156,7 +160,7 @@ body {
 
 .content-table{
     padding: 20px 20px 20px 20px;
-    margin: 70px 10px 10px 10px;
+    margin: 20px 10px 10px 10px;
     border-radius: 10px;
     background-color: white;
 }
@@ -339,17 +343,15 @@ body {
 }
 
 .anggota-proyek-container{
-    margin-top: 80px;
+    margin-top: 20px;
     margin-right:20px;
     font-size: 14px;
-    margin-bottom: 20px;
 }
 
 .detail-proyek-container{
-    margin-top: 80px;
-    margin-left:20px;
+    margin-top: 20px;
+    margin-left: 20px;
     font-size: 14px;
-    margin-bottom: 20px;
 }
 
 .detail-dokumen-penunjang,
@@ -642,6 +644,7 @@ body {
     margin: 0px 10px 0px 10px;
 }
 
+
     /* You can modify these styles to match your application's theme */
     #filterContainer {
         transition: all 0.3s ease;
@@ -661,3 +664,6 @@ body {
     #filter_nominal_min, #filter_nominal_max {
         text-align: right;
     }
+
+
+
