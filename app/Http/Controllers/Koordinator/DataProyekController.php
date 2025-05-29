@@ -179,69 +179,354 @@ class DataProyekController extends Controller
         }
     }
 
-    public function deleteDataProyek(Request $request, $proyekId)
+    public function deleteDataProyek($id)
     {
-        DB::beginTransaction();
-    
         try {
-            // Siapkan timestamp dan user_id untuk tracking deleted_at dan deleted_by
-            $now = now();
-            $userId = auth()->user()->id ?? session('user_id');
-    
-            // 1. Soft delete anggota dosen
-            DB::table('t_project_member_dosen')
-                ->where('proyek_id', $proyekId)
+            DB::beginTransaction();
+            
+            $proyek = DB::table('m_proyek')
+                ->where('proyek_id', $id)
                 ->whereNull('deleted_at')
+                ->first();
+                
+            if (!$proyek) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data proyek tidak ditemukan atau sudah dihapus'
+                ], 404);
+            }
+            
+            $deletedAt = Carbon::now();
+            $deletedBy = auth()->user()->id ?? session('user_id');
+            
+            // Log untuk debugging
+            Log::info("Starting soft delete for project ID: {$id}");
+            Log::info("Deleted at: {$deletedAt}, Deleted by: {$deletedBy}");
+            
+            // 1. Soft delete dokumentasi dalam luaran 
+            $this->softDeleteDokumentasiLuaran($id, $deletedAt, $deletedBy);
+            
+            // 2. Soft delete luaran proyek
+            $this->softDeleteLuaranProyek($id, $deletedAt, $deletedBy);
+            
+            // 3. Soft delete progres proyek
+            $this->softDeleteProgresProyek($id, $deletedAt, $deletedBy);
+            
+            // 4. Soft delete timeline proyek
+            $this->softDeleteTimelineProyek($id, $deletedAt, $deletedBy);
+            
+            // 5. Soft delete dokumen penunjang
+            $this->softDeleteDokumenPenunjang($id, $deletedAt, $deletedBy);
+            
+            // 6. Soft delete anggota proyek
+            $this->softDeleteAnggotaProyek($id, $deletedAt, $deletedBy);
+            
+            // 7. Soft delete project leader
+            $this->softDeleteProjectLeader($id, $deletedAt, $deletedBy);
+            
+            // 8. Soft delete keuangan TEFA
+            $this->softDeleteKeuanganTefa($id, $deletedAt, $deletedBy);
+
+            // 8. Soft delete proyek utama terakhir
+            $result = DB::table('m_proyek')
+                ->where('proyek_id', $id)
                 ->update([
-                    'deleted_at' => $now,
-                    'deleted_by' => $userId,
+                    'deleted_at' => $deletedAt,
+                    'deleted_by' => $deletedBy,
+                    'updated_at' => $deletedAt,
+                    'updated_by' => $deletedBy
                 ]);
-    
-            // 2. Soft delete anggota mahasiswa
-            DB::table('t_project_member_mahasiswa')
-                ->where('proyek_id', $proyekId)
-                ->whereNull('deleted_at')
-                ->update([
-                    'deleted_at' => $now,
-                    'deleted_by' => $userId,
-                ]);
-    
-            // 3. Soft delete anggota profesional
-            DB::table('t_project_member_profesional')
-                ->where('proyek_id', $proyekId)
-                ->whereNull('deleted_at')
-                ->update([
-                    'deleted_at' => $now,
-                    'deleted_by' => $userId,
-                ]);
-    
-            // 4. Soft delete project leader
-            DB::table('t_project_leader')
-                ->where('proyek_id', $proyekId)
-                ->whereNull('deleted_at')
-                ->update([
-                    'deleted_at' => $now,
-                    'deleted_by' => $userId,
-                ]);
-    
-            // 5. Soft delete proyek itu sendiri
-            DB::table('m_proyek')
-                ->where('proyek_id', $proyekId)
-                ->update([
-                    'deleted_at' => $now,
-                    'deleted_by' => $userId,
-                ]);
-    
+                
+            Log::info("Main project soft delete result: {$result}");
+            
             DB::commit();
+            
             return redirect()->route('koordinator.dataProyek')
-                ->with('success', 'Data proyek beserta semua anggota berhasil dihapus.');
+                ->with('success', 'Proyek berhasil dihapus beserta semua data terkait.');
+            
         } catch (\Exception $e) {
-            DB::rollBack();
-            return redirect()->back()
-                ->with('error', 'Gagal menghapus data proyek: ' . $e->getMessage());
+            DB::rollback();
+            
+            Log::error("Error in soft delete: " . $e->getMessage());
+            Log::error("Stack trace: " . $e->getTraceAsString());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat menghapus proyek: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+    
+    private function softDeleteDokumenPenunjang($proyekId, $deletedAt, $deletedBy)
+    {
+        $tableName = 'm_dokumen_penunjang_proyek';
+        
+        $count = DB::table($tableName)
+            ->where('proyek_id', $proyekId)
+            ->whereNull('deleted_at')
+            ->count();
+            
+        Log::info("Found {$count} dokumen penunjang for project {$proyekId}");
+        
+        if ($count > 0) {
+            $result = DB::table($tableName)
+                ->where('proyek_id', $proyekId)
+                ->whereNull('deleted_at')
+                ->update([
+                    'deleted_at' => $deletedAt,
+                    'deleted_by' => $deletedBy,
+                    'updated_at' => $deletedAt,
+                    'updated_by' => $deletedBy
+                ]);
+                
+            Log::info("Soft deleted {$result} dokumen penunjang records");
+            
+            // Verifikasi hasil
+            $remainingActive = DB::table($tableName)
+                ->where('proyek_id', $proyekId)
+                ->whereNull('deleted_at')
+                ->count();
+                
+            Log::info("Remaining active dokumen penunjang: {$remainingActive}");
+        }
+    }
+    
+    private function softDeleteTimelineProyek($proyekId, $deletedAt, $deletedBy)
+    {
+        $tableName = 't_timeline_proyek';
+        
+        $count = DB::table($tableName)
+            ->where('proyek_id', $proyekId)
+            ->whereNull('deleted_at')
+            ->count();
+            
+        Log::info("Found {$count} timeline proyek records");
+        
+        if ($count > 0) {
+            $result = DB::table($tableName)
+                ->where('proyek_id', $proyekId)
+                ->whereNull('deleted_at')
+                ->update([
+                    'deleted_at' => $deletedAt,
+                    'deleted_by' => $deletedBy,
+                    'updated_at' => $deletedAt,
+                    'updated_by' => $deletedBy
+                ]);
+                
+            Log::info("Soft deleted {$result} timeline proyek records");
+        }
+    }
+    
+    private function softDeleteProgresProyek($proyekId, $deletedAt, $deletedBy)
+    {
+        $tableName = 't_progres_proyek';
+        
+        $count = DB::table($tableName)
+            ->where('proyek_id', $proyekId)
+            ->whereNull('deleted_at')
+            ->count();
+            
+        Log::info("Found {$count} progres proyek records");
+        
+        if ($count > 0) {
+            $result = DB::table($tableName)
+                ->where('proyek_id', $proyekId)
+                ->whereNull('deleted_at')
+                ->update([
+                    'deleted_at' => $deletedAt,
+                    'deleted_by' => $deletedBy,
+                    'updated_at' => $deletedAt,
+                    'updated_by' => $deletedBy
+                ]);
+                
+            Log::info("Soft deleted {$result} progres proyek records");
+        }
+    }
+    
+    private function softDeleteDokumentasiLuaran($proyekId, $deletedAt, $deletedBy)
+    {
+        // Cek tabel luaran yang digunakan - berdasarkan controller Dosen menggunakan 'd_luaran_proyek'
+        $luaranTableName = 'd_luaran_proyek';
+        
+        // Jika tabel d_luaran_proyek tidak ada, coba t_luaran_proyek
+        if (!DB::getSchemaBuilder()->hasTable($luaranTableName)) {
+            $luaranTableName = 't_luaran_proyek';
+        }
+        
+        Log::info("Using luaran table: {$luaranTableName}");
+        
+        if (DB::getSchemaBuilder()->hasTable($luaranTableName)) {
+            // Ambil semua luaran untuk proyek ini
+            $luaranIds = DB::table($luaranTableName)
+                ->where('proyek_id', $proyekId)
+                ->whereNull('deleted_at')
+                ->pluck('luaran_proyek_id');
+                
+            Log::info("Found luaran IDs: " . $luaranIds->implode(', '));
+                
+            if ($luaranIds->isNotEmpty()) {
+                $dokumentasiTableName = 'd_dokumentasi_proyek';
+                
+                if (DB::getSchemaBuilder()->hasTable($dokumentasiTableName)) {
+                    $count = DB::table($dokumentasiTableName)
+                        ->whereIn('luaran_proyek_id', $luaranIds)
+                        ->whereNull('deleted_at')
+                        ->count();
+                        
+                    Log::info("Found {$count} dokumentasi luaran records");
+                    
+                    if ($count > 0) {
+                        $result = DB::table($dokumentasiTableName)
+                            ->whereIn('luaran_proyek_id', $luaranIds)
+                            ->whereNull('deleted_at')
+                            ->update([
+                                'deleted_at' => $deletedAt,
+                                'deleted_by' => $deletedBy,
+                                'updated_at' => $deletedAt,
+                                'updated_by' => $deletedBy
+                            ]);
+                            
+                        Log::info("Soft deleted {$result} dokumentasi luaran records");
+                    }
+                } else {
+                    Log::warning("Table {$dokumentasiTableName} not found");
+                }
+            }
+        } else {
+            Log::warning("Luaran table not found");
+        }
+    }
+    
+    private function softDeleteLuaranProyek($proyekId, $deletedAt, $deletedBy)
+    {
+        // Cek tabel yang tersedia
+        $tableName = 'd_luaran_proyek';
+        
+        if (!DB::getSchemaBuilder()->hasTable($tableName)) {
+            $tableName = 't_luaran_proyek';
+        }
+        
+        if (DB::getSchemaBuilder()->hasTable($tableName)) {
+            $count = DB::table($tableName)
+                ->where('proyek_id', $proyekId)
+                ->whereNull('deleted_at')
+                ->count();
+                
+            Log::info("Found {$count} luaran proyek records in {$tableName}");
+            
+            if ($count > 0) {
+                $result = DB::table($tableName)
+                    ->where('proyek_id', $proyekId)
+                    ->whereNull('deleted_at')
+                    ->update([
+                        'deleted_at' => $deletedAt,
+                        'deleted_by' => $deletedBy,
+                        'updated_at' => $deletedAt,
+                        'updated_by' => $deletedBy
+                    ]);
+                    
+                Log::info("Soft deleted {$result} luaran proyek records");
+            }
+        } else {
+            Log::warning("Luaran proyek table not found");
         }
     }
 
+    private function softDeleteAnggotaProyek($proyekId, $deletedAt, $deletedBy)
+    {
+        $memberTables = [
+            't_project_member_dosen' => 'dosen',
+            't_project_member_profesional' => 'profesional', 
+            't_project_member_mahasiswa' => 'mahasiswa'
+        ];
+        
+        foreach ($memberTables as $tableName => $type) {
+            if (DB::getSchemaBuilder()->hasTable($tableName)) {
+                $count = DB::table($tableName)
+                    ->where('proyek_id', $proyekId)
+                    ->whereNull('deleted_at')
+                    ->count();
+                    
+                Log::info("Found {$count} {$type} members");
+                
+                if ($count > 0) {
+                    $result = DB::table($tableName)
+                        ->where('proyek_id', $proyekId)
+                        ->whereNull('deleted_at')
+                        ->update([
+                            'deleted_at' => $deletedAt,
+                            'deleted_by' => $deletedBy,
+                            'updated_at' => $deletedAt,
+                            'updated_by' => $deletedBy
+                        ]);
+                        
+                    Log::info("Soft deleted {$result} {$type} member records");
+                }
+            } else {
+                Log::warning("Table {$tableName} not found");
+            }
+        }
+    }
+
+    private function softDeleteProjectLeader($proyekId, $deletedAt, $deletedBy)
+    {
+        $tableName = 't_project_leader';
+        
+        if (DB::getSchemaBuilder()->hasTable($tableName)) {
+            $count = DB::table($tableName)
+                ->where('proyek_id', $proyekId)
+                ->whereNull('deleted_at')
+                ->count();
+                
+            Log::info("Found {$count} project leader records");
+            
+            if ($count > 0) {
+                $result = DB::table($tableName)
+                    ->where('proyek_id', $proyekId)
+                    ->whereNull('deleted_at')
+                    ->update([
+                        'deleted_at' => $deletedAt,
+                        'deleted_by' => $deletedBy,
+                        'updated_at' => $deletedAt,
+                        'updated_by' => $deletedBy
+                    ]);
+                    
+                Log::info("Soft deleted {$result} project leader records");
+            }
+        } else {
+            Log::warning("Table {$tableName} not found");
+        }
+    }
+
+    private function softDeleteKeuanganTefa($proyekId, $deletedAt, $deletedBy)
+    {
+        $tableName = 't_keuangan_tefa';
+        
+        if (DB::getSchemaBuilder()->hasTable($tableName)) {
+            $count = DB::table($tableName)
+                ->where('proyek_id', $proyekId)
+                ->whereNull('deleted_at')
+                ->count();
+                
+            Log::info("Found {$count} keuangan TEFA records");
+            
+            if ($count > 0) {
+                $result = DB::table($tableName)
+                    ->where('proyek_id', $proyekId)
+                    ->whereNull('deleted_at')
+                    ->update([
+                        'deleted_at' => $deletedAt,
+                        'deleted_by' => $deletedBy,
+                        'updated_at' => $deletedAt,
+                        'updated_by' => $deletedBy
+                    ]);
+                    
+                Log::info("Soft deleted {$result} keuangan TEFA records");
+            }
+        } else {
+            Log::warning("Table {$tableName} not found");
+        }
+    }
 
     public function updateProjectLeader(Request $request, $proyekId) {
         $request->validate([

@@ -97,6 +97,43 @@
                             </div>
                         </td>
                     </tr>
+                    <!-- Modal Delete untuk Proyek -->
+                    <div class="modal fade" id="modalDelete{{ $dataProyek->proyek_id }}" tabindex="-1" aria-labelledby="deleteLabel{{ $dataProyek->proyek_id }}" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <form action="{{ route('koordinator.deleteDataProyek', $dataProyek->proyek_id) }}" method="POST">
+                                    @csrf
+                                    @method('DELETE')
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="deleteLabel{{ $dataProyek->proyek_id }}">Konfirmasi Hapus</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p>Apakah Anda yakin ingin menghapus proyek <strong>{{ $dataProyek->nama_proyek }}</strong>?</p>
+                                        <div class="alert alert-warning">
+                                            <i class="bi bi-exclamation-triangle-fill me-2"></i> Tindakan ini akan menghapus:
+                                            <ul class="mb-0 mt-2">
+                                                <li>Data proyek</li>
+                                                <li>Project leader</li>
+                                                <li>Semua anggota dosen</li>
+                                                <li>Semua anggota mahasiswa</li>
+                                                <li>Semua anggota profesional</li>
+                                                <li>Data Timeline Proyek</li>
+                                                <li>Data Progres Proyek</li>
+                                                <li>Data Luaran Proyek</li>
+                                                <li>Data Dokumen Penunjang</li>
+                                                <li>Data Keuangan Proyek</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-tutup" data-bs-dismiss="modal">Batal</button>
+                                        <button type="submit" class="btn btn-hapus">Hapus</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
                     @empty
                     <tr>
                         <td colspan="5" class="text-center">
@@ -242,38 +279,7 @@
     </div>
 </div>
 
-<!-- Modal Delete untuk Proyek -->
-<div class="modal fade" id="modalDelete{{ $dataProyek->proyek_id }}" tabindex="-1" aria-labelledby="deleteLabel{{ $dataProyek->proyek_id }}" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <form action="{{ route('koordinator.deleteDataProyek', $dataProyek->proyek_id) }}" method="POST">
-                @csrf
-                @method('DELETE')
-                <div class="modal-header">
-                    <h5 class="modal-title" id="deleteLabel{{ $dataProyek->proyek_id }}">Konfirmasi Hapus</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
-                </div>
-                <div class="modal-body">
-                    <p>Apakah Anda yakin ingin menghapus proyek <strong>{{ $dataProyek->nama_proyek }}</strong>?</p>
-                    <div class="alert alert-warning">
-                        <i class="bi bi-exclamation-triangle-fill me-2"></i> Tindakan ini akan menghapus:
-                        <ul class="mb-0 mt-2">
-                            <li>Data proyek</li>
-                            <li>Project leader</li>
-                            <li>Semua anggota dosen</li>
-                            <li>Semua anggota mahasiswa</li>
-                            <li>Semua anggota profesional</li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-tutup" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-hapus">Hapus</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+
 @endsection
 @push('scripts')
     @vite('resources/js/Koordinator/data_proyek.js')
