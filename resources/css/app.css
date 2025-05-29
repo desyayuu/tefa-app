@@ -360,8 +360,7 @@ select,
 
 .has-submenu.open .main-menu-item .icon svg path,
 .has-submenu.open .main-menu-item .icon svg circle {
-    stroke: #3C21F7;
-    fill: none;
+    fill: #3C21F7;
 }
 
 .has-submenu.open .main-menu-item .icon svg path[fill="#878787"],
@@ -378,6 +377,7 @@ select,
 
 .has-submenu.open .main-menu-item .menu-text {
     color: #3C21F7;
+    font-weight: bold;
 
 }
 

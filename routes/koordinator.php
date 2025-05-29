@@ -17,7 +17,7 @@ use App\Http\Controllers\Koordinator\DataProgresProyekController;
 use App\Http\Controllers\Koordinator\DataKeuangan\DataKeuanganTefaController;
 use App\Http\Controllers\Koordinator\DataKeuangan\DataMasukKeuanganProyekController;
 use App\Http\Controllers\Koordinator\DataKeuangan\DataKeluarKeuanganProyekController;
-
+use App\Http\Controllers\Koordinator\DataSubJenisKategoriTransaksiController;
 
 Route::middleware([KoordinatorMiddleware::class])->prefix('koordinator')->group(function () {
     Route::get('/', [KoordinatorController::class, 'dashboard'])->name('koordinator.dashboard');
@@ -115,15 +115,47 @@ Route::middleware([KoordinatorMiddleware::class])->prefix('koordinator')->group(
     Route::post('/keuangan-tefa/update/{id}', [DataKeuanganTefaController::class, 'update']);
     Route::delete('/keuangan-tefa/delete/{id}', [DataKeuanganTefaController::class, 'destroy']);
 
-    // Data Masuk Keuangan Proyek
-    // Route::get('/keuangan-proyek/dana-masuk', [DataMasukKeuanganProyekController::class, 'getDataProyek'])->name('koordinator.dataMasukKeuanganProyek');
-    Route::get('/data-masuk-keuangan-proyek', [DataMasukKeuanganProyekController::class, 'getDataProyek'])->name('koordinator.dataMasukKeuanganProyek');
+    Route::prefix('data-masuk-keuangan-proyek')->group(function () {
+        Route::get('/', [DataMasukKeuanganProyekController::class, 'getDataProyek'])->name('koordinator.dataMasukKeuanganProyek');
+        Route::get('/get-kategori-pemasukan', [DataMasukKeuanganProyekController::class, 'getKategoriPemasukanForFilter'])->name('koordinator.getKategoriPemasukan');
+        Route::get('/{proyekId}', [DataMasukKeuanganProyekController::class, 'getDataMasukKeuanganProyek'])->name('koordinator.detailDataMasukKeuanganProyek');
+        Route::get('/{proyekId}/transaksi', [DataMasukKeuanganProyekController::class, 'getDataTransaksiProyek'])->name('koordinator.getDataTransaksiProyek');
+        Route::get('/{proyekId}/transaksi/{transaksiId}/detail', [DataMasukKeuanganProyekController::class, 'getTransaksiDetailForEdit'])->name('transaksi.detail');
+        Route::post('/tambah-transaksi', [DataMasukKeuanganProyekController::class, 'tambahTransaksiPemasukan'])->name('tambah-transaksi');
+        Route::post('/store-with-files', [DataMasukKeuanganProyekController::class, 'storeWithFiles'])->name('store-with-files');
+        Route::put('/update-transaksi/{transaksiId}', [DataMasukKeuanganProyekController::class, 'updateTransaksiPemasukan'])->name('update-transaksi');
+        Route::delete('/hapus-transaksi/{transaksiId}', [DataMasukKeuanganProyekController::class, 'hapusTransaksi'])->name('hapus-transaksi');
+        Route::get('/download/{fileName}', [DataMasukKeuanganProyekController::class, 'downloadBuktiTransaksi'])->name('download-bukti')->where('fileName', '.*');
+        Route::get('/sub-jenis-transaksi', [DataMasukKeuanganProyekController::class, 'getSubJenisTransaksi'])->name('sub-jenis-transaksi');
+        Route::get('/{proyekId}/summary', [DataMasukKeuanganProyekController::class, 'getSummary']);
+    });
 
-    // Project details and transactions
-    Route::get('/data-masuk-keuangan-proyek/{proyekId}', [DataMasukKeuanganProyekController::class, 'getDataMasukKeuanganProyek'])->name('koordinator.detailDataMasukKeuanganProyek');
-    Route::get('/data-masuk-keuangan-proyek/{proyekId}/transaksi', [DataMasukKeuanganProyekController::class, 'getDataTransaksiProyek'])->name('koordinator.getDataTransaksiProyek');
-    Route::post('/data-masuk-keuangan-proyek/tambah-transaksi', [DataMasukKeuanganProyekController::class, 'tambahTransaksiPemasukan'])->name('koordinator.tambahTransaksiPemasukan');
-    Route::delete('/data-masuk-keuangan-proyek/hapus-transaksi/{transaksiId}', [DataMasukKeuanganProyekController::class, 'hapusTransaksi'])->name('koordinator.hapusTransaksi');
-    Route::get('/bukti-transaksi/{fileName}', [DataMasukKeuanganProyekController::class, 'downloadBuktiTransaksi'])->name('koordinator.downloadBuktiTransaksi');
+
+    // Data Keluar Keuangan Proyek
+    Route::prefix('data-keluar-keuangan-proyek')->group(function () {
+        Route::get('/', [DataKeluarKeuanganProyekController::class, 'getDataProyek'])->name('koordinator.dataKeluarKeuanganProyek');
+        Route::get('/get-kategori-pengeluaran', [DataKeluarKeuanganProyekController::class, 'getKategoriPengeluaranForFilter'])->name('koordinator.getKategoriPengeluaran');
+        Route::get('/{proyekId}', [DataKeluarKeuanganProyekController::class, 'getDataKeluarKeuanganProyek'])->name('koordinator.detailDataKeluarKeuanganProyek');
+        Route::get('/{proyekId}/transaksi', [DataKeluarKeuanganProyekController::class, 'getDataTransaksiProyek'])->name('koordinator.getDataTransaksiProyek');
+        Route::get('/{proyekId}/transaksi/{transaksiId}/detail', [DataKeluarKeuanganProyekController::class, 'getTransaksiDetailForEdit'])->name('transaksi.detail');
+        Route::post('/tambah-transaksi', [DataKeluarKeuanganProyekController::class, 'tambahTransaksiPengeluaran'])->name('tambah-transaksi');
+        Route::post('/store-with-files', [DataKeluarKeuanganProyekController::class, 'storeWithFiles'])->name('store-with-files');
+        Route::put('/update-transaksi/{transaksiId}', [DataKeluarKeuanganProyekController::class, 'updateTransaksiPengeluaran'])->name('update-transaksi');
+        Route::delete('/hapus-transaksi/{transaksiId}', [DataKeluarKeuanganProyekController::class, 'hapusTransaksi'])->name('hapus-transaksi');
+        Route::get('/download/{fileName}', [DataKeluarKeuanganProyekController::class, 'downloadBuktiTransaksi'])->name('download-bukti')->where('fileName', '.*');
+        Route::get('/sub-jenis-transaksi', [DataKeluarKeuanganProyekController::class, 'getSubJenisTransaksi'])->name('sub-jenis-transaksi');
+        Route::get('/{proyekId}/summary', [DataKeluarKeuanganProyekController::class, 'getSummary']);
+    });
+
+    Route::prefix('data-sub-kategori-transaksi')->group(function () {
+        Route::get('/', [DataSubJenisKategoriTransaksiController::class, 'getDataSubJenisKategoriTransaksi'])->name('koordinator.getSubKategoriTransaksi');
+        Route::get('/data-sub-kategori-transaksi/search', [DataSubJenisKategoriTransaksiController::class, 'getDataSubJenisKategoriTransaksi'])->name('getSubKategoriTransaksi');
+        Route::post('/store-sub-kategori-transaksi', [DataSubJenisKategoriTransaksiController::class, 'storeDataSubJenisTransaksi'])->name('koordinator.storeDataSubJenisKategori');
+        Route::get('/get-sub-jenis-kategori/{id}', [DataSubJenisKategoriTransaksiController::class, 'detailDataSubJenisTransaksi'])->name('koordinator.getDetailSubJenisKategori');
+        Route::put('/update-sub-jenis-kategori/{id}', [DataSubJenisKategoriTransaksiController::class, 'updateDataSubJenisTransaksi'])->name('koordinator.updateSubJenisKategori');
+        Route::delete('/delete-sub-jenis-kategori/{id}', [DataSubJenisKategoriTransaksiController::class, 'deleteDataSubJenisTransaksi'])->name('koordinator.deleteSubJenisKategori');
+        Route::get('/get-jenis-transaksi', [DataSubJenisKategoriTransaksiController::class, 'getJenisTransaksi'])->name('koordinator.getJenisTransaksi');
+        Route::get('/get-jenis-keuangan-tefa', [DataSubJenisKategoriTransaksiController::class, 'getJenisKeuanganTefa'])->name('koordinator.getJenisKeuanganTefa');
+    });
 
 });

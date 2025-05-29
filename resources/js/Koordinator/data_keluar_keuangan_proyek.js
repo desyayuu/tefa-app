@@ -1,4 +1,3 @@
-// data_masuk_keuangan_proyek_integrated.js
 import swal from '../components';
 $(document).ready(function() {
     $.ajaxSetup({
@@ -33,7 +32,7 @@ $(document).ready(function() {
     
     if (document.getElementById('tableKeuangan')) {
         console.log('Detail page detected, initializing filters');
-        initializePemasukanFilters();
+        initializePengeluaranFilters();
     }
 });
 
@@ -74,7 +73,7 @@ function initializeViewProjectButtons() {
             showLoadingIndicator();
             console.log('Navigating to detail page for proyek ID:', proyekId);
             
-            window.location.href = `/koordinator/data-masuk-keuangan-proyek/${proyekId}`;
+            window.location.href = `/koordinator/data-keluar-keuangan-proyek/${proyekId}`;
         });
     });
     
@@ -87,7 +86,7 @@ function initializeViewProjectButtons() {
             
             if (proyekId) {
                 showLoadingIndicator();
-                window.location.href = `/koordinator/data-masuk-keuangan-proyek/${proyekId}`;
+                window.location.href = `/koordinator/data-keluar-keuangan-proyek/${proyekId}`;
             }
         }
     });
@@ -147,13 +146,13 @@ function initializeAddTransactionForm() {
             document.getElementById('hidden_jenis_transaksi_id').value = jenisTransaksiSelect.value;
             document.getElementById('hidden_jenis_keuangan_tefa_id').value = jenisKeuanganSelect.value;
             
-            const isSingle = $("#isSinglePemasukan").val() === '1';
+            const isSingle = $("#isSinglePengeluaran").val() === '1';
             
             if (!isSingle) {
                 // Multiple mode - check if there are items in the list
-                const itemList = JSON.parse($("#pemasukan_JsonData").val());
+                const itemList = JSON.parse($("#pengeluaran_JsonData").val());
                 if (itemList.length === 0) {
-                    $("#form_pemasukan_error").removeClass('d-none')
+                    $("#form_pengeluaran_error").removeClass('d-none')
                         .text('Tambahkan minimal satu item ke daftar sebelum menyimpan.');
                     return;
                 }
@@ -205,7 +204,7 @@ function loadTransactionDetailForEdit(transaksiId) {
         return;
     }
     
-    fetch(`/koordinator/data-masuk-keuangan-proyek/${proyekId}/transaksi/${transaksiId}/detail`, {
+    fetch(`/koordinator/data-keluar-keuangan-proyek/${proyekId}/transaksi/${transaksiId}/detail`, {
         method: 'GET',
         headers: {
             'X-CSRF-TOKEN': csrfToken || '',
@@ -474,7 +473,7 @@ function getFileTypeIcon(extension) {
 function removeFromList(itemId) {
     console.log("Removing item with ID:", itemId);
     
-    let currentList = JSON.parse($("#pemasukan_JsonData").val());
+    let currentList = JSON.parse($("#pengeluaran_JsonData").val());
     console.log("Current list before removal:", currentList);
     
     const itemIdStr = String(itemId);
@@ -483,29 +482,29 @@ function removeFromList(itemId) {
     
     console.log("List after removal:", currentList);
     
-    $("#pemasukan_JsonData").val(JSON.stringify(currentList));
+    $("#pengeluaran_JsonData").val(JSON.stringify(currentList));
     
-    if (window.pemasukanFiles && window.pemasukanFiles[itemIdStr]) {
-        delete window.pemasukanFiles[itemIdStr];
+    if (window.pengeluaranFiles && window.pengeluaranFiles[itemIdStr]) {
+        delete window.pengeluaranFiles[itemIdStr];
         console.log(`File associated with item ${itemIdStr} has been removed from storage`);
     }
     
     $(`#item-${itemId}`).remove();
     
     if (currentList.length === 0) {
-        $("#isSinglePemasukan").val('1');
-        $("#daftarPemasukan").html(`
-            <tr id="emptyRowPemasukan">
-                <td colspan="5" class="text-center">Belum ada pemasukan yang ditambahkan ke daftar</td>
+        $("#isSinglePengeluaran").val('1');
+        $("#daftarPengeluaran").html(`
+            <tr id="emptyRowPengeluaran">
+                <td colspan="5" class="text-center">Belum ada pengeluaran yang ditambahkan ke daftar</td>
             </tr>
         `);
     }
     
-    $("#form_pemasukan_error").removeClass('d-none alert-danger').addClass('alert-success')
+    $("#form_pengeluaran_error").removeClass('d-none alert-danger').addClass('alert-success')
         .text('Item berhasil dihapus dari daftar.');
     
     setTimeout(function() {
-        $("#form_pemasukan_error").addClass('d-none').removeClass('alert-success');
+        $("#form_pengeluaran_error").addClass('d-none').removeClass('alert-success');
     }, 3000);
 }
 
@@ -521,24 +520,24 @@ function formatCurrency(amount) {
 
 
 function handleSubmitSuccess() {
-    swal.successMessage('Dana pemasukan berhasi disimpan');
+    swal.successMessage('Dana pengeluaran berhasi disimpan');
     
     $("#addTransactionForm")[0].reset();
     
-    $("#btnSimpanPemasukan").prop('disabled', false).html('Simpan');
+    $("#btnSimpanPengeluaran").prop('disabled', false).html('Simpan');
     
-    $("#form_pemasukan_error").addClass('d-none').text('');
+    $("#form_pengeluaran_error").addClass('d-none').text('');
     $(".is-invalid").removeClass('is-invalid');
     
     $("#bukti_transaksi").val('');
     $("#file_preview_container").empty();
     
-    if (window.pemasukanFiles) {
-        window.pemasukanFiles = {};
+    if (window.pengeluaranFiles) {
+        window.pengeluaranFiles = {};
     }
-    $("#pemasukan_JsonData").val('[]');
-    $("#daftarPemasukan").html('<tr id="emptyRowPemasukan"><td colspan="5" class="text-center">Belum ada pemasukan yang ditambahkan ke daftar</td></tr>');
-    $("#isSinglePemasukan").val('1');
+    $("#pengeluaran_JsonData").val('[]');
+    $("#daftarPengeluaran").html('<tr id="emptyRowPengeluaran"><td colspan="5" class="text-center">Belum ada pengeluaran yang ditambahkan ke daftar</td></tr>');
+    $("#isSinglePengeluaran").val('1');
     
     $("#addTransactionModal").modal('hide');
     
@@ -547,7 +546,7 @@ function handleSubmitSuccess() {
 }
 
 function handleSubmitError(xhr, status, error, isSingle) {
-    $("#btnSimpanPemasukan").prop('disabled', false).html('Simpan');
+    $("#btnSimpanPengeluaran").prop('disabled', false).html('Simpan');
     
     console.error('Submit error:', {
         status: xhr.status,
@@ -558,7 +557,7 @@ function handleSubmitError(xhr, status, error, isSingle) {
     
     if (xhr.status === 419) {
         // CSRF token mismatch
-        $("#form_pemasukan_error")
+        $("#form_pengeluaran_error")
             .removeClass('d-none')
             .addClass('alert-danger')
             .text('Token keamanan tidak valid. Silakan refresh halaman dan coba lagi.');
@@ -588,12 +587,12 @@ function handleSubmitError(xhr, status, error, isSingle) {
         }
         
         if (hasFormErrors) {
-            $("#form_pemasukan_error")
+            $("#form_pengeluaran_error")
                 .removeClass('d-none')
                 .addClass('alert-danger')
                 .text('Terdapat kesalahan pada form. Silakan periksa kembali.');
         } else {
-            $("#form_pemasukan_error")
+            $("#form_pengeluaran_error")
                 .removeClass('d-none')
                 .addClass('alert-danger')
                 .text('Validasi gagal: ' + (xhr.responseJSON?.message || 'Silakan periksa data yang diinput.'));
@@ -602,14 +601,14 @@ function handleSubmitError(xhr, status, error, isSingle) {
     } else if (xhr.status === 500) {
         // Server error
         const errorMessage = xhr.responseJSON?.message || 'Terjadi kesalahan pada server.';
-        $("#form_pemasukan_error")
+        $("#form_pengeluaran_error")
             .removeClass('d-none')
             .addClass('alert-danger')
             .text('Error Server: ' + errorMessage);
             
     } else if (xhr.status === 0) {
         // Network error
-        $("#form_pemasukan_error")
+        $("#form_pengeluaran_error")
             .removeClass('d-none')
             .addClass('alert-danger')
             .text('Tidak dapat terhubung ke server. Periksa koneksi internet Anda.');
@@ -619,7 +618,7 @@ function handleSubmitError(xhr, status, error, isSingle) {
         const errorMessage = xhr.responseJSON?.message || 
                            xhr.statusText || 
                            'Terjadi kesalahan yang tidak diketahui.';
-        $("#form_pemasukan_error")
+        $("#form_pengeluaran_error")
             .removeClass('d-none')
             .addClass('alert-danger')
             .text(`Error (${xhr.status}): ${errorMessage}`);
@@ -659,7 +658,7 @@ function deleteTransaction(transaksiId) {
         }
     });
     
-    fetch(`/koordinator/data-masuk-keuangan-proyek/hapus-transaksi/${transaksiId}`, {
+    fetch(`/koordinator/data-keluar-keuangan-proyek/hapus-transaksi/${transaksiId}`, {
         method: 'DELETE',
         headers: {
             'X-CSRF-TOKEN': csrfToken,
@@ -716,14 +715,14 @@ function initializeSubkategoriLogic() {
                 subkategoriContainer.style.display = 'block';
                 
                 // Update label untuk menunjukkan field ini required
-                const label = subkategoriContainer.querySelector('label[for="subkategori_pemasukan_id"]');
+                const label = subkategoriContainer.querySelector('label[for="subkategori_pengeluaran_id"]');
                 if (label && !label.querySelector('.text-danger')) {
                     // Pastikan ada asterisk merah untuk menunjukkan required
                     const asterisk = label.querySelector('.text-danger');
                     if (!asterisk) {
                         label.innerHTML = label.innerHTML.replace(
-                            'Kategori Pemasukan', 
-                            'Kategori Pemasukan <span class="text-danger">*</span>'
+                            'Kategori Pengeluaran', 
+                            'Kategori Pengeluaran <span class="text-danger">*</span>'
                         );
                     }
                 }
@@ -750,8 +749,8 @@ function initializeForm() {
     const today = new Date().toISOString().split('T')[0];
     $("#tanggal_transaksi").val(today);
     
-    $("#pemasukan_JsonData").val('[]');
-    $("#isSinglePemasukan").val('1');
+    $("#pengeluaran_JsonData").val('[]');
+    $("#isSinglePengeluaran").val('1');
 
     // Handle file input change
     $("#bukti_transaksi").change(function() {
@@ -760,7 +759,7 @@ function initializeForm() {
     });
 
     // Handle add to list button
-    $("#btnTambahkanKeDaftarPemasukan").off('click').on('click', function() {
+    $("#btnTambahkanKeDaftarPengeluaran").off('click').on('click', function() {
         const originalBtnText = $(this).text();
         $(this).prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Menambahkan...');
         
@@ -788,13 +787,13 @@ function initializeForm() {
         $("#" + errorId).text('');
         
         // Clear general form error juga
-        $("#form_pemasukan_error").addClass('d-none').text('');
+        $("#form_pengeluaran_error").addClass('d-none').text('');
     });
 }
 
 function isSubkategoriRequired() { 
     const subkategoriContainer = document.getElementById('subkategoriContainer');
-    const hasSubkategoriData = window.hasSubkategoriPemasukan;
+    const hasSubkategoriData = window.hasSubkategoriPengeluaran;
     
     // Subkategori wajib jika container terlihat dan ada data subkategori
     return subkategoriContainer && 
@@ -804,8 +803,8 @@ function isSubkategoriRequired() {
 
 function validateForm() {
     // Check if we're in multiple mode and have items in the list
-    const isSingle = $("#isSinglePemasukan").val() === '1';
-    const itemList = JSON.parse($("#pemasukan_JsonData").val());
+    const isSingle = $("#isSinglePengeluaran").val() === '1';
+    const itemList = JSON.parse($("#pengeluaran_JsonData").val());
     
     // Jika mode multiple dan sudah ada item di list, skip validasi form
     // karena kita submit data list, bukan data form
@@ -820,7 +819,7 @@ function validateForm() {
     // Clear previous validation errors
     $(".is-invalid").removeClass("is-invalid");
     $(".invalid-feedback").text('');
-    $("#form_pemasukan_error").addClass('d-none').text('');
+    $("#form_pengeluaran_error").addClass('d-none').text('');
     
     // Required fields dasar
     const requiredFields = [
@@ -831,7 +830,7 @@ function validateForm() {
     
     // Tambahkan subkategori ke required fields jika diperlukan
     if (isSubkategoriRequired()) {
-        requiredFields.push({ id: 'subkategori_pemasukan_id', name: 'Kategori Pemasukan' });
+        requiredFields.push({ id: 'subkategori_pengeluaran_id', name: 'Kategori Pengeluaran' });
         console.log('Subkategori validation required');
     }
     
@@ -878,7 +877,7 @@ function validateForm() {
 
 function addToList() {
     if (!validateForm()) {
-        $("#form_pemasukan_error").removeClass('d-none alert-success').addClass('alert-danger')
+        $("#form_pengeluaran_error").removeClass('d-none alert-success').addClass('alert-danger')
             .text('Harap periksa semua field yang wajib diisi.');
         return false;
     }
@@ -891,7 +890,7 @@ function addToList() {
     const deskripsi = $("#deskripsi_transaksi").val();
     
     // Ambil nilai subkategori jika ada
-    const subkategoriId = $("#subkategori_pemasukan_id").val() || null;
+    const subkategoriId = $("#subkategori_pengeluaran_id").val() || null;
     
     const displayNominal = formatCurrency(nominal);
     
@@ -905,7 +904,7 @@ function addToList() {
         console.log(`File "${fileName}" associated with item ${itemId}`);
     }
     
-    let currentList = JSON.parse($("#pemasukan_JsonData").val());
+    let currentList = JSON.parse($("#pengeluaran_JsonData").val());
     
     const sequence = currentList.length;
     
@@ -915,7 +914,7 @@ function addToList() {
         proyek_id: $('input[name="proyek_id"]').val(),
         jenis_transaksi_id: $("#hidden_jenis_transaksi_id").val(),
         jenis_keuangan_tefa_id: $("#hidden_jenis_keuangan_tefa_id").val(),
-        subkategori_pemasukan_id: subkategoriId, // Tambahkan subkategori
+        subkategori_pengeluaran_id: subkategoriId, // Tambahkan subkategori
         nama_transaksi: namaTransaksi,
         tanggal_transaksi: tanggal,
         nominal: nominal,
@@ -932,17 +931,17 @@ function addToList() {
         return rest;
     });
     
-    $("#pemasukan_JsonData").val(JSON.stringify(serializedList));
+    $("#pengeluaran_JsonData").val(JSON.stringify(serializedList));
     
-    if (!window.pemasukanFiles) {
-        window.pemasukanFiles = {};
+    if (!window.pengeluaranFiles) {
+        window.pengeluaranFiles = {};
     }
     if (fileObject) {
-        window.pemasukanFiles[itemId] = fileObject;
+        window.pengeluaranFiles[itemId] = fileObject;
     }
     
-    $("#isSinglePemasukan").val('0');
-    $("#emptyRowPemasukan").remove();
+    $("#isSinglePengeluaran").val('0');
+    $("#emptyRowPengeluaran").remove();
     
     const displayDate = new Date(tanggal).toLocaleDateString('id-ID');
     
@@ -1016,7 +1015,7 @@ function addToList() {
         </tr>
     `;
     
-    $("#daftarPemasukan").append(newRow);
+    $("#daftarPengeluaran").append(newRow);
     
     // Clear form
     $(".is-invalid").removeClass("is-invalid");
@@ -1026,28 +1025,28 @@ function addToList() {
     $("#nominal").val('');
     $("#deskripsi_transaksi").val('');
     $("#bukti_transaksi").val('');
-    $("#subkategori_pemasukan_id").val(''); // Clear subkategori
+    $("#subkategori_pengeluaran_id").val(''); // Clear subkategori
     $("#file_preview_container").empty();
     
-    $("#form_pemasukan_error").removeClass('d-none alert-danger').addClass('alert-success')
+    $("#form_pengeluaran_error").removeClass('d-none alert-danger').addClass('alert-success')
         .text('Item berhasil ditambahkan ke daftar.');
     
     setTimeout(function() {
-        $("#form_pemasukan_error").addClass('d-none').removeClass('alert-success');
+        $("#form_pengeluaran_error").addClass('d-none').removeClass('alert-success');
     }, 3000);
     
     return true;
 }
 
 function submitForm() {
-    const isSingle = $("#isSinglePemasukan").val() === '1';
-    const itemList = JSON.parse($("#pemasukan_JsonData").val());
+    const isSingle = $("#isSinglePengeluaran").val() === '1';
+    const itemList = JSON.parse($("#pengeluaran_JsonData").val());
     
     console.log("Submit form with mode:", isSingle ? "Single" : "Multiple");
     console.log("Items in list:", itemList.length);
     
     // Clear any previous error messages
-    $("#form_pemasukan_error").addClass('d-none').text('');
+    $("#form_pengeluaran_error").addClass('d-none').text('');
     
     // Get CSRF token
     const csrfToken = $('meta[name="csrf-token"]').attr('content') || 
@@ -1056,7 +1055,7 @@ function submitForm() {
     
     if (!csrfToken) {
         console.error('CSRF token not found!');
-        $("#form_pemasukan_error").removeClass('d-none').addClass('alert-danger')
+        $("#form_pengeluaran_error").removeClass('d-none').addClass('alert-danger')
             .text('CSRF token tidak ditemukan. Silakan refresh halaman.');
         return false;
     }
@@ -1066,20 +1065,20 @@ function submitForm() {
     const formData = new FormData($("#addTransactionForm")[0]);
     formData.set('_token', csrfToken);
     
-    const submitButton = $("#btnSimpanPemasukan");
+    const submitButton = $("#btnSimpanPengeluaran");
     submitButton.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Menyimpan...');
     
     if (!isSingle && itemList.length > 0) {
         // Multiple mode - ada item di list, submit data list
         console.log("Multiple mode - submitting list data, skip form validation");
         
-        formData.set('pemasukan_data', JSON.stringify(itemList));
+        formData.set('pengeluaran_data', JSON.stringify(itemList));
         formData.set('is_single', '0');
         
         // Add files for each item
-        if (window.pemasukanFiles) {
+        if (window.pengeluaranFiles) {
             let fileCounter = 0;
-            for (const [itemId, fileObj] of Object.entries(window.pemasukanFiles)) {
+            for (const [itemId, fileObj] of Object.entries(window.pengeluaranFiles)) {
                 if (fileObj instanceof File) {
                     formData.append(`bukti_transaksi_${itemId}`, fileObj);
                     fileCounter++;
@@ -1091,7 +1090,7 @@ function submitForm() {
         
         // Submit dengan endpoint untuk multiple items
         $.ajax({
-            url: '/koordinator/data-masuk-keuangan-proyek/store-with-files',
+            url: '/koordinator/data-keluar-keuangan-proyek/store-with-files',
             type: 'POST',
             data: formData,
             processData: false,
@@ -1113,7 +1112,7 @@ function submitForm() {
         console.log("Single mode - validating form before submit");
         
         if (!validateForm()) {
-            $("#form_pemasukan_error").removeClass('d-none').addClass('alert-danger')
+            $("#form_pengeluaran_error").removeClass('d-none').addClass('alert-danger')
                 .text('Harap periksa semua field yang wajib diisi.');
             submitButton.prop('disabled', false).html('Simpan');
             
@@ -1128,7 +1127,7 @@ function submitForm() {
         
         // Submit dengan endpoint untuk single item
         $.ajax({
-            url: '/koordinator/data-masuk-keuangan-proyek/tambah-transaksi',
+            url: '/koordinator/data-keluar-keuangan-proyek/tambah-transaksi',
             type: 'POST',
             data: formData,
             processData: false,
@@ -1148,7 +1147,7 @@ function submitForm() {
     } else {
         // Multiple mode tapi tidak ada item di list
         console.log("Multiple mode but no items in list");
-        $("#form_pemasukan_error").removeClass('d-none').addClass('alert-danger')
+        $("#form_pengeluaran_error").removeClass('d-none').addClass('alert-danger')
             .text('Tambahkan minimal satu item ke daftar sebelum menyimpan.');
         submitButton.prop('disabled', false).html('Simpan');
         return false;
@@ -1179,7 +1178,7 @@ function populateEditForm(data) {
         const subkategoriSelect = $("#edit_sub_jenis_transaksi_id");
         
         // Check if subkategori data is available in database
-        const hasSubkategoriData = window.hasSubkategoriPemasukan || 
+        const hasSubkategoriData = window.hasSubkategoriPengeluaran || 
                                   (subkategoriSelect.find('option[value]:not([value=""])').length > 0);
         
         if (hasSubkategoriData) {
@@ -1196,7 +1195,7 @@ function populateEditForm(data) {
             // ✅ Update placeholder dan tambah required
             const firstOption = subkategoriSelect.find('option[value=""]');
             if (firstOption.length) {
-                firstOption.text('Pilih Kategori Pemasukan');
+                firstOption.text('Pilih Kategori Pengeluaran');
             }
             subkategoriSelect.attr('required', 'required');
             
@@ -1251,7 +1250,7 @@ function validateEditForm() {
     
     // ✅ PERBAIKAN: Tambah subkategori ke required fields HANYA jika tersedia di edit form
     if (window.isEditSubkategoriRequired) {
-        requiredFields.push({ id: 'edit_sub_jenis_transaksi_id', name: 'Kategori Pemasukan' });
+        requiredFields.push({ id: 'edit_sub_jenis_transaksi_id', name: 'Kategori Pengeluaran' });
         console.log('Edit validation: Subkategori added to required fields');
     } else {
         console.log('Edit validation: Subkategori not required (no data available)');
@@ -1337,8 +1336,8 @@ function submitEditForm() {
         // Jika subkategori required, pastikan ada nilainya
         if (!subkategoriValue) {
             $("#edit_sub_jenis_transaksi_id").addClass('is-invalid');
-            $("#edit_sub_jenis_transaksi_id_error").text('Kategori Pemasukan wajib dipilih');
-            showEditError('Kategori Pemasukan wajib dipilih karena tersedia dalam sistem.');
+            $("#edit_sub_jenis_transaksi_id_error").text('Kategori Pengeluaran wajib dipilih');
+            showEditError('Kategori Pengeluaran wajib dipilih karena tersedia dalam sistem.');
             return;
         }
         formData.set('edit_sub_jenis_transaksi_id', subkategoriValue);
@@ -1361,7 +1360,7 @@ function submitEditForm() {
     submitButton.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Menyimpan...');
     
     $.ajax({
-        url: `/koordinator/data-masuk-keuangan-proyek/update-transaksi/${transaksiId}`,
+        url: `/koordinator/data-keluar-keuangan-proyek/update-transaksi/${transaksiId}`,
         type: 'POST',
         data: formData,
         processData: false,
@@ -1473,31 +1472,31 @@ function showEditError(message) {
 
 // Filter Data 
 
-function initializePemasukanFilterHandlers() {
+function initializePengeluaranFilterHandlers() {
     // Format nominal inputs with thousand separator
-    $("#filter_pemasukan_nominal_min, #filter_pemasukan_nominal_max").on('input', function() {
+    $("#filter_pengeluaran_nominal_min, #filter_pengeluaran_nominal_max").on('input', function() {
         formatNominalFilter($(this));
     });
     
     // Handle filter form submission
     $("#formFilterKeuanganTefa").submit(function(e) {
         e.preventDefault();
-        applyPemasukanFilters();
+        applyPengeluaranFilters();
     });
     
     // Handle reset filter button
     $("#btnResetFilter").click(function() {
-        resetPemasukanFilters();
+        resetPengeluaranFilters();
     });
     
     // Real-time validation for date range
     $("#filter_tanggal_mulai, #filter_tanggal_akhir").change(function() {
-        validatePemasukanDateRange();
+        validatePengeluaranDateRange();
     });
 }
 
 // Validate Date Range
-function validatePemasukanDateRange() {
+function validatePengeluaranDateRange() {
     const startDate = $("#filter_tanggal_mulai").val();
     const endDate = $("#filter_tanggal_akhir").val();
     
@@ -1519,11 +1518,11 @@ function validatePemasukanDateRange() {
 }
 
 // Apply Filters
-function applyPemasukanFilters() {
-    console.log("Applying pemasukan filters...");
+function applyPengeluaranFilters() {
+    console.log("Applying pengeluaran filters...");
     
     // Validate date range first
-    if (!validatePemasukanDateRange()) {
+    if (!validatePengeluaranDateRange()) {
         swal.errorMessage('Tanggal Akhir tidak boleh lebih awal dari Tanggal Mulai');
         return;
     }
@@ -1533,7 +1532,7 @@ function applyPemasukanFilters() {
         tanggal_mulai: $("#filter_tanggal_mulai").val(),
         tanggal_akhir: $("#filter_tanggal_akhir").val(),
         nama_transaksi: $("#filter_nama_transaksi").val(),
-        kategori_pemasukan: $("#filter_jenis_keuangan").val(),
+        kategori_pengeluaran: $("#filter_jenis_keuangan").val(),
         status_bukti: $("#filter_sub_jenis_transaksi").val()
     };
     
@@ -1541,18 +1540,18 @@ function applyPemasukanFilters() {
     console.log("Applied filters:", filters);
     
     // Save filters for future use
-    savePemasukanFiltersToLocalStorage();
+    savePengeluaranFiltersToLocalStorage();
     
     // Load data with filters
     loadTransaksiData(1, filters);
 }
 
 // Clear Saved Filters from LocalStorage
-function clearSavedPemasukanFilters() {
-    // Clear all pemasukan filter-related items in localStorage
+function clearSavedPengeluaranFilters() {
+    // Clear all pengeluaran filter-related items in localStorage
     for (let i = localStorage.length - 1; i >= 0; i--) {
         const key = localStorage.key(i);
-        if (key && (key.startsWith('filter_') || key === 'pemasukanFiltersApplied')) {
+        if (key && (key.startsWith('filter_') || key === 'pengeluaranFiltersApplied')) {
             localStorage.removeItem(key);
         }
     }
@@ -1591,6 +1590,7 @@ function loadTransaksiData(page = 1, filters = {}) {
         return;
     }
     
+    updateFinancialSummary();
     const proyekId = proyekIdInput.value;
     console.log('Loading transaction data for proyek ID:', proyekId, 'Page:', page, 'Filters:', filters);
     
@@ -1617,7 +1617,7 @@ function loadTransaksiData(page = 1, filters = {}) {
         ...filters 
     });
     
-    fetch(`/koordinator/data-masuk-keuangan-proyek/${proyekId}/transaksi?${params.toString()}`, {
+    fetch(`/koordinator/data-keluar-keuangan-proyek/${proyekId}/transaksi?${params.toString()}`, {
         method: 'GET',
         headers: {
             'X-CSRF-TOKEN': csrfToken || '',
@@ -1677,7 +1677,7 @@ function loadTransaksiData(page = 1, filters = {}) {
             const filterApplied = Object.keys(filters).some(key => filters[key] !== '' && filters[key] !== undefined);
             const emptyMessage = filterApplied 
                 ? 'Tidak ada data transaksi yang sesuai dengan filter yang dipilih.' 
-                : 'Belum ada data transaksi pemasukan';
+                : 'Belum ada data transaksi pengeluaran';
                 
             tableBody.innerHTML = `
                 <tr>
@@ -1833,7 +1833,7 @@ function initializeSelect2Filters() {
     }
     
     try {
-        // Initialize Select2 for kategori pemasukan filter
+        // Initialize Select2 for kategori pengeluaran filter
         if ($("#filter_jenis_keuangan").length) {
             // First destroy any existing instances to prevent duplicates
             if ($('#filter_jenis_keuangan').hasClass('select2-hidden-accessible')) {
@@ -1843,7 +1843,7 @@ function initializeSelect2Filters() {
             $('#filter_jenis_keuangan').select2({
                 theme: 'bootstrap-5',
                 width: '100%',
-                placeholder: 'Pilih Kategori Pemasukan',
+                placeholder: 'Pilih Kategori Pengeluaran',
                 allowClear: true,
                 language: {
                     noResults: function() {
@@ -1886,7 +1886,7 @@ function initializeSelect2Filters() {
     }
 }
 
-function loadKategoriPemasukanForFilter() {
+function loadKategoriPengeluaranForFilter() {
     const proyekIdInput = document.querySelector('input[name="proyek_id"]');
     if (!proyekIdInput) {
         console.error('Proyek ID input not found');
@@ -1894,7 +1894,7 @@ function loadKategoriPemasukanForFilter() {
     }
     
     const proyekId = proyekIdInput.value;
-    const requestUrl = '/koordinator/data-masuk-keuangan-proyek/get-kategori-pemasukan';
+    const requestUrl = '/koordinator/data-keluar-keuangan-proyek/get-kategori-pengeluaran';
     console.log('Calling URL:', requestUrl, 'with proyek_id:', proyekId);
     
     $.ajax({
@@ -1925,7 +1925,7 @@ function loadKategoriPemasukanForFilter() {
                     $("#filter_jenis_keuangan").select2({
                         theme: 'bootstrap-5',
                         width: '100%',
-                        placeholder: 'Pilih Kategori Pemasukan',
+                        placeholder: 'Pilih Kategori Pengeluaran',
                         allowClear: true,
                         language: {
                             noResults: function() {
@@ -1954,7 +1954,7 @@ function loadKategoriPemasukanForFilter() {
             }
         },
         error: function(xhr, status, error) {
-            console.error('Failed to load kategori pemasukan:', {
+            console.error('Failed to load kategori pengeluaran:', {
                 status: xhr.status, 
                 statusText: xhr.statusText,
                 responseText: xhr.responseText,
@@ -1967,8 +1967,8 @@ function loadKategoriPemasukanForFilter() {
     });
 }
 
-function resetPemasukanFilters() {
-    console.log("Resetting pemasukan filters...");
+function resetPengeluaranFilters() {
+    console.log("Resetting pengeluaran filters...");
     
     // Destroy Select2 instances before reset using proper check
     $("#formFilterKeuanganTefa select").each(function() {
@@ -1984,13 +1984,13 @@ function resetPemasukanFilters() {
     $("#formFilterKeuanganTefa .is-invalid").removeClass('is-invalid');
     
     // Clear saved filters from localStorage
-    clearSavedPemasukanFilters();
+    clearSavedPengeluaranFilters();
     
-    // Reload kategori pemasukan and reinitialize Select2
+    // Reload kategori pengeluaran and reinitialize Select2
     const proyekIdInput = document.querySelector('input[name="proyek_id"]');
     if (proyekIdInput && proyekIdInput.value) {
-        console.log("Reloading kategori pemasukan after reset...");
-        loadKategoriPemasukanForFilter();
+        console.log("Reloading kategori pengeluaran after reset...");
+        loadKategoriPengeluaranForFilter();
     } else {
         console.warn("No proyek_id found, hiding kategori container");
         $("#filterKategoriTransaksiContainer").hide();
@@ -2005,29 +2005,29 @@ function resetPemasukanFilters() {
     // Reload data without filters
     loadTransaksiData(1, {});
     
-    console.log("Pemasukan filters reset completed");
+    console.log("Pengeluaran filters reset completed");
 }
 
 
-function initializePemasukanFilters() {
-    console.log("Initializing pemasukan filters...");
+function initializePengeluaranFilters() {
+    console.log("Initializing pengeluaran filters...");
     
-    // Load kategori pemasukan for filter dropdown
-    loadKategoriPemasukanForFilter();
+    // Load kategori pengeluaran for filter dropdown
+    loadKategoriPengeluaranForFilter();
     
     // Initialize Select2 for static dropdowns
     initializeSelect2Filters();
     
     // Set up filter form handlers
-    initializePemasukanFilterHandlers();
+    initializePengeluaranFilterHandlers();
     
     // Load saved filters if any
-    loadSavedPemasukanFilters();
+    loadSavedPengeluaranFilters();
     
-    console.log("Pemasukan filters initialized successfully");
+    console.log("Pengeluaran filters initialized successfully");
 }
 
-function savePemasukanFiltersToLocalStorage() {
+function savePengeluaranFiltersToLocalStorage() {
     $('#formFilterKeuanganTefa').find('input, select').each(function() {
         if ($(this).attr('id')) {
             // For Select2 elements, get the actual selected value
@@ -2040,18 +2040,18 @@ function savePemasukanFiltersToLocalStorage() {
     });
     
     // Save filter application timestamp
-    localStorage.setItem('pemasukanFiltersApplied', new Date().getTime());
+    localStorage.setItem('pengeluaranFiltersApplied', new Date().getTime());
 }
 
-function loadSavedPemasukanFilters() {
+function loadSavedPengeluaranFilters() {
     // Check if we have recently saved filters (within last hour)
-    const lastApplied = localStorage.getItem('pemasukanFiltersApplied');
+    const lastApplied = localStorage.getItem('pengeluaranFiltersApplied');
     if (!lastApplied) return;
     
     const oneHourAgo = new Date().getTime() - (60 * 60 * 1000);
     if (parseInt(lastApplied) < oneHourAgo) {
         // Filters are older than 1 hour, clear them
-        clearSavedPemasukanFilters();
+        clearSavedPengeluaranFilters();
         return;
     }
     
@@ -2072,7 +2072,7 @@ function loadSavedPemasukanFilters() {
     });
     
     // Load dependent data if needed
-    loadKategoriPemasukanForFilter();
+    loadKategoriPengeluaranForFilter();
     
     // Apply filters automatically if any were saved
     if ($("#filter_tanggal_mulai").val() || 
@@ -2083,14 +2083,14 @@ function loadSavedPemasukanFilters() {
         
         // Apply with slight delay to ensure all components are loaded
         setTimeout(function() {
-            applyPemasukanFilters();
+            applyPengeluaranFilters();
         }, 500);
     }
 }
 
 function updateFinancialSummary() {
     // Show loading state
-    $("#totalPemasukan").text('Loading...');
+    $("#totalPengeluaran").text('Loading...');
 
     console.log("Updating financial summary...");
     
@@ -2098,7 +2098,7 @@ function updateFinancialSummary() {
     const proyekIdInput = document.querySelector('input[name="proyek_id"]');
     if (!proyekIdInput) {
         console.error('Proyek ID input not found');
-        $("#totalPemasukan").text('Error');
+        $("#totalPengeluaran").text('Error');
         return;
     }
     
@@ -2106,7 +2106,7 @@ function updateFinancialSummary() {
     console.log('Getting summary for proyek ID:', proyekId);
     
     $.ajax({
-        url: `/koordinator/data-masuk-keuangan-proyek/${proyekId}/summary`,
+        url: `/koordinator/data-keluar-keuangan-proyek/${proyekId}/summary`,
         type: 'GET',
         dataType: 'json',
         headers: {
@@ -2129,16 +2129,16 @@ function updateFinancialSummary() {
                 };
                 
                 // Update summary display
-                $('#totalPemasukan').text(formatCurrency(data.total_pemasukan));
+                $('#totalPengeluaran').text(formatCurrency(data.total_pengeluaran));
 
                 // Optional: Update additional summary info if elements exist
-                if ($("#jumlahTransaksiPemasukan").length) {
-                    $("#jumlahTransaksiPemasukan").text(data.transaksi_count || 0);
+                if ($("#jumlahTransaksiPengeluaran").length) {
+                    $("#jumlahTransaksiPengeluaran").text(data.transaksi_count || 0);
                 }
                 
                 // Optional: Update kategori breakdown if container exists
-                if ($("#kategoriBreakdown").length && data.pemasukan_by_kategori) {
-                    updateKategoriBreakdown(data.pemasukan_by_kategori);
+                if ($("#kategoriBreakdown").length && data.pengeluaran_by_kategori) {
+                    updateKategoriBreakdown(data.pengeluaran_by_kategori);
                 }
                 
                 console.log('Financial summary updated successfully');
@@ -2156,7 +2156,7 @@ function updateFinancialSummary() {
             });
             
             // Show error state
-            $('#totalPemasukan').text('Error');
+            $('#totalPengeluaran').text('Error');
             
             // Optional: Show error message to user
             if ($("#summaryError").length) {

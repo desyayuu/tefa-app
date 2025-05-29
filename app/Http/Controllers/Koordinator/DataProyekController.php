@@ -51,7 +51,9 @@ class DataProyekController extends Controller
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('m_proyek.nama_proyek', 'like', "%{$search}%")
-                  ->orWhere('d_mitra_proyek.nama_mitra', 'like', "%{$search}%");
+                  ->orWhere('d_mitra_proyek.nama_mitra', 'like', "%{$search}%")
+                  ->orWhere('m_jenis_proyek.nama_jenis_proyek', 'like', "%{$search}%")
+                  ->orWhere('m_proyek.status_proyek', 'like', "%{$search}%");
             });
         }
         

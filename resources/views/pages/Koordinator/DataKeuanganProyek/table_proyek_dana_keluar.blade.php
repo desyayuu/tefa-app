@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'TEFA | Data Pemasukan Keuangan Proyek')
+@section('title', 'TEFA | Data Pengeluaran Keuangan Proyek')
 
 @section('content')
 <div class="main-layout">
@@ -15,10 +15,10 @@
             @include('components.handling_error')
 
             <div class="title-table d-flex justify-content-between align-items-center mb-3">
-                <h4 class="m-0">Data Pemasukan Keuangan Proyek</h4>
+                <h4 class="m-0">Data Pengeluaran Keuangan Proyek</h4>
                 <div class="d-flex gap-2 align-items-center">
                     <div class="position-relative">
-                        <form action="{{ route('koordinator.dataMasukKeuanganProyek') }}" method="GET" id="searchForm">
+                        <form action="{{ route('koordinator.dataKeluarKeuanganProyek') }}" method="GET" id="searchForm">
                             <input type="text" name="search" class="form-control pe-5 form-search" placeholder="Cari proyek..." value="{{ $search ?? '' }}">
                             <button type="submit" class="btn position-absolute top-50 end-0 translate-middle-y pe-2 py-2 border-0 bg-transparent">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -31,7 +31,7 @@
                     
                     <!-- Button Clear Search-->
                     @if(isset($search) && $search)
-                    <a href="{{ route('koordinator.dataMasukKeuanganProyek') }}" class="btn btn-tutup btn-outline-secondary" id="clearSearchBtn">
+                    <a href="{{ route('koordinator.dataKeluarKeuanganProyek') }}" class="btn btn-tutup btn-outline-secondary" id="clearSearchBtn">
                         Hapus Filter
                     </a>
                     @endif
@@ -71,7 +71,7 @@
                                 <td><span class="badge bg-success">Done</span></td>
                             @endif
                             <td>
-                                <button type="button" class="btn btn-action-dana-masuk" data-proyek-id="{{ $item->id }}">
+                                <button type="button" class="btn view-project-btn" data-proyek-id="{{ $item->id }}">
                                     <svg width="20" height="20" viewBox="0 0 26 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                         <path d="M21.0571 10.9056C21.4729 11.3872 21.6808 11.628 21.6808 12C21.6808 12.372 21.4729 12.6128 21.0571 13.0944C19.5628 14.8252 16.307 18 12.5313 18C8.7555 18 5.49977 14.8252 4.00541 13.0944C3.58961 12.6128 3.38171 12.372 3.38171 12C3.38171 11.628 3.58961 11.3872 4.00541 10.9056C5.49977 9.17485 8.7555 6 12.5313 6C16.307 6 19.5628 9.17485 21.0571 10.9056Z" fill="#3C21F7"/>
                                         <path d="M15.6641 12C15.6641 13.6569 14.2615 15 12.5313 15C10.801 15 9.39844 13.6569 9.39844 12C9.39844 10.3431 10.801 9 12.5313 9C14.2615 9 15.6641 10.3431 15.6641 12Z" fill="white"/>
@@ -92,20 +92,14 @@
                         @endforelse
                     </tbody>
                 </table>
-            </div>
 
-            <!-- Loading Indicator (Hidden by default) -->
-            <div id="loadingIndicator" class="text-center d-none">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
+            </div>
             </div>
         </div>
     </div>
 </div>
 
 @endsection
-
 @push('scripts')
-    @vite('resources/js/Koordinator/data_masuk_keuangan_proyek.js')
+    @vite('resources/js/Koordinator/data_keluar_keuangan_proyek.js')
 @endpush

@@ -39,6 +39,5 @@ export default {
             confirmButtonText: 'Ya, Hapus',
             cancelButtonText: 'Batal'
         })
-    }
-
+    },
 }; 

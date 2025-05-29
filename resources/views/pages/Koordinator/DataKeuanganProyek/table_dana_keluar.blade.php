@@ -1,8 +1,8 @@
 <div class="data-masuk-keuangan-proyek-container flex-grow-1">
     <div class="card shadow-sm border-0 rounded-3 h-100">
         <div class="card-body">
-            <div id="data-masuk-keuangan-proyek-section" class="title-table d-flex justify-content-between align-items-center mb-3">
-                <h4 class="m-0">Rincian Dana Pemasukan</h4>
+            <div id="data-keluar-keuangan-proyek-section" class="title-table d-flex justify-content-between align-items-center mb-3">
+                <h4 class="m-0">Rincian Dana Pengeluaran</h4>
                 <div class="d-flex gap-2 align-items-center">
                     <button type="button" class="btn btn-add" data-bs-toggle="modal" data-bs-target="#addTransactionModal">
                         Tambah Data
@@ -44,7 +44,7 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="addTransactionModalLabel">Tambah Pemasukan</h5>
+                <h5 class="modal-title" id="addTransactionModalLabel">Tambah Pengeluaran</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -53,17 +53,17 @@
                     
                     <!-- Pass subkategori data and availability flag to JavaScript -->
                     <script type="application/json" id="subkategoriData">
-                        {!! json_encode($subkategoriPemasukan) !!}
+                        {!! json_encode($subkategoriPengeluaran) !!}
                     </script>
                     
-                    <!-- Pass hasSubkategoriPemasukan flag to JavaScript -->
+                    <!-- Pass hasSubkategoriPengeluaran flag to JavaScript -->
                     <script>
-                        window.hasSubkategoriPemasukan = {{ json_encode($hasSubkategoriPemasukan ?? false) }};
-                        console.log('HasSubkategoriPemasukan flag:', window.hasSubkategoriPemasukan);
+                        window.hasSubkategoriPengeluaran = {{ json_encode($hasSubkategoriPengeluaran ?? false) }};
+                        console.log('HasSubkategoriPengeluaran flag:', window.hasSubkategoriPengeluaran);
                     </script>
                     
                     <!-- Error Alert -->
-                    <div class="alert alert-danger d-none" id="form_pemasukan_error" role="alert"></div>
+                    <div class="alert alert-danger d-none" id="form_pengeluaran_error" role="alert"></div>
                     
                     <div class="row mb-3">
                         <div class="col-md-6">
@@ -102,22 +102,22 @@
                     
                     <div class="row mb-3">
                         <div class="col-md-6" id="subkategoriContainer" style="display: none;">
-                            <label for="subkategori_pemasukan_id" class="form-label">
-                                Kategori Pemasukan 
+                            <label for="subkategori_pengeluaran_id" class="form-label">
+                                Kategori Pengeluaran 
                                 <span class="text-danger">*</span>
                             </label>
                             <div class="invalid-feedback" id=sub_kategori_error></div>
-                            <select class="form-select" id="subkategori_pemasukan_id" name="subkategori_pemasukan_id">
-                                <option value="">Pilih Kategori Pemasukan</option>
-                                @if(isset($subkategoriPemasukan) && $subkategoriPemasukan->count() > 0)
-                                    @foreach($subkategoriPemasukan as $subkategori)
+                            <select class="form-select" id="subkategori_pengeluaran_id" name="subkategori_pengeluaran_id">
+                                <option value="">Pilih Kategori Pengeluaran</option>
+                                @if(isset($subkategoriPengeluaran) && $subkategoriPengeluaran->count() > 0)
+                                    @foreach($subkategoriPengeluaran as $subkategori)
                                         <option value="{{ $subkategori->sub_jenis_transaksi_id }}">
                                             {{ $subkategori->nama_sub_jenis_transaksi }}
                                         </option>
                                     @endforeach
                                 @endif
                             </select>
-                            <div class="invalid-feedback" id="subkategori_pemasukan_id_error"></div>
+                            <div class="invalid-feedback" id="subkategori_pengeluaran_id_error"></div>
                         </div>
                     </div>
                     <div class="row mb-3">
@@ -154,13 +154,13 @@
 
                     <div class="mt-2">
                         <div class="col-12 text-end">
-                            <button type="button" class="btn btn-add" id="btnTambahkanKeDaftarPemasukan">Tambahkan ke Daftar</button>
+                            <button type="button" class="btn btn-add" id="btnTambahkanKeDaftarPengeluaran">Tambahkan ke Daftar</button>
                         </div>
                     </div>
 
                     <!-- Enhanced List Display -->
-                    <div class="daftar-pemasukan-container mt-5">
-                        <h5>Daftar Pemasukan Keuangan Proyek yang Akan ditambahkan</h5>
+                    <div class="daftar-pengeluaran-container mt-5">
+                        <h5>Daftar Pengeluaran Keuangan Proyek yang Akan ditambahkan</h5>
                         <div class="table-responsive">
                             <table class="table table-bordered table-striped">
                                 <thead>
@@ -172,24 +172,24 @@
                                         <th>Aksi</th>
                                     </tr>
                                 </thead>
-                                <tbody id="daftarPemasukan">
-                                    <tr id="emptyRowPemasukan">
+                                <tbody id="daftarPengeluaran">
+                                    <tr id="emptyRowPengeluaran">
                                         <td colspan="6" class="text-center text-muted">
                                             <i class="bi bi-inbox me-2"></i>
-                                            Belum ada pemasukan yang ditambahkan ke daftar
+                                            Belum ada pengeluaran yang ditambahkan ke daftar
                                         </td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
-                        <input type="hidden" name="pemasukan_data" id="pemasukan_JsonData" value="[]">
-                        <input type="hidden" name="is_single" id="isSinglePemasukan" value="1">
+                        <input type="hidden" name="pengeluaran_data" id="pengeluaran_JsonData" value="[]">
+                        <input type="hidden" name="is_single" id="isSinglePengeluaran" value="1">
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-tutup" data-bs-dismiss="modal">Batal</button>
-                <button type="submit" form="addTransactionForm" class="btn btn-add" id="btnSimpanPemasukan">Simpan</button>
+                <button type="submit" form="addTransactionForm" class="btn btn-add" id="btnSimpanPengeluaran">Simpan</button>
             </div>
         </div>
     </div>
@@ -202,7 +202,7 @@
         <div class="modal-content">
             <form id="formEditDataKeuanganProyek" novalidate enctype="multipart/form-data">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="modalEditKeuanganProyekLabel">Edit Data Pemasukan Keuangan Proyek</h1>
+                    <h1 class="modal-title fs-5" id="modalEditKeuanganProyekLabel">Edit Data Pengeluaran Keuangan Proyek</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body label-form">
@@ -232,14 +232,14 @@
                                 <label for="edit_jenis_transaksi_id" class="form-label">Jenis Transaksi</label>
                                 <select class="form-select" id="edit_jenis_transaksi_id" name="edit_jenis_transaksi_id" disabled>
                                     @foreach($jenisTransaksi as $jenis)
-                                        @if($jenis->nama_jenis_transaksi == 'Pemasukan')
+                                        @if($jenis->nama_jenis_transaksi == 'Pengeluaran')
                                             <option value="{{ $jenis->jenis_transaksi_id }}" selected>{{ $jenis->nama_jenis_transaksi }}</option>
                                         @else
                                             <option value="{{ $jenis->jenis_transaksi_id }}">{{ $jenis->nama_jenis_transaksi }}</option>
                                         @endif
                                     @endforeach
                                 </select>
-                                <small class="form-text text-muted">Jenis transaksi tidak dapat diubah untuk pemasukan proyek</small>
+                                <small class="form-text text-muted">Jenis transaksi tidak dapat diubah untuk pengeluaran proyek</small>
                             </div>
                             
                             <!-- Keperluan Transaksi - Fixed with proper value -->
@@ -254,7 +254,7 @@
                                         @endif
                                     @endforeach
                                 </select>
-                                <small class="form-text text-muted">Keperluan transaksi tidak dapat diubah untuk pemasukan proyek</small>
+                                <small class="form-text text-muted">Keperluan transaksi tidak dapat diubah untuk pengeluaran proyek</small>
                             </div>
                             
                             <!-- Proyek - Display Only -->
@@ -267,13 +267,13 @@
                             <!-- ✅ KOREKSI: Modal Edit dengan logic conditional required yang benar -->
                             <div class="col-md-6 mb-3" id="edit_kategoriTransaksiContainer" style="display: none;">
                                 <label for="edit_sub_jenis_transaksi_id" class="form-label">
-                                    Kategori Pemasukan
+                                    Kategori Pengeluaran
                                     <!-- ✅ Required indicator akan ditambah via JavaScript jika diperlukan -->
                                 </label>
                                 <select class="form-select" id="edit_sub_jenis_transaksi_id" name="edit_sub_jenis_transaksi_id">
-                                    <option value="">Pilih Kategori Pemasukan</option>
-                                    @if(isset($subkategoriPemasukan) && $subkategoriPemasukan->count() > 0)
-                                        @foreach($subkategoriPemasukan as $subkategori)
+                                    <option value="">Pilih Kategori Pengeluaran</option>
+                                    @if(isset($subkategoriPengeluaran) && $subkategoriPengeluaran->count() > 0)
+                                        @foreach($subkategoriPengeluaran as $subkategori)
                                             <option value="{{ $subkategori->sub_jenis_transaksi_id }}">
                                                 {{ $subkategori->nama_sub_jenis_transaksi }}
                                             </option>
@@ -283,7 +283,7 @@
                                 <div class="invalid-feedback" id="edit_sub_jenis_transaksi_id_error"></div>
                                 <!-- Help text yang akan diupdate via JavaScript -->
                                 <small class="form-text text-muted" id="edit_subkategori_help_text">
-                                    Kategori pemasukan untuk membantu kategorisasi transaksi.
+                                    Kategori pengeluaran untuk membantu kategorisasi transaksi.
                                 </small>
                             </div>
 

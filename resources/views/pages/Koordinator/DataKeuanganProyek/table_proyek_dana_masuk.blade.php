@@ -15,7 +15,7 @@
             @include('components.handling_error')
 
             <div class="title-table d-flex justify-content-between align-items-center mb-3">
-                <h4 class="m-0">Data Pengeluaran Keuangan Proyek</h4>
+                <h4 class="m-0">Data Pemasukan Keuangan Proyek</h4>
                 <div class="d-flex gap-2 align-items-center">
                     <div class="position-relative">
                         <form action="{{ route('koordinator.dataMasukKeuanganProyek') }}" method="GET" id="searchForm">

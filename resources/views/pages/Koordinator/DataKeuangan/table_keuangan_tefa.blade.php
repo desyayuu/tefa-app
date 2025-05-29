@@ -87,6 +87,7 @@
                             <div class="invalid-feedback" id="jenis_keuangan_tefa_id_error"></div>
                         </div>
 
+                        
                         <!-- Proyek -->
                         <div class="col-md-6 mb-3" id="proyekContainer" style="display: none;">
                             <label for="proyek_id_selected" class="form-label">Proyek</label>
@@ -96,14 +97,14 @@
                             <div class="invalid-feedback" id="proyek_id_selected_error"></div>
                         </div>
 
-                        <!-- Kategori Pengeluaran -->
-                        <div class="col-md-6 mb-3" id="kategoriPengeluaranContainer" style="display: none;">
-                            <label for="sub_jenis_transaksi_id" class="form-label">Kategori Pengeluaran</label>
+                        <div class="col-md-6 mb-3" id="kategoriTransaksiContainer" style="display: none;">
+                            <label for="sub_jenis_transaksi_id" class="form-label">Kategori Transaksi</label>
                             <select class="form-select select2-dropdown" id="sub_jenis_transaksi_id" name="sub_jenis_transaksi_id">
-                                <option value="" disabled selected>Pilih Kategori Pengeluaran</option>
+                                <option value="" disabled selected>Pilih Kategori Transaksi</option>
                             </select>
                             <div class="invalid-feedback" id="sub_jenis_transaksi_id_error"></div>
                         </div>
+
 
                         <!-- Nama Transaksi -->
                         <div class="col-md-6 mb-3">
@@ -222,14 +223,16 @@
                             </select>
                             <div class="invalid-feedback" id="edit_proyek_id_selected_error"></div>
                         </div>
-                        <!-- Kategori Pengeluaran -->
-                        <div class="col-md-6 mb-3" id="edit_kategoriPengeluaranContainer" style="display: none;">
-                            <label for="edit_sub_jenis_transaksi_id" class="form-label">Kategori Pengeluaran</label>
+
+                        <!-- Sub Jeis kATEGORI -->
+                        <div class="col-md-6 mb-3" id="edit_kategoriTransaksiContainer" style="display: none;">
+                            <label for="edit_sub_jenis_transaksi_id" class="form-label">Kategori Transaksi</label>
                             <select class="form-select select2-dropdown" id="edit_sub_jenis_transaksi_id" name="edit_sub_jenis_transaksi_id">
-                                <option value="" disabled selected>Pilih Kategori Pengeluaran</option>
+                                <option value="" disabled selected>Pilih Kategori Transaksi</option>
                             </select>
                             <div class="invalid-feedback" id="edit_sub_jenis_transaksi_id_error"></div>
                         </div>
+
                         <!-- Nama Transaksi -->
                         <div class="col-md-6 mb-3">
                             <label for="edit_nama_transaksi" class="form-label">Nama Transaksi <span class="text-danger">*</span></label>

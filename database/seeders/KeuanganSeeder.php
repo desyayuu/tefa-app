@@ -144,7 +144,6 @@ class KeuanganSeeder extends Seeder
             ]
         ]);
         
-        //seed untuk sub jenis pengeluaran non-proyek
         DB::table('m_sub_jenis_transaksi')->insert([
             [
                 'sub_jenis_transaksi_id' => Str::uuid(),

@@ -23,7 +23,7 @@ class DataMitraController extends Controller
                   ->orWhere('telepon_mitra', 'like', "%{$search}%");
             });
         }
-        $mitra = $query->paginate(2);
+        $mitra = $query->paginate(10);
         return view('pages.Koordinator.data_mitra', compact('mitra', 'search'), [
             'titleSidebar' => 'Data Mitra',
         ]);

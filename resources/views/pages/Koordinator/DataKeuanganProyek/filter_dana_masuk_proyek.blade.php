@@ -1,3 +1,4 @@
+<!-- ✅ UPDATE: Ganti struktur filter dalam paste-1.txt dengan yang ini -->
 <div class="filter-data-keuangan-tefa-container flex-grow-1 mt-5">
     <div class="card shadow-sm border-0 rounded-3">
         <div class="card-body">
@@ -18,44 +19,23 @@
                         <div class="col-md-3 mb-3">
                             <label for="filter_tanggal_akhir" class="form-label">Tanggal Akhir</label>
                             <input type="date" class="form-control" id="filter_tanggal_akhir" name="filter_tanggal_akhir">
+                            <div class="invalid-feedback" id="filter_tanggal_akhir_error"></div>
                         </div>
                         
-                        <!-- Jenis Transaksi -->
-                        <div class="col-md-3 mb-3">
-                            <label for="filter_jenis_transaksi" class="form-label">Jenis Transaksi</label>
-                            <select class="form-select" id="filter_jenis_transaksi" name="filter_jenis_transaksi">
-                                <option value="">Semua</option>
-                                <option value="Pemasukan">Pemasukan</option>
-                                <option value="Pengeluaran">Pengeluaran</option>
-                            </select>
-                        </div>
-                        
-                        <!-- Keperluan Transaksi -->
-                        <div class="col-md-3 mb-3">
-                            <label for="filter_jenis_keuangan" class="form-label">Keperluan Transaksi</label>
-                            <select class="form-select" id="filter_jenis_keuangan" name="filter_jenis_keuangan">
-                                <option value="">Semua</option>
-                                <option value="Proyek">Proyek</option>
-                                <option value="Non Proyek">Non Proyek</option>
-                            </select>
-                        </div>
-                        
-                        <!-- Nama Transaksi (optional) -->
+                        <!-- Nama Transaksi -->
                         <div class="col-md-3 mb-3">
                             <label for="filter_nama_transaksi" class="form-label">Nama Transaksi</label>
                             <input type="text" class="form-control" id="filter_nama_transaksi" name="filter_nama_transaksi" placeholder="Cari nama transaksi...">
                         </div>
                         
-                        <!-- Wrap the Proyek dropdown in a container that can be shown/hidden -->
-                        <div class="col-md-3 mb-3" id="filterProyekContainer" style="display: none;">
-                            <label for="filter_proyek" class="form-label">Proyek</label>
-                            <select class="form-select" id="filter_proyek" name="filter_proyek">
-                                <option value="">Semua Proyek</option>
-                                <!-- Options will be loaded via AJAX -->
+                        <div class="col-md-3 mb-3" id="filterKategoriTransaksiContainer" style="display: none;">
+                            <label for="filter_jenis_keuangan" class="form-label">Kategori Pemasukan</label>
+                            <select class="form-select" id="filter_jenis_keuangan" name="filter_jenis_keuangan">
+                                <option value="">Semua Kategori</option>
                             </select>
+                            <div class="invalid-feedback" id="filter_jenis_keuangan_error"></div>
                         </div>
-
-                        <!-- Wrap the Sub Jenis Transaksi dropdown in a container that can be shown/hidden -->
+                        
                         <div class="col-md-6 mb-3" id="filterKategoriTransaksiContainer" style="display: none;">
                             <label for="filter_sub_jenis_transaksi" class="form-label">Kategori Transaksi</label>
                             <select class="form-select" id="filter_sub_jenis_transaksi" name="filter_sub_jenis_transaksi">
@@ -63,6 +43,7 @@
                             </select>
                             <div class="invalid-feedback" id="filter_sub_jenis_transaksi_error"></div>
                         </div>
+
                     </div>
                     
                     <div class="d-flex justify-content-end gap-2 mt-2">
