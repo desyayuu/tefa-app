@@ -8,11 +8,28 @@
     @include('layouts.Koordinator.sidebar')
     
     <div class="main-content">
-        @include('layouts.Koordinator.header')
+        @include('layouts.Koordinator.header')            
+        <div class="breadcrumb-container">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item">
+                            <a href="">
+                                <i class="fas fa-project-diagram me-1"></i>
+                                Keuangan Proyek
+                            </a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Dana Pengeluaran Proyek
+                        </li>
+                    </ol>
+                </nav>
+            </div>
 
         <div class="content-table">
             <!-- Handling Error and Success -->
             @include('components.handling_error')
+            
 
             <div class="title-table d-flex justify-content-between align-items-center mb-3">
                 <h4 class="m-0">Data Pengeluaran Keuangan Proyek</h4>
@@ -92,8 +109,14 @@
                         @endforelse
                     </tbody>
                 </table>
-
-            </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="showing-text">
+                        Showing {{ $proyek->firstItem() }} to {{ $proyek->lastItem() }} of {{ $proyek->total() }} entries
+                    </div>
+                    <div class="pagination-links">
+                        {{ $proyek->appends(['search' => request('search')])->links('vendor.pagination.custom_master') }}
+                    </div>
+                </div>
             </div>
         </div>
     </div>

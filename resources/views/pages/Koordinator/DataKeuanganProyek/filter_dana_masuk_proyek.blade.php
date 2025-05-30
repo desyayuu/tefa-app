@@ -1,5 +1,4 @@
-<!-- ✅ UPDATE: Ganti struktur filter dalam paste-1.txt dengan yang ini -->
-<div class="filter-data-keuangan-tefa-container flex-grow-1 mt-5">
+<div class="filter-data-keuangan-tefa-container flex-grow-1 mt-3">
     <div class="card shadow-sm border-0 rounded-3">
         <div class="card-body">
             <div class="title-filter d-flex justify-content-between align-items-center mb-3">

@@ -79,7 +79,7 @@
                         @elseif ($dataProyek->status_proyek == 'In Progress')
                             <td><span class="badge bg-primary">In Progres</span></td>
                         @elseif ($dataProyek->status_proyek == 'Done')
-                            <td><span class="badge bg-done">Done</span></td>
+                            <td><span class="badge bg-success">Done</span></td>
                         @endif
                         <td>
                             <div class="d-flex gap-2">

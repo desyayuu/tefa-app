@@ -9,10 +9,27 @@
     
     <div class="main-content">
         @include('layouts.Koordinator.header')
+            <div class="breadcrumb-container">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item">
+                            <a href="">
+                                <i class="fas fa-project-diagram me-1"></i>
+                                Keuangan Proyek
+                            </a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Dana Pemasukan Proyek
+                        </li>
+                    </ol>
+                </nav>
+            </div>
 
         <div class="content-table">
             <!-- Handling Error and Success -->
             @include('components.handling_error')
+
 
             <div class="title-table d-flex justify-content-between align-items-center mb-3">
                 <h4 class="m-0">Data Pemasukan Keuangan Proyek</h4>
@@ -52,6 +69,7 @@
                         <tr>
                             <th scope="col">Nama Proyek</th>
                             <th scope="col">Project Leader</th>
+                            <th scope="col">Periode Proyek</th>
                             <th scope="col">Dana Pendanaan</th>
                             <th scope="col">Status Proyek</th>
                             <th scope="col">Aksi</th>
@@ -62,6 +80,7 @@
                         <tr>
                             <td>{{ $item->nama_proyek }}</td>
                             <td>{{ $item->nama_project_leader ?? '-' }}</td>
+                            <td>{{ $item->tanggal_mulai}} - {{$item->tanggal_selesai}}</td>
                             <td>{{ 'Rp ' . number_format($item->dana_pendanaan, 0, ',', '.') }}</td>
                             @if ($item->status_proyek == 'Initiation')
                                 <td><span class="badge bg-secondary">Inisiasi</span></td>

@@ -40,6 +40,12 @@ class DataMasukKeuanganProyekController extends Controller{
                 $join->on('t_project_leader.leader_id', '=', 'd_profesional.profesional_id')->where('t_project_leader.leader_type', '=', 'Profesional');
             });
         
+            // Format Tanggal Mulai dan Selesai
+        $query->selectRaw('
+            DATE_FORMAT(m_proyek.tanggal_mulai, "%d/%m/%Y") as tanggal_mulai,
+            DATE_FORMAT(m_proyek.tanggal_selesai, "%d/%m/%Y") as tanggal_selesai
+        ');
+        
         if ($search) {
             $query->where(function($q) use ($search) {
                 $q->where('m_proyek.nama_proyek', 'like', '%' . $search . '%')
@@ -49,7 +55,8 @@ class DataMasukKeuanganProyekController extends Controller{
             });
         }
         
-        $proyek = $query->orderBy('m_proyek.created_at', 'desc')->paginate(10);
+        $proyek = $query->orderByRaw("FIELD (m_proyek.status_proyek, 'In Progres', 'Inisiasi', 'Done')")
+                        ->paginate(10);
         return view('pages.Koordinator.DataKeuanganProyek.table_proyek_dana_masuk', [
             'proyek' => $proyek,
             'search' => $search,

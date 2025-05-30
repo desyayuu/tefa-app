@@ -46,6 +46,14 @@ class DataProyekController extends Controller
                 $join->on('t_project_leader.leader_id', '=', 'd_profesional.profesional_id')
                     ->where('t_project_leader.leader_type', '=', 'Profesional');
             });
+
+            // Format Tanggal 
+        $query->selectRaw('
+            DATE_FORMAT(m_proyek.tanggal_mulai, "%d/%m/%Y") as tanggal_mulai,
+            DATE_FORMAT(m_proyek.tanggal_selesai, "%d/%m/%Y") as tanggal_selesai
+        ');
+        
+        
         
         if ($request->has('search') && !empty($request->search)) {
             $search = $request->search;

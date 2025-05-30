@@ -51,7 +51,8 @@ class DataKeluarKeuanganProyekController extends Controller
             });
         }
         
-        $proyek = $query->orderBy('m_proyek.created_at', 'desc')->paginate(10);
+        $proyek = $query->orderByRaw("FIELD (m_proyek.status_proyek, 'In Progres', 'Inisiasi', 'Done')")
+                        ->paginate(10);
         return view('pages.Koordinator.DataKeuanganProyek.table_proyek_dana_keluar', [
             'proyek' => $proyek,
             'search' => $search,

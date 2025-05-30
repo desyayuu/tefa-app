@@ -560,7 +560,7 @@ document.addEventListener('DOMContentLoaded', function () {
             // Determine badge class based on status - FIXED: let instead of const
             let badgeClass = '';
             if (statusProgresProyek === 'Done') {
-                badgeClass = 'badge bg-done';
+                badgeClass = 'badge bg-success';
             } else if (statusProgresProyek === 'In Progress') {
                 badgeClass = 'badge bg-primary';
             } else if (statusProgresProyek === 'Inisiasi') {

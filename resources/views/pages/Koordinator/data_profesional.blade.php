@@ -8,11 +8,30 @@
     @include('layouts.Koordinator.sidebar')
     
     <div class="main-content">
-        @include('layouts.Koordinator.header')
+        @include('layouts.Koordinator.header')        
+        <div class="breadcrumb-container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item">
+                        <a href="{{ route('koordinator.dataProfesional') }}" class="breadcrumb-item active" aria-current="page">
+                            <i class="fas fa-project-diagram me-1"></i>
+                            Data Profesional
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="">
+                            <i class="fas fa-project-diagram me-1"></i>
+                           
+                        </a>
+                    </li>
+                </ol>
+            </nav>
+        </div>
 
         <div class="content-table">
             <!-- Handling Error and Success -->
             @include('components.handling_error')
+            
             
             <div class="title-table d-flex justify-content-between align-items-center mb-3">
                 <h4 class="m-0">Data Profesional</h4>
