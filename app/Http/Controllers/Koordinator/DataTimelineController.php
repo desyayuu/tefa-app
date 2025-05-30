@@ -36,8 +36,7 @@ class DataTimelineController extends Controller
         // Get timeline data
         $query = DB::table('t_timeline_proyek')
             ->where('proyek_id', $id)
-            ->whereNull('deleted_at')
-            ;
+            ->whereNull('deleted_at');
         
         // Apply search filter
         if ($search) {
@@ -62,6 +61,10 @@ class DataTimelineController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => $timelines->items(),
+                'proyek_dates' => [
+                    'tanggal_mulai' => $proyek->tanggal_mulai,
+                    'tanggal_selesai' => $proyek->tanggal_selesai
+                ],
                 'pagination' => [
                     'current_page' => $timelines->currentPage(),
                     'per_page_timeline' => $timelines->perPage(),
@@ -71,7 +74,55 @@ class DataTimelineController extends Controller
                 ]
             ]);
         }
+    }
+    
+    private function validateTimelineDate($tanggalMulai, $tanggalSelesai, $proyekId)
+    {
+        // Get project dates
+        $proyek = DB::table('m_proyek')
+            ->where('proyek_id', $proyekId)
+            ->select('tanggal_mulai', 'tanggal_selesai')
+            ->first();
+            
+        if (!$proyek) {
+            return ['valid' => false, 'message' => 'Data proyek tidak ditemukan'];
+        }
         
+        $proyekMulai = Carbon::parse($proyek->tanggal_mulai);
+        $proyekSelesai = Carbon::parse($proyek->tanggal_selesai);
+        $timelineMulai = Carbon::parse($tanggalMulai);
+        $timelineSelesai = Carbon::parse($tanggalSelesai);
+        
+        // Check if timeline dates are within project date range
+        if ($timelineMulai->lt($proyekMulai)) {
+            return [
+                'valid' => false, 
+                'message' => 'Tanggal mulai timeline tidak boleh sebelum tanggal mulai proyek (' . $proyekMulai->format('d/m/Y') . ')'
+            ];
+        }
+        
+        if ($timelineSelesai->gt($proyekSelesai)) {
+            return [
+                'valid' => false, 
+                'message' => 'Tanggal selesai timeline tidak boleh setelah tanggal selesai proyek (' . $proyekSelesai->format('d/m/Y') . ')'
+            ];
+        }
+        
+        if ($timelineMulai->gt($proyekSelesai)) {
+            return [
+                'valid' => false, 
+                'message' => 'Tanggal mulai timeline tidak boleh setelah tanggal selesai proyek (' . $proyekSelesai->format('d/m/Y') . ')'
+            ];
+        }
+        
+        if ($timelineSelesai->lt($proyekMulai)) {
+            return [
+                'valid' => false, 
+                'message' => 'Tanggal selesai timeline tidak boleh sebelum tanggal mulai proyek (' . $proyekMulai->format('d/m/Y') . ')'
+            ];
+        }
+        
+        return ['valid' => true];
     }
     
     public function addDataTimeline(Request $request){
@@ -110,6 +161,19 @@ class DataTimelineController extends Controller
                     ], 422);
                 }
                 
+                // Validate against project date range
+                $dateValidation = $this->validateTimelineDate(
+                    $request->input('tanggal_mulai_timeline'),
+                    $request->input('tanggal_selesai_timeline'),
+                    $request->input('proyek_id')
+                );
+                
+                if (!$dateValidation['valid']) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => $dateValidation['message']
+                    ], 422);
+                }
 
                 $timelineId = Str::uuid();
                 // Insert single timeline
@@ -152,6 +216,22 @@ class DataTimelineController extends Controller
                         'success' => false,
                         'message' => 'Tidak ada data timeline yang ditambahkan'
                     ], 422);
+                }
+                
+                // Validate each timeline against project date range
+                foreach ($timelineData as $index => $timeline) {
+                    $dateValidation = $this->validateTimelineDate(
+                        $timeline['tanggal_mulai_timeline'],
+                        $timeline['tanggal_selesai_timeline'],
+                        $request->input('proyek_id')
+                    );
+                    
+                    if (!$dateValidation['valid']) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => "Timeline ke-" . ($index + 1) . ": " . $dateValidation['message']
+                        ], 422);
+                    }
                 }
                 
                 // Insert multiple timeline
@@ -204,9 +284,19 @@ class DataTimelineController extends Controller
             ], 404);
         }
         
+        // Get project dates for validation
+        $proyek = DB::table('m_proyek')
+            ->where('proyek_id', $timeline->proyek_id)
+            ->select('tanggal_mulai', 'tanggal_selesai')
+            ->first();
+        
         return response()->json([
             'success' => true,
-            'data' => $timeline
+            'data' => $timeline,
+            'proyek_dates' => [
+                'tanggal_mulai' => $proyek->tanggal_mulai,
+                'tanggal_selesai' => $proyek->tanggal_selesai
+            ]
         ]);
     }
     
@@ -237,6 +327,20 @@ class DataTimelineController extends Controller
                 'success' => false,
                 'message' => 'Validasi gagal',
                 'errors' => $validator->errors()
+            ], 422);
+        }
+        
+        // Validate against project date range
+        $dateValidation = $this->validateTimelineDate(
+            $request->input('tanggal_mulai_timeline'),
+            $request->input('tanggal_selesai_timeline'),
+            $timeline->proyek_id
+        );
+        
+        if (!$dateValidation['valid']) {
+            return response()->json([
+                'success' => false,
+                'message' => $dateValidation['message']
             ], 422);
         }
         

@@ -24,6 +24,28 @@
                 </div>
             </div>
 
+            <!-- Info Rentang Tanggal Proyek -->
+            @if(isset($proyek))
+            <div class="alert alert-info mb-3" role="alert">
+                <div class="d-flex align-items-center">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="me-2">
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                        <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <div>
+                        <strong>Rentang Tanggal Proyek:</strong> 
+                        <span class="text-dark">
+                            {{ \Carbon\Carbon::parse($proyek->tanggal_mulai)->format('d/m/Y') }} - 
+                            {{ \Carbon\Carbon::parse($proyek->tanggal_selesai)->format('d/m/Y') }}
+                        </span>
+                        <small class="d-block text-muted mt-1">
+                            Timeline harus berada dalam rentang tanggal proyek ini
+                        </small>
+                    </div>
+                </div>
+            </div>
+            @endif
+
             <!-- Timeline Table -->
             <div class="table-responsive">
                 <table class="table table-striped" id="tableDataTimeline">
@@ -77,22 +99,43 @@
                     <!-- Alert untuk error keseluruhan form -->
                     <div class="alert alert-danger d-none" id="form_timeline_error"></div>
                     
+                    <!-- Info Rentang Tanggal Proyek di Modal -->
+                    @if(isset($proyek))
+                    <div class="alert alert-warning mb-3" role="alert">
+                        <div class="d-flex align-items-start">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="me-2 mt-1 flex-shrink-0">
+                                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <line x1="12" y1="9" x2="12" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <line x1="12" y1="17" x2="12.01" y2="17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <div>
+                                <strong>Perhatian:</strong> Tanggal timeline harus berada dalam rentang proyek
+                                <br>
+                                <span class="text-dark">
+                                    <strong>{{ \Carbon\Carbon::parse($proyek->tanggal_mulai)->format('d/m/Y') }} - 
+                                    {{ \Carbon\Carbon::parse($proyek->tanggal_selesai)->format('d/m/Y') }}</strong>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+                    
                     <div class="row mb-3">
                         <!-- Nama Timeline -->
                         <div class="mb-2 col-md-6">
-                            <label for="nama_timeline" class="form-label">Nama Timeline</label>
+                            <label for="nama_timeline" class="form-label">Nama Timeline <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="nama_timeline" name="nama_timeline" required>
                             <div class="invalid-feedback" id="nama_timeline_error"></div>
                         </div>
                         <!-- Tanggal Mulai -->
                         <div class="mb-2 col-md-6">
-                            <label for="tanggal_mulai_timeline" class="form-label">Tanggal Mulai</label>
+                            <label for="tanggal_mulai_timeline" class="form-label">Tanggal Mulai <span class="text-danger">*</span></label>
                             <input type="date" class="form-control" id="tanggal_mulai_timeline" name="tanggal_mulai_timeline" required>
                             <div class="invalid-feedback" id="tanggal_mulai_timeline_error"></div>
                         </div>
                         <!-- Tanggal Selesai -->
                         <div class="mb-2 col-md-6">
-                            <label for="tanggal_selesai_timeline" class="form-label">Tanggal Selesai</label>
+                            <label for="tanggal_selesai_timeline" class="form-label">Tanggal Selesai <span class="text-danger">*</span></label>
                             <input type="date" class="form-control" id="tanggal_selesai_timeline" name="tanggal_selesai_timeline" required>
                             <div class="invalid-feedback" id="tanggal_selesai_timeline_error"></div>
                         </div>
@@ -159,6 +202,27 @@
                 <div class="modal-body label-form">
                     <!-- Alert untuk error -->
                     <div class="alert alert-danger d-none" id="edit_form_error"></div>
+                    
+                    <!-- Info Rentang Tanggal Proyek di Modal Edit -->
+                    @if(isset($proyek))
+                    <div class="alert alert-warning mb-3" role="alert">
+                        <div class="d-flex align-items-start">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="me-2 mt-1 flex-shrink-0">
+                                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <line x1="12" y1="9" x2="12" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <line x1="12" y1="17" x2="12.01" y2="17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <div>
+                                <strong>Perhatian:</strong> Tanggal timeline harus berada dalam rentang proyek
+                                <br>
+                                <span class="text-dark">
+                                    <strong>{{ \Carbon\Carbon::parse($proyek->tanggal_mulai)->format('d/m/Y') }} - 
+                                    {{ \Carbon\Carbon::parse($proyek->tanggal_selesai)->format('d/m/Y') }}</strong>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
                     
                     <div class="mb-3">
                         <label for="edit_nama_timeline" class="form-label">Nama Timeline <span class="text-danger">*</span></label>

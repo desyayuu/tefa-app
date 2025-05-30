@@ -204,7 +204,7 @@
                         <td>{{ $d->nidn_dosen}}</td>
                         <td>
                             <div class="d-flex gap-2">
-                                <a href="" data-bs-target="#modalMahasiswa{{ $d->dosen_id }}">
+                                <a href="#" data-bs-toggle="modal" data-bs-target="#modalDosen{{ $d->dosen_id }}">
                                     <svg width="20" height="20" viewBox="0 0 26 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                         <path d="M21.0571 10.9056C21.4729 11.3872 21.6808 11.628 21.6808 12C21.6808 12.372 21.4729 12.6128 21.0571 13.0944C19.5628 14.8252 16.307 18 12.5313 18C8.7555 18 5.49977 14.8252 4.00541 13.0944C3.58961 12.6128 3.38171 12.372 3.38171 12C3.38171 11.628 3.58961 11.3872 4.00541 10.9056C5.49977 9.17485 8.7555 6 12.5313 6C16.307 6 19.5628 9.17485 21.0571 10.9056Z" fill="#3C21F7"/>
                                         <path d="M15.6641 12C15.6641 13.6569 14.2615 15 12.5313 15C10.801 15 9.39844 13.6569 9.39844 12C9.39844 10.3431 10.801 9 12.5313 9C14.2615 9 15.6641 10.3431 15.6641 12Z" fill="white"/>
@@ -240,18 +240,20 @@
                                                 <label for="nama_dosen_{{ $d->dosen_id }}" class="form-label">Nama Dosen</label>
                                                 <input type="text" class="form-control @error('nama_dosen') is-invalid @enderror" 
                                                     id="nama_dosen_{{ $d->dosen_id }}" name="nama_dosen" 
-                                                    value="{{ old('nama_dosen', $d->nama_dosen) }}" required>
+                                                    value="{{ old('nama_dosen', $d->nama_dosen) }}" 
+                                                    data-original-db-value="{{ $d->nama_dosen }}" required>
                                                 <div class="invalid-feedback" id="nama_error_{{ $d->dosen_id }}">
                                                     @error('nama_dosen') {{ $message }} @else Nama dosen wajib diisi @enderror
                                                 </div>
                                             </div>
-                                            
+
                                             <!-- NIDN -->
                                             <div class="mb-2 col-md-6">
                                                 <label for="nidn_dosen_{{ $d->dosen_id }}" class="form-label">NIDN/NIP</label>
                                                 <input type="text" class="form-control @error('nidn_dosen') is-invalid @enderror" 
                                                     id="nidn_dosen_{{ $d->dosen_id }}" name="nidn_dosen" 
                                                     value="{{ old('nidn_dosen', $d->nidn_dosen) }}" 
+                                                    data-original-db-value="{{ $d->nidn_dosen }}"
                                                     maxlength="10" pattern="[0-9]{10}" 
                                                     title="NIDN harus berupa angka dan tepat 10 digit" required>
                                                 <div class="invalid-feedback" id="nidn_error_{{ $d->dosen_id }}">
@@ -259,12 +261,13 @@
                                                 </div>
                                                 <small class="text-muted">NIDN harus berupa angka dan tepat 10 digit</small>
                                             </div>
-                                            
+
                                             <!-- Status Akun -->
                                             <div class="mb-2 col-md-4">
                                                 <label for="status_akun_dosen_{{ $d->dosen_id }}" class="form-label">Status Akun</label>
                                                 <select class="form-select @error('status_akun_dosen') is-invalid @enderror" 
-                                                    id="status_akun_dosen_{{ $d->dosen_id }}" name="status_akun_dosen" required>
+                                                    id="status_akun_dosen_{{ $d->dosen_id }}" name="status_akun_dosen" 
+                                                    data-original-db-value="{{ $d->status }}" required>
                                                     <option value="Active" {{ old('status_akun_dosen', $d->status) == 'Active' ? 'selected' : '' }}>Active</option>
                                                     <option value="Pending" {{ old('status_akun_dosen', $d->status) == 'Pending' ? 'selected' : '' }}>Pending</option>
                                                     <option value="Rejected" {{ old('status_akun_dosen', $d->status) == 'Rejected' ? 'selected' : '' }}>Rejected</option>
@@ -274,46 +277,49 @@
                                                     @error('status_akun_dosen') {{ $message }} @else Status akun harus dipilih @enderror
                                                 </div>
                                             </div>
-                                            
+
                                             <!-- Email -->
                                             <div class="mb-2 col-md-4">
                                                 <label for="email_dosen_{{ $d->dosen_id }}" class="form-label">Email</label>
                                                 <input type="email" class="form-control @error('email_dosen') is-invalid @enderror" 
                                                     id="email_dosen_{{ $d->dosen_id }}" name="email_dosen" 
                                                     value="{{ old('email_dosen', $d->email) }}" 
-                                                    data-original="{{ $d->email }}" required>
+                                                    data-original-db-value="{{ $d->email }}" required>
                                                 <div class="invalid-feedback" id="email_error_{{ $d->dosen_id }}">
                                                     @error('email_dosen') {{ $message }} @else Format email tidak valid @enderror
                                                 </div>
                                             </div>
-                                            
+
                                             <!-- Password -->
                                             <div class="mb-2 col-md-4">
                                                 <label for="password_dosen_{{ $d->dosen_id }}" class="form-label">Password</label>
                                                 <input type="password" class="form-control @error('password_dosen') is-invalid @enderror" 
-                                                    id="password_dosen_{{ $d->dosen_id }}" name="password_dosen">
+                                                    id="password_dosen_{{ $d->dosen_id }}" name="password_dosen"
+                                                    data-original-db-value="">
                                                 <div class="invalid-feedback" id="password_error_{{ $d->dosen_id }}">
                                                     @error('password_dosen') {{ $message }} @enderror
                                                 </div>
                                                 <small class="text-muted">Password akan diupdate otomatis jika NIDN diubah</small>
                                             </div>
-                                            
+
                                             <!-- Tanggal Lahir -->
                                             <div class="mb-2 col-md-4">
                                                 <label for="tanggal_lahir_dosen_{{ $d->dosen_id }}" class="form-label">Tanggal Lahir</label>
                                                 <input type="date" class="form-control @error('tanggal_lahir_dosen') is-invalid @enderror" 
                                                     id="tanggal_lahir_dosen_{{ $d->dosen_id }}" name="tanggal_lahir_dosen" 
-                                                    value="{{ old('tanggal_lahir_dosen', $d->tanggal_lahir_dosen) }}">
+                                                    value="{{ old('tanggal_lahir_dosen', $d->tanggal_lahir_dosen) }}"
+                                                    data-original-db-value="{{ $d->tanggal_lahir_dosen }}">
                                                 <div class="invalid-feedback" id="tanggal_lahir_error_{{ $d->dosen_id }}">
                                                     @error('tanggal_lahir_dosen') {{ $message }} @enderror
                                                 </div>
                                             </div>
-                                            
+
                                             <!-- Jenis Kelamin -->
                                             <div class="mb-2 col-md-4">
                                                 <label for="jenis_kelamin_dosen_{{ $d->dosen_id }}" class="form-label">Jenis Kelamin</label>
                                                 <select class="form-select @error('jenis_kelamin_dosen') is-invalid @enderror" 
-                                                    id="jenis_kelamin_dosen_{{ $d->dosen_id }}" name="jenis_kelamin_dosen">
+                                                    id="jenis_kelamin_dosen_{{ $d->dosen_id }}" name="jenis_kelamin_dosen"
+                                                    data-original-db-value="{{ $d->jenis_kelamin_dosen ?? '' }}">
                                                     <option value="" {{ old('jenis_kelamin_dosen', $d->jenis_kelamin_dosen) == null ? 'selected' : '' }}>Pilih Jenis Kelamin</option>
                                                     <option value="Laki-Laki" {{ old('jenis_kelamin_dosen', $d->jenis_kelamin_dosen) == 'Laki-Laki' ? 'selected' : '' }}>Laki-Laki</option>
                                                     <option value="Perempuan" {{ old('jenis_kelamin_dosen', $d->jenis_kelamin_dosen) == 'Perempuan' ? 'selected' : '' }}>Perempuan</option>
@@ -322,32 +328,17 @@
                                                     @error('jenis_kelamin_dosen') {{ $message }} @enderror
                                                 </div>
                                             </div>
-                                            
+
                                             <!-- Telepon -->
                                             <div class="mb-2 col-md-4">
                                                 <label for="telepon_dosen_{{ $d->dosen_id }}" class="form-label">Telepon</label>
                                                 <input type="text" class="form-control @error('telepon_dosen') is-invalid @enderror" 
                                                     id="telepon_dosen_{{ $d->dosen_id }}" name="telepon_dosen" 
-                                                    value="{{ old('telepon_dosen', $d->telepon_dosen) }}">
+                                                    value="{{ old('telepon_dosen', $d->telepon_dosen) }}"
+                                                    data-original-db-value="{{ $d->telepon_dosen ?? '' }}">
                                                 <div class="invalid-feedback" id="telepon_error_{{ $d->dosen_id }}">
                                                     @error('telepon_dosen') {{ $message }} @enderror
                                                 </div>
-                                            </div>
-                                            
-                                            <!-- Foto Profil -->
-                                            <div class="mb-2 col-md-6">
-                                                <label for="profile_img_dosen_{{ $d->dosen_id }}" class="form-label">Foto Profil</label>
-                                                @if ($d->profile_img_dosen)
-                                                    <div class="mb-2">
-                                                        <img src="{{ asset($d->profile_img_dosen) }}" alt="Profile Image" class="img-thumbnail" style="max-height: 100px;">
-                                                    </div>
-                                                @endif
-                                                <input type="file" class="form-control @error('profile_img_dosen') is-invalid @enderror" 
-                                                    id="profile_img_dosen_{{ $d->dosen_id }}" name="profile_img_dosen" accept="image/*">
-                                                <div class="invalid-feedback" id="profile_img_error_{{ $d->dosen_id }}">
-                                                    @error('profile_img_dosen') {{ $message }} @else Format gambar tidak valid. Gunakan jpeg, png, jpg, gif. Maksimal 2MB. @enderror
-                                                </div>
-                                                <small class="text-muted">Format gambar: jpeg, png, jpg, gif. Maksimal 2MB.</small>
                                             </div>
                                         </div>
                                     </div>
@@ -409,6 +400,6 @@
 </div>
 @endsection
 
-@section('scripts')
-<script src="{{ asset('js/Koordiantor/data_dosen.js') }}"></script>
-@endsection
+@push('scripts')
+    @vite('resources/js/Koordinator/data_dosen.js')
+@endpush

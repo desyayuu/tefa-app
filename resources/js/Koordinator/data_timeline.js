@@ -3,6 +3,8 @@ import swal from '../components';
 $(document).ready(function() {
     let currentPageTimeline = 1; 
     let perPageTimeline = 3; 
+    let proyekDates = {}; // Store project dates for validation
+    
     loadDataTimeline(1);
 
     if (window.location.hash === '#data-timeline-section') {
@@ -21,7 +23,7 @@ $(document).ready(function() {
         }, 500);
     });
 
-    // Button 
+    // Search form
     $('#searchTimelineForm').on('submit', function(e) {
         e.preventDefault();
         const searchValue = $('#searchTimeline').val();
@@ -32,7 +34,7 @@ $(document).ready(function() {
         
         window.history.pushState({}, '', currentUrl.toString());
         
-        currentPageTimeline =1;
+        currentPageTimeline = 1;
         loadDataTimeline();
         scrollToDataTimelineSection();
     });
@@ -47,6 +49,81 @@ $(document).ready(function() {
         $('#btnClearSearch').addClass('d-none');
     });
 
+    // Validation function for timeline dates against project dates
+    function validateTimelineDatesAgainstProject(tanggalMulai, tanggalSelesai) {
+        if (!proyekDates.tanggal_mulai || !proyekDates.tanggal_selesai) {
+            return { valid: true }; // If project dates not loaded, skip validation
+        }
+        
+        const proyekMulai = new Date(proyekDates.tanggal_mulai);
+        const proyekSelesai = new Date(proyekDates.tanggal_selesai);
+        const timelineMulai = new Date(tanggalMulai);
+        const timelineSelesai = new Date(tanggalSelesai);
+        
+        if (timelineMulai < proyekMulai) {
+            return {
+                valid: false,
+                field: 'tanggal_mulai_timeline',
+                message: `Tanggal mulai timeline tidak boleh sebelum tanggal mulai proyek (${formatDate(proyekDates.tanggal_mulai)})`
+            };
+        }
+        
+        if (timelineSelesai > proyekSelesai) {
+            return {
+                valid: false,
+                field: 'tanggal_selesai_timeline',
+                message: `Tanggal selesai timeline tidak boleh setelah tanggal selesai proyek (${formatDate(proyekDates.tanggal_selesai)})`
+            };
+        }
+        
+        if (timelineMulai > proyekSelesai) {
+            return {
+                valid: false,
+                field: 'tanggal_mulai_timeline',
+                message: `Tanggal mulai timeline tidak boleh setelah tanggal selesai proyek (${formatDate(proyekDates.tanggal_selesai)})`
+            };
+        }
+        
+        if (timelineSelesai < proyekMulai) {
+            return {
+                valid: false,
+                field: 'tanggal_selesai_timeline',
+                message: `Tanggal selesai timeline tidak boleh sebelum tanggal mulai proyek (${formatDate(proyekDates.tanggal_mulai)})`
+            };
+        }
+        
+        return { valid: true };
+    }
+
+    // Set date limits for input fields
+    function setDateLimits() {
+        if (proyekDates.tanggal_mulai && proyekDates.tanggal_selesai) {
+            // For add form
+            $('#tanggal_mulai_timeline').attr('min', proyekDates.tanggal_mulai);
+            $('#tanggal_mulai_timeline').attr('max', proyekDates.tanggal_selesai);
+            $('#tanggal_selesai_timeline').attr('min', proyekDates.tanggal_mulai);
+            $('#tanggal_selesai_timeline').attr('max', proyekDates.tanggal_selesai);
+            
+            // For edit form
+            $('#edit_tanggal_mulai_timeline').attr('min', proyekDates.tanggal_mulai);
+            $('#edit_tanggal_mulai_timeline').attr('max', proyekDates.tanggal_selesai);
+            $('#edit_tanggal_selesai_timeline').attr('min', proyekDates.tanggal_mulai);
+            $('#edit_tanggal_selesai_timeline').attr('max', proyekDates.tanggal_selesai);
+        }
+    }
+
+    // Update date limits when start date changes
+    $('#tanggal_mulai_timeline, #edit_tanggal_mulai_timeline').on('change', function() {
+        const startDate = $(this).val();
+        const isEdit = $(this).attr('id').includes('edit');
+        const endDateField = isEdit ? '#edit_tanggal_selesai_timeline' : '#tanggal_selesai_timeline';
+        
+        if (startDate) {
+            $(endDateField).attr('min', startDate);
+        }
+    });
+
+    // Edit form submission
     $("#formEditTimeline").on('submit', function(e) {
         e.preventDefault();
         
@@ -89,6 +166,16 @@ $(document).ready(function() {
             hasErrors = true;
         }
         
+        // Validate against project dates
+        if (tanggalMulai && tanggalSelesai) {
+            const dateValidation = validateTimelineDatesAgainstProject(tanggalMulai, tanggalSelesai);
+            if (!dateValidation.valid) {
+                $(`#edit_${dateValidation.field}_error`).text(dateValidation.message);
+                $(`#edit_${dateValidation.field}`).addClass("is-invalid");
+                hasErrors = true;
+            }
+        }
+        
         if (hasErrors) {
             return false;
         }
@@ -113,7 +200,6 @@ $(document).ready(function() {
             },
             success: function(response) {
                 if (response.success) {
-                    
                     swal.successMessage(response.message).then(() => {
                         loadDataTimeline();
                         $('#modalEditTimeline').modal('hide');
@@ -141,7 +227,7 @@ $(document).ready(function() {
                                 $(`#${errorField}`).addClass('is-invalid');
                             });
                         } else {
-                            $("#edit_form_error").removeClass('d-none').text('Terjadi kesalahan. Silakan coba lagi.');
+                            $("#edit_form_error").removeClass('d-none').text(response.message || 'Terjadi kesalahan. Silakan coba lagi.');
                         }
                     } catch (e) {
                         $("#edit_form_error").removeClass('d-none').text('Terjadi kesalahan. Silakan coba lagi.');
@@ -208,7 +294,6 @@ $(document).ready(function() {
             },
             success: function(response) {
                 $("#tableDataTimeline tbody").empty();
-            
                 
                 if (typeof response === 'string' && response.indexOf('<!DOCTYPE html>') >= 0) {
                     console.error("Received HTML response instead of JSON");
@@ -217,6 +302,12 @@ $(document).ready(function() {
                 }
                 
                 if (response.success && response.data) {
+                    // Store project dates for validation
+                    if (response.proyek_dates) {
+                        proyekDates = response.proyek_dates;
+                        setDateLimits();
+                    }
+                    
                     if (Array.isArray(response.data) && response.data.length > 0) {
                         if (response.pagination) {
                             updatePaginationTimelineInfo(
@@ -297,6 +388,12 @@ $(document).ready(function() {
                     // Pulihkan konten modal
                     modalBody.html(originalContent);
                     
+                    // Store project dates if available
+                    if (response.proyek_dates) {
+                        proyekDates = response.proyek_dates;
+                        setDateLimits();
+                    }
+                    
                     // Isi form dengan data
                     const data = response.data;
                     $("#edit_nama_timeline").val(data.nama_timeline_proyek);
@@ -310,7 +407,6 @@ $(document).ready(function() {
             },
             error: function(xhr) {
                 console.error("Error loading timeline detail:", xhr.responseText);
-
                 swal.errorMessage('Terjadi kesalahan saat memuat data timeline');
                 $('#modalEditTimeline').modal('hide');
             }
@@ -419,7 +515,6 @@ $(document).ready(function() {
             },
             error: function(xhr) {
                 console.error("Error deleting timeline:", xhr.responseText);
-
                 swal.errorMessage('Terjadi kesalahan saat menghapus timeline');
             }
         });
@@ -485,7 +580,6 @@ $(document).ready(function() {
         const deskripsi = $("#deskripsi_timeline").val() || '';
         
         // Validasi sederhana
-        let errors = {};
         let hasErrors = false;
         
         if (!namaTimeline) {
@@ -510,6 +604,16 @@ $(document).ready(function() {
             $("#tanggal_selesai_timeline").addClass("is-invalid");
             $("#tanggal_selesai_timeline_error").text("Tanggal selesai harus setelah tanggal mulai");
             hasErrors = true;
+        }
+        
+        // Validate against project dates
+        if (tanggalMulai && tanggalSelesai) {
+            const dateValidation = validateTimelineDatesAgainstProject(tanggalMulai, tanggalSelesai);
+            if (!dateValidation.valid) {
+                $(`#${dateValidation.field}_error`).text(dateValidation.message);
+                $(`#${dateValidation.field}`).addClass("is-invalid");
+                hasErrors = true;
+            }
         }
         
         if (hasErrors) {
@@ -545,7 +649,7 @@ $(document).ready(function() {
         $("#nama_timeline").val('');
         $("#tanggal_mulai_timeline").val('');
         $("#tanggal_selesai_timeline").val('');
-        $("#deskripsi").val('');
+        $("#deskripsi_timeline").val('');
         resetFormErrors();
     }
     
@@ -642,7 +746,6 @@ $(document).ready(function() {
         const isSingle = $("#isSingleTimeline").val() === "1";
         const formData = new FormData(this);
         
-        
         // Validate based on mode (single or multiple)
         if (isSingle) {
             // Validate input for single timeline
@@ -676,6 +779,16 @@ $(document).ready(function() {
                 hasErrors = true;
             }
             
+            // Validate against project dates
+            if (tanggalMulai && tanggalSelesai) {
+                const dateValidation = validateTimelineDatesAgainstProject(tanggalMulai, tanggalSelesai);
+                if (!dateValidation.valid) {
+                    $(`#${dateValidation.field}_error`).text(dateValidation.message);
+                    $(`#${dateValidation.field}`).addClass("is-invalid");
+                    hasErrors = true;
+                }
+            }
+            
             if (hasErrors) {
                 $(this).data('submitting', false);
                 return false;
@@ -684,6 +797,24 @@ $(document).ready(function() {
             // Validate for multiple timeline
             if (timelineCollection.length === 0) {
                 $("#form_timeline_error").removeClass('d-none').text('Anda belum menambahkan timeline ke daftar');
+                $(this).data('submitting', false);
+                return false;
+            }
+            
+            // Validate all items in collection against project dates
+            let collectionErrors = [];
+            timelineCollection.forEach((item, index) => {
+                const dateValidation = validateTimelineDatesAgainstProject(
+                    item.tanggal_mulai_timeline, 
+                    item.tanggal_selesai_timeline
+                );
+                if (!dateValidation.valid) {
+                    collectionErrors.push(`Timeline ke-${index + 1}: ${dateValidation.message}`);
+                }
+            });
+            
+            if (collectionErrors.length > 0) {
+                $("#form_timeline_error").removeClass('d-none').html(collectionErrors.join('<br>'));
                 $(this).data('submitting', false);
                 return false;
             }
@@ -716,13 +847,10 @@ $(document).ready(function() {
                         timelineCollection = [];
                         $("#timelineJsonData").val('[]');
                         $("#isSingleTimeline").val("1");
-                        
+                        renderTimelineCollection();
 
                         $('#modalTambahTimeline').modal('hide');
-                        
-
                         $(self).data('submitting', false);
-                        
 
                         setTimeout(function() {
                             currentPageTimeline = 1;
@@ -747,7 +875,7 @@ $(document).ready(function() {
                                 $(`#${field}`).addClass('is-invalid');
                             });
                         } else {
-                            $("#form_timeline_error").removeClass('d-none').text('Terjadi kesalahan. Silakan coba lagi.');
+                            $("#form_timeline_error").removeClass('d-none').text(response.message || 'Terjadi kesalahan. Silakan coba lagi.');
                         }
                     } catch (e) {
                         $("#form_timeline_error").removeClass('d-none').text('Terjadi kesalahan. Silakan coba lagi.');
@@ -779,82 +907,30 @@ $(document).ready(function() {
         });
     }
     
-    function resetTimelineForm() {
-        $("#nama_timeline").val('');
-        $("#tanggal_mulai_timeline").val('');
-        $("#tanggal_selesai_timeline").val('');
-        $("#deskripsi_timeline").val('');
-        resetFormErrors();
-    }
-
-    function resetFormErrors() {
-        $(".is-invalid").removeClass("is-invalid");
-        $(".invalid-feedback").empty(); 
-        $("#form_timeline_error").addClass('d-none').empty(); 
-    }
-
-    function renderTimelineCollection() {
-        const tbody = $("#daftarTimeline");
-        
-        if (timelineCollection.length === 0) {
-            tbody.html(`
-                <tr id="emptyRowTimeline">
-                    <td colspan="4" class="text-center">Belum ada timeline yang ditambahkan ke daftar</td>
-                </tr>
-            `);
-            return;
+    // Modal add timeline opened - set date limits
+    $('#modalTambahTimeline').on('shown.bs.modal', function () {
+        // Load project dates if not already loaded
+        if (!proyekDates.tanggal_mulai || !proyekDates.tanggal_selesai) {
+            const proyekId = $('input[name="proyek_id"]').val();
+            if (proyekId) {
+                // Make a quick AJAX call to get project dates
+                $.ajax({
+                    url: `/koordinator/proyek/${proyekId}/timeline`,
+                    type: 'GET',
+                    data: { page: 1, per_page_timeline: 1 },
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success: function(response) {
+                        if (response.success && response.proyek_dates) {
+                            proyekDates = response.proyek_dates;
+                            setDateLimits();
+                        }
+                    }
+                });
+            }
+        } else {
+            setDateLimits();
         }
-        
-        // Hapus row kosong jika ada
-        $("#emptyRowTimeline").remove();
-        
-        // Clear tbody dan re-render semua item
-        tbody.empty();
-        
-        timelineCollection.forEach((item, index) => {
-            const formattedMulai = formatDate(item.tanggal_mulai_timeline);
-            const formattedSelesai = formatDate(item.tanggal_selesai_timeline);
-            
-            tbody.append(`
-                <tr>
-                    <td>${item.nama_timeline}</td>
-                    <td>${formattedMulai}</td>
-                    <td>${formattedSelesai}</td>
-                    <td>
-                        <button type="button" class="btn btn-action-delete btn-remove-timeline" data-id="${item.id}">
-                            <svg width="20" height="20" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path fill-rule="evenodd" clip-rule="evenodd" d="M21.5896 12.4848C21.5896 17.6563 17.459 21.8486 12.3636 21.8486C7.26829 21.8486 3.1377 17.6563 3.1377 12.4848C3.1377 7.31339 7.26829 3.12109 12.3636 3.12109C17.459 3.12109 21.5896 7.31339 21.5896 12.4848ZM7.56137 17.3588C7.17375 16.9654 7.17375 16.3276 7.56137 15.9342L10.9599 12.4848L7.56137 9.03551C7.17375 8.6421 7.17375 8.00426 7.56137 7.61085C7.94899 7.21744 8.57744 7.21744 8.96506 7.61085L12.3636 11.0602L15.7622 7.61085C16.1498 7.21744 16.7783 7.21744 17.1659 7.61085C17.5535 8.00426 17.5535 8.6421 17.1659 9.03551L13.7673 12.4848L17.1659 15.9342C17.5535 16.3276 17.5535 16.9654 17.1659 17.3588C16.7783 17.7522 16.1498 17.7522 15.7622 17.3588L12.3636 13.9095L8.96506 17.3588C8.57744 17.7522 7.94899 17.7522 7.56137 17.3588Z" fill="#E56F8C"/>
-                            </svg>
-                        </button>
-                    </td>
-                </tr>
-            `);
-        });
-        
-        // Attach click event for remove button
-        $(".btn-remove-timeline").off('click').on('click', function() {
-            const id = $(this).data('id');
-            removeTimelineItem(id);
-        }); 
-    }
-
-    function removeTimelineItem(id) {
-        timelineCollection = timelineCollection.filter(item => item.id !== id);
-        $("#timelineJsonData").val(JSON.stringify(timelineCollection));
-        
-        // Set is_single ke 1 jika tidak ada item
-        if (timelineCollection.length === 0) {
-            $("#isSingleTimeline").val("1");
-        }
-        
-        renderTimelineCollection();
-    }
-
-    $('#modalTambahTimeline').on('hidden.bs.modal', function () {
-        resetTimelineForm();
-        timelineCollection = [];
-        $("#timelineJsonData").val('[]');
-        $("#isSingleTimeline").val("1");
-        renderTimelineCollection();
     });
-}); 
+});

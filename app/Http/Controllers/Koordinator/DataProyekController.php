@@ -65,8 +65,9 @@ class DataProyekController extends Controller
             });
         }
         
-        // Gunakan paginate untuk menghasilkan objek paginasi yang benar
-        $proyek = $query->orderBy('m_proyek.created_at', 'desc')->paginate(10);
+        // Mengurutkan Tmapilan sesuai statsu proyek
+        $proyek = $query->orderByRaw("FIELD (m_proyek.status_proyek, 'In Progres', 'Inisiasi', 'Done')")
+                        ->paginate(10);
         $search = $request->search;
         
         return view('pages.Koordinator.DataProyek.table_data_proyek', compact(
