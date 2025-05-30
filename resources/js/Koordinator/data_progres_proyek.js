@@ -305,24 +305,28 @@ document.addEventListener('DOMContentLoaded', function () {
         if (typeof $.fn.select2 !== 'undefined') {
             try {
                 $('.select2-edit-leader').select2({
+                    theme: 'bootstrap-5',
                     dropdownParent: $('#modalEditProgres'),
                     placeholder: 'Pilih Project Leader',
                     width: '100%'
                 });
                 
                 $('.select2-edit-dosen').select2({
+                    theme: 'bootstrap-5',
                     dropdownParent: $('#modalEditProgres'),
                     placeholder: 'Pilih Dosen',
                     width: '100%'
                 });
                 
                 $('.select2-edit-profesional').select2({
+                    theme: 'bootstrap-5',
                     dropdownParent: $('#modalEditProgres'),
                     placeholder: 'Pilih Profesional',
                     width: '100%'
                 });
                 
                 $('.select2-edit-mahasiswa').select2({
+                    theme: 'bootstrap-5',
                     dropdownParent: $('#modalEditProgres'),
                     placeholder: 'Pilih Mahasiswa',
                     width: '100%'
@@ -642,24 +646,28 @@ document.addEventListener('DOMContentLoaded', function () {
         if (typeof $.fn.select2 !== 'undefined') {
             try {
                 $('.select2-assign-leader').select2({
+                    theme: 'bootstrap-5',
                     dropdownParent: $('#modalTambahProgresFromKoor'),
                     placeholder: 'Pilih Project Leader',
                     width: '100%'
                 });
                 
                 $('.select2-assign-dosen').select2({
+                    theme: 'bootstrap-5',
                     dropdownParent: $('#modalTambahProgresFromKoor'),
                     placeholder: 'Pilih Dosen',
                     width: '100%'
                 });
                 
                 $('.select2-assign-profesional').select2({
+                    theme: 'bootstrap-5',
                     dropdownParent: $('#modalTambahProgresFromKoor'),
                     placeholder: 'Pilih Profesional',
                     width: '100%'
                 });
                 
                 $('.select2-assign-mahasiswa').select2({
+                    theme: 'bootstrap-5',
                     dropdownParent: $('#modalTambahProgresFromKoor'),
                     placeholder: 'Pilih Mahasiswa',
                     width: '100%'
@@ -1015,18 +1023,21 @@ document.addEventListener('DOMContentLoaded', function () {
                             try {
                                 // Initialize each Select2 individually
                                 $('.select2-assign-leader').select2({
+                                    theme: 'bootstrap-5',
                                     dropdownParent: $('#modalTambahProgresFromKoor'),
                                     placeholder: 'Pilih Project Leader',
                                     width: '100%'
                                 });
                                 
                                 $('.select2-assign-dosen').select2({
+                                    theme: 'bootstrap-5',
                                     dropdownParent: $('#modalTambahProgresFromKoor'),
                                     placeholder: 'Pilih Dosen',
                                     width: '100%'
                                 });
                                 
                                 $('.select2-assign-profesional').select2({
+                                    theme: 'bootstrap-5',
                                     dropdownParent: $('#modalTambahProgresFromKoor'),
                                     placeholder: 'Pilih Profesional',
                                     width: '100%'
@@ -1034,6 +1045,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                 
                                 // Initialize mahasiswa select
                                 $('.select2-assign-mahasiswa').select2({
+                                    theme: 'bootstrap-5',
                                     dropdownParent: $('#modalTambahProgresFromKoor'),
                                     placeholder: 'Pilih Mahasiswa',
                                     width: '100%'

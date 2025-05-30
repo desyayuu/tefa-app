@@ -106,7 +106,7 @@
                         
                         <!-- Assigned To - Two Step -->
                         <div class="mb-3 col-md-6">
-                            <label for="assigned_type" class="form-label">Ditugaskan Kepada</label>
+                            <label for="assigned_type" class="form-label">Ditugaskan Kepada <span class="text-danger">*</span></label>
                             <select class="form-select" id="assigned_type">
                                 <option value="" selected>Pilih Tipe</option>
                                 <option value="leader">Project Leader</option>
@@ -119,7 +119,7 @@
                         
                         <!-- Leader Section -->
                         <div class="mb-3 col-md-6 d-none" id="leader_section">
-                            <label for="leder_assign_id" class="form-label">Pilih Project Leader</label>
+                            <label for="leder_assign_id" class="form-label">Pilih Project Leader <span class="text-danger">*</span></label>
                             <select class="form-select select2-assign-leader" id="leder_assign_id">
                                 <option value="">Cari nama...</option>
                             </select>
@@ -128,7 +128,7 @@
                         
                         <!-- Dosen Section -->
                         <div class="mb-3 col-md-6 d-none" id="dosen_section">
-                            <label for="dosen_assign_id" class="form-label">Pilih Dosen</label>
+                            <label for="dosen_assign_id" class="form-label">Pilih Dosen <span class="text-danger">*</span></label>
                             <select class="form-select select2-assign-dosen" id="dosen_assign_id">
                                 <option value="">Cari nama...</option>
                             </select>
@@ -137,7 +137,7 @@
                         
                         <!-- Profesional Section -->
                         <div class="mb-3 col-md-6 d-none" id="profesional_section">
-                            <label for="profesional_assign_id" class="form-label">Pilih Profesional</label>
+                            <label for="profesional_assign_id" class="form-label">Pilih Profesional <span class="text-danger">*</span></label>
                             <select class="form-select select2-assign-profesional" id="profesional_assign_id">
                                 <option value="">Cari nama...</option>
                             </select>
@@ -146,7 +146,7 @@
                         
                         <!-- Mahasiswa Section -->
                         <div class="mb-3 col-md-6 d-none" id="mahasiswa_section">
-                            <label for="mahasiswa_assign_id" class="form-label">Pilih Mahasiswa</label>
+                            <label for="mahasiswa_assign_id" class="form-label">Pilih Mahasiswa <span class="text-danger">*</span></label>
                             <select class="form-select select2-assign-mahasiswa" id="mahasiswa_assign_id">
                                 
                             </select>
@@ -255,7 +255,7 @@
                         
                         <!-- Assigned To - Two Step -->
                         <div class="mb-3 col-md-6">
-                            <label for="edit_assigned_type" class="form-label">Ditugaskan Kepada</label>
+                            <label for="edit_assigned_type" class="form-label">Ditugaskan Kepada <span class="text-danger">*</span></label>
                             <select class="form-select" id="edit_assigned_type" name="assigned_type">
                                 <option value="" selected>Pilih Tipe</option>
                                 <option value="leader">Project Leader</option>
@@ -268,7 +268,7 @@
                         
                         <!-- Leader Section -->
                         <div class="mb-3 col-md-6 d-none" id="edit_leader_section">
-                            <label for="edit_leder_assign_id" class="form-label">Pilih Project Leader</label>
+                            <label for="edit_leder_assign_id" class="form-label">Pilih Project Leader <span class="text-danger">*</span></label>
                             <select class="form-select select2-edit-leader" id="edit_leder_assign_id">
                                 <option value="">Cari nama...</option>
                             </select>
@@ -277,7 +277,7 @@
                         
                         <!-- Dosen Section -->
                         <div class="mb-3 col-md-6 d-none" id="edit_dosen_section">
-                            <label for="edit_dosen_assign_id" class="form-label">Pilih Dosen</label>
+                            <label for="edit_dosen_assign_id" class="form-label">Pilih Dosen <span class="text-danger">*</span></label>
                             <select class="form-select select2-edit-dosen" id="edit_dosen_assign_id">
                                 <option value="">Cari nama...</option>
                             </select>
@@ -286,7 +286,7 @@
                         
                         <!-- Profesional Section -->
                         <div class="mb-3 col-md-6 d-none" id="edit_profesional_section">
-                            <label for="edit_profesional_assign_id" class="form-label">Pilih Profesional</label>
+                            <label for="edit_profesional_assign_id" class="form-label">Pilih Profesional <span class="text-danger">*</span></label>
                             <select class="form-select select2-edit-profesional" id="edit_profesional_assign_id">
                                 <option value="">Cari nama...</option>
                             </select>
@@ -295,7 +295,7 @@
                         
                         <!-- Mahasiswa Section -->
                         <div class="mb-3 col-md-6 d-none" id="edit_mahasiswa_section">
-                            <label for="edit_mahasiswa_assign_id" class="form-label">Pilih Mahasiswa</label>
+                            <label for="edit_mahasiswa_assign_id" class="form-label">Pilih Mahasiswa <span class="text-danger">*</span></label>
                             <select class="form-select select2-edit-mahasiswa" id="edit_mahasiswa_assign_id">
                                 <option value="">Cari nama...</option>
                             </select>
