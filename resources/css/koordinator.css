@@ -422,6 +422,7 @@ body {
 
 /* Input style */
 .form-control {
+    font-size: 14px;
     border-radius: 6px;
     border: 1px solid #dee2e6;
 }

@@ -1,7 +1,382 @@
 document.addEventListener('DOMContentLoaded', function() {
     autoCloseAlerts();
     tambahMahasiswa();
+    setupFileValidation();
+    setupFormValidation();
+
 });
+
+function setupFileValidation() {
+    // File input elements
+    const fileInputs = [
+        'profile_img_mahasiswa',
+        'cv_mahasiswa', 
+        'ktp_mahasiswa',
+        'ktm_mahasiswa'
+    ];
+
+    fileInputs.forEach(inputId => {
+        const fileInput = document.getElementById(inputId);
+        if (fileInput) {
+            fileInput.addEventListener('change', function() {
+            });
+        }
+    });
+}
+
+function validateFileUpload(fileInput) {
+    const inputId = fileInput.id;
+    
+    // Reset error state
+    fileInput.classList.remove('is-invalid');
+    const errorElement = document.getElementById(inputId + '_error');
+    if (errorElement) {
+        errorElement.textContent = '';
+    }
+    
+    // Check if file is selected
+    if (!fileInput.files || fileInput.files.length === 0) {
+        return true; // No file is fine since it's optional
+    }
+    
+    const file = fileInput.files[0];
+    console.log("File details:", {
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        inputId: inputId
+    });
+    
+    // Validate file size (max 2MB)
+    const maxSize = 2 * 1024 * 1024; // 2MB in bytes
+    if (file.size > maxSize) {
+        console.error("File too large:", file.size);
+        fileInput.classList.add('is-invalid');
+        if (errorElement) {
+            errorElement.textContent = 'Ukuran file maksimal 2MB';
+        }
+        return false;
+    }
+    
+    // Validate file extension based on field type
+    const fileName = file.name.toLowerCase();
+    const extension = fileName.split('.').pop();
+    let allowedExtensions = [];
+    let errorMessage = '';
+    
+    switch (inputId) {
+        case 'profile_img_mahasiswa':
+            allowedExtensions = ['jpg', 'jpeg', 'png', 'gif'];
+            errorMessage = 'Format file tidak didukung. Format yang diizinkan: JPG, JPEG, PNG, GIF';
+            break;
+        case 'cv_mahasiswa':
+            allowedExtensions = ['pdf', 'doc', 'docx'];
+            errorMessage = 'Format file tidak didukung. Format yang diizinkan: PDF, DOC, DOCX';
+            break;
+        case 'ktp_mahasiswa':
+        case 'ktm_mahasiswa':
+            allowedExtensions = ['pdf', 'jpg', 'jpeg', 'png'];
+            errorMessage = 'Format file tidak didukung. Format yang diizinkan: PDF, JPG, JPEG, PNG';
+            break;
+    }
+    
+    console.log("File validation:", {
+        extension: extension,
+        allowedExtensions: allowedExtensions,
+        isAllowed: allowedExtensions.includes(extension)
+    });
+    
+    if (!allowedExtensions.includes(extension)) {
+        fileInput.classList.add('is-invalid');
+        if (errorElement) {
+            errorElement.textContent = errorMessage;
+        }
+        return false;
+    }
+    
+    return true;
+}
+
+function clearFilePreview(inputId) {
+    const fileInput = document.getElementById(inputId);
+    const previewContainerId = inputId.replace('_mahasiswa', '_preview_container');
+    const previewContainer = document.getElementById(previewContainerId);
+    
+    if (fileInput) {
+        fileInput.value = '';
+    }
+    
+    if (previewContainer) {
+        previewContainer.innerHTML = '';
+    }
+    
+    console.log('File preview cleared for:', inputId);
+}
+
+function getFileIconHtml(extension) {
+    const iconData = getFileIconData(extension);
+    return `<i class="${iconData.icon}" style="color: ${iconData.color}; font-size: 1.5em;"></i>`;
+}
+
+
+function getFileIconData(extension) {
+    switch (extension) {
+        case 'pdf':
+            return { icon: 'bi bi-file-earmark-pdf', color: '#dc3545' };
+        case 'doc':
+        case 'docx':
+            return { icon: 'bi bi-file-earmark-word', color: '#2b579a' };
+        case 'jpg':
+        case 'jpeg':
+        case 'png':
+        case 'gif':
+            return { icon: 'bi bi-file-earmark-image', color: '#6f42c1' };
+        default:
+            return { icon: 'bi bi-file-earmark', color: '#6c757d' };
+    }
+}
+
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+
+function setupFormValidation() {
+    const form = document.getElementById('formEditMahasiswa');
+    if (!form) return;
+
+    // Store original values for validation
+    storeOriginalValues(form);
+
+    // Setup real-time validation
+    setupRealTimeValidation(form);
+
+        async function validateFormAsync() {
+        let isValid = true;
+        
+        // Clear previous errors
+        document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+        document.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
+        document.getElementById('form_mahasiswa_error').classList.add('d-none');
+        
+        const mahasiswaId = document.getElementById('mahasiswa_id').value;
+        const originalNim = document.getElementById('nim_mahasiswa').getAttribute('data-original-value');
+        const originalEmail = document.getElementById('email_mahasiswa').getAttribute('data-original-value');
+        
+        // Validate required fields
+        const namaInput = document.getElementById('nama_mahasiswa');
+        if (!validateNama(namaInput)) {
+            isValid = false;
+        }
+        
+        const nimInput = document.getElementById('nim_mahasiswa');
+        if (!(await validateNim(nimInput, mahasiswaId, originalNim))) {
+            isValid = false;
+        }
+        
+        const emailInput = document.getElementById('email_mahasiswa');
+        if (!(await validateEmail(emailInput, mahasiswaId, originalEmail))) {
+            isValid = false;
+        }
+        
+        const statusInput = document.getElementById('status_akun_mahasiswa');
+        if (!statusInput.value) {
+            statusInput.classList.add('is-invalid');
+            const errorElement = document.getElementById('status_akun_mahasiswa_error');
+            if (errorElement) {
+                errorElement.textContent = 'Status akun harus dipilih';
+            }
+            isValid = false;
+        }
+        
+        // Validate file uploads
+        const fileInputs = ['profile_img_mahasiswa', 'cv_mahasiswa', 'ktp_mahasiswa', 'ktm_mahasiswa'];
+        fileInputs.forEach(inputId => {
+            const fileInput = document.getElementById(inputId);
+            if (fileInput && fileInput.files.length > 0) {
+                if (!validateFileUpload(fileInput)) {
+                    isValid = false;
+                }
+            }
+        });
+        
+        return isValid;
+    }
+
+    // Handle form submission
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        // Show loading state
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalBtnText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Menyimpan...';
+        
+        try {
+            // Validate form
+            const isValid = await validateFormAsync();
+            
+            if (isValid) {
+                // Submit form if validation passes
+                form.submit();
+            } else {
+                // Restore button state if validation fails
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+                
+                // Focus on first invalid field
+                setTimeout(() => {
+                    const firstInvalid = form.querySelector('.is-invalid');
+                    if (firstInvalid) {
+                        firstInvalid.focus();
+                    }
+                }, 100);
+            }
+        } catch (error) {
+            console.error('Form validation error:', error);
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnText;
+            
+            const errorContainer = document.getElementById('form_mahasiswa_error');
+            if (errorContainer) {
+                errorContainer.textContent = 'Terjadi kesalahan saat validasi. Silakan coba lagi.';
+                errorContainer.classList.remove('d-none');
+            }
+        }
+    });
+}
+
+function storeOriginalValues(form) {
+    const inputs = form.querySelectorAll('input:not([type="file"]), select, textarea');
+    inputs.forEach(input => {
+        input.setAttribute('data-original-value', input.value);
+    });
+}
+
+function setupRealTimeValidation(form) {
+    const mahasiswaId = document.getElementById('mahasiswa_id').value;
+    const originalNim = document.getElementById('nim_mahasiswa').getAttribute('data-original-value');
+    const originalEmail = document.getElementById('email_mahasiswa').getAttribute('data-original-value');
+    
+    // Validate name on blur
+    const namaInput = document.getElementById('nama_mahasiswa');
+    if (namaInput) {
+        namaInput.addEventListener('blur', function() {
+            validateNama(this);
+        });
+    }
+
+    // Validate NIM on blur
+    const nimInput = document.getElementById('nim_mahasiswa');
+    if (nimInput) {
+        nimInput.addEventListener('blur', async function() {
+            await validateNim(this, mahasiswaId, originalNim);
+        });
+    }
+
+    // Validate email on blur
+    const emailInput = document.getElementById('email_mahasiswa');
+    if (emailInput) {
+        emailInput.addEventListener('blur', async function() {
+            await validateEmail(this, mahasiswaId, originalEmail);
+        });
+    }
+
+    // Clear validation errors on input
+    form.querySelectorAll('input, select, textarea').forEach(input => {
+        input.addEventListener('input', function() {
+            this.classList.remove('is-invalid');
+            const errorElement = document.getElementById(this.id + '_error');
+            if (errorElement) {
+                errorElement.textContent = '';
+            }
+        });
+    });
+}
+
+function validateNama(namaInput) {
+    if (!namaInput.value.trim()) {
+        namaInput.classList.add('is-invalid');
+        const errorElement = document.getElementById('nama_mahasiswa_error');
+        if (errorElement) {
+            errorElement.textContent = 'Nama mahasiswa wajib diisi';
+        }
+        return false;
+    } else {
+        namaInput.classList.remove('is-invalid');
+        const errorElement = document.getElementById('nama_mahasiswa_error');
+        if (errorElement) {
+            errorElement.textContent = '';
+        }
+        return true;
+    }
+}
+
+function validateNimFormat(nimInput) {
+    const nimValue = nimInput.value.trim();
+    
+    if (!nimValue) {
+        nimInput.classList.add('is-invalid');
+        const errorElement = document.getElementById('nim_mahasiswa_error');
+        if (errorElement) {
+            errorElement.textContent = 'NIM wajib diisi';
+        }
+        return false;
+    }
+    
+    if (!/^\d{10}$/.test(nimValue)) {
+        nimInput.classList.add('is-invalid');
+        const errorElement = document.getElementById('nim_mahasiswa_error');
+        if (errorElement) {
+            errorElement.textContent = 'NIM harus berupa angka dan tepat 10 digit';
+        }
+        return false;
+    }
+    
+    nimInput.classList.remove('is-invalid');
+    const errorElement = document.getElementById('nim_mahasiswa_error');
+    if (errorElement) {
+        errorElement.textContent = '';
+    }
+    return true;
+}
+
+function validateEmailFormat(emailInput) {
+    const emailValue = emailInput.value.trim();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    
+    if (!emailValue) {
+        emailInput.classList.add('is-invalid');
+        const errorElement = document.getElementById('email_mahasiswa_error');
+        if (errorElement) {
+            errorElement.textContent = 'Email wajib diisi';
+        }
+        return false;
+    }
+    
+    if (!emailRegex.test(emailValue)) {
+        emailInput.classList.add('is-invalid');
+        const errorElement = document.getElementById('email_mahasiswa_error');
+        if (errorElement) {
+            errorElement.textContent = 'Format email tidak valid';
+        }
+        return false;
+    }
+    
+    emailInput.classList.remove('is-invalid');
+    const errorElement = document.getElementById('email_mahasiswa_error');
+    if (errorElement) {
+        errorElement.textContent = '';
+    }
+    return true;
+}
 
 
 function resetFormFieldsToOriginal() {
@@ -112,114 +487,6 @@ function clearEmptyDateFields(form) {
             field.removeAttribute('name');
         }
     });
-    return true;
-}
-
-// Validate name field 
-function validateNama(namaInput) {
-    if (!namaInput.value.trim()) {
-        namaInput.classList.add('is-invalid');
-        const errorElement = namaInput.nextElementSibling;
-        if (errorElement && errorElement.classList.contains('invalid-feedback')) {
-            errorElement.textContent = 'Nama mahasiswa wajib diisi';
-        } else {
-            const errorDiv = document.createElement('div');
-            errorDiv.classList.add('invalid-feedback');
-            errorDiv.textContent = 'Nama mahasiswa wajib diisi';
-            namaInput.parentNode.appendChild(errorDiv);
-        }
-        return false;
-    } else {
-        namaInput.classList.remove('is-invalid');
-        const errorElement = namaInput.nextElementSibling;
-        if (errorElement && errorElement.classList.contains('invalid-feedback')) {
-            errorElement.textContent = '';
-        }
-        return true;
-    }
-}
-
-// Validate NIM format
-function validateNimFormat(nimInput) {
-    const nimValue = nimInput.value.trim();
-    
-    // Validasi NIM tidak boleh kosong
-    if (!nimValue) {
-        nimInput.classList.add('is-invalid');
-        const errorElement = nimInput.nextElementSibling;
-        if (errorElement && errorElement.classList.contains('invalid-feedback')) {
-            errorElement.textContent = 'NIM wajib diisi';
-        } else {
-            const errorDiv = document.createElement('div');
-            errorDiv.classList.add('invalid-feedback');
-            errorDiv.textContent = 'NIM wajib diisi';
-            nimInput.parentNode.appendChild(errorDiv);
-        }
-        return false;
-    }
-    
-    // Validasi NIM harus berupa angka dan tepat 10 digit
-    if (!/^\d{10}$/.test(nimValue)) {
-        nimInput.classList.add('is-invalid');
-        const errorElement = nimInput.nextElementSibling;
-        if (errorElement && errorElement.classList.contains('invalid-feedback')) {
-            errorElement.textContent = 'NIM harus berupa angka dan tepat 10 digit';
-        } else {
-            const errorDiv = document.createElement('div');
-            errorDiv.classList.add('invalid-feedback');
-            errorDiv.textContent = 'NIM harus berupa angka dan tepat 10 digit';
-            nimInput.parentNode.appendChild(errorDiv);
-        }
-        return false;
-    }
-    
-    nimInput.classList.remove('is-invalid');
-    const errorElement = nimInput.nextElementSibling;
-    if (errorElement && errorElement.classList.contains('invalid-feedback')) {
-        errorElement.textContent = '';
-    }
-    return true;
-}
-
-// Validate email format
-function validateEmailFormat(emailInput) {
-    const emailValue = emailInput.value.trim();
-    
-    // Validasi email tidak boleh kosong
-    if (!emailValue) {
-        emailInput.classList.add('is-invalid');
-        const errorElement = emailInput.nextElementSibling;
-        if (errorElement && errorElement.classList.contains('invalid-feedback')) {
-            errorElement.textContent = 'Email wajib diisi';
-        } else {
-            const errorDiv = document.createElement('div');
-            errorDiv.classList.add('invalid-feedback');
-            errorDiv.textContent = 'Email wajib diisi';
-            emailInput.parentNode.appendChild(errorDiv);
-        }
-        return false;
-    }
-    
-    // Validasi format email
-    if (!isValidEmail(emailValue)) {
-        emailInput.classList.add('is-invalid');
-        const errorElement = emailInput.nextElementSibling;
-        if (errorElement && errorElement.classList.contains('invalid-feedback')) {
-            errorElement.textContent = 'Format email tidak valid';
-        } else {
-            const errorDiv = document.createElement('div');
-            errorDiv.classList.add('invalid-feedback');
-            errorDiv.textContent = 'Format email tidak valid';
-            emailInput.parentNode.appendChild(errorDiv);
-        }
-        return false;
-    }
-    
-    emailInput.classList.remove('is-invalid');
-    const errorElement = emailInput.nextElementSibling;
-    if (errorElement && errorElement.classList.contains('invalid-feedback')) {
-        errorElement.textContent = '';
-    }
     return true;
 }
 
@@ -667,119 +934,53 @@ function tambahMahasiswa() {
     // Validate form for adding new mahasiswa
     async function validateFormAsync() {
         let isValid = true;
-        resetErrorMessages();
-    
-        // Validate Name
-        if (namaMahasiswa && !namaMahasiswa.value.trim()) {
-            namaMahasiswa.classList.add('is-invalid');
-            if (namaError) namaError.textContent = "Nama mahasiswa wajib diisi";
+        
+        // Clear previous errors
+        document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+        document.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
+        document.getElementById('form_mahasiswa_error').classList.add('d-none');
+        
+        const mahasiswaId = document.getElementById('mahasiswa_id').value;
+        const originalNim = document.getElementById('nim_mahasiswa').getAttribute('data-original-value');
+        const originalEmail = document.getElementById('email_mahasiswa').getAttribute('data-original-value');
+        
+        // Validate required fields
+        const namaInput = document.getElementById('nama_mahasiswa');
+        if (!validateNama(namaInput)) {
             isValid = false;
         }
-    
-        // Validate NIDN
-        if (nimMahasiswa && !nimMahasiswa.value.trim()) {
-            nimMahasiswa.classList.add('is-invalid');
-            if (nimError) nimError.textContent = "NIM wajib diisi";
+        
+        const nimInput = document.getElementById('nim_mahasiswa');
+        if (!(await validateNim(nimInput, mahasiswaId, originalNim))) {
             isValid = false;
-        } else if (nimMahasiswa) {
-            const nimValue = nimMahasiswa.value.trim();
-    
-            // Validate NIM format
-            if (!isValidNim(nimValue)) {
-                nimMahasiswa.classList.add('is-invalid');
-                if (nimError) nimError.textContent = "NIM harus berupa angka dan tepat 10 digit";
-                isValid = false;
-            } else {
-                // Check for duplicates in the list
-                const nimDuplicate = mahasiswaList.some(mahasiswa => mahasiswa.nim_mahasiswa === nimValue);
-                if (nimDuplicate) {
-                    nimMahasiswa.classList.add('is-invalid');
-                    if (nimError) nimError.textContent = "NIM sudah ada di daftar yang akan ditambahkan";
-                    isValid = false;
-                } else {
-                    // Check with database
-                    nimMahasiswa.classList.add('is-loading');
-                    try {
-                        const nimExists = await checkNimExistsAsync(nimValue);
-                        nimMahasiswa.classList.remove('is-loading');
-                        if (nimExists) {
-                            nimMahasiswa.classList.add('is-invalid');
-                            if (nimError) nimError.textContent = "NIM sudah terdaftar di database";
-                            isValid = false;
-                        }
-                    } catch (error) {
-                        console.error('Error checking NIDN:', error);
-                        nimMahasiswa.classList.remove('is-loading');
-                        if (formError) {
-                            formError.textContent = "Terjadi kesalahan saat memeriksa NIDN. Silakan coba lagi.";
-                            formError.classList.remove('d-none');
-                        }
-                        isValid = false;
-                    }
-                }
+        }
+        
+        const emailInput = document.getElementById('email_mahasiswa');
+        if (!(await validateEmail(emailInput, mahasiswaId, originalEmail))) {
+            isValid = false;
+        }
+        
+        const statusInput = document.getElementById('status_akun_mahasiswa');
+        if (!statusInput.value) {
+            statusInput.classList.add('is-invalid');
+            const errorElement = document.getElementById('status_akun_mahasiswa_error');
+            if (errorElement) {
+                errorElement.textContent = 'Status akun harus dipilih';
             }
+            isValid = false;
         }
-    
-        // Validate Email
-        if (emailMahasiswa && !emailMahasiswa.value.trim()) {
-            emailMahasiswa.classList.add('is-invalid');
-            if (emailError) emailError.textContent = "Email wajib diisi";
-            isValid = false;
-        } else if (emailMahasiswa && !isValidEmail(emailMahasiswa.value.trim())) {
-            emailMahasiswa.classList.add('is-invalid');
-            if (emailError) emailError.textContent = "Format email tidak valid";
-            isValid = false;
-        } else if (emailMahasiswa) {
-            const emailValue = emailMahasiswa.value.trim();
-            // Check for duplicates in the list
-            const emailDuplicate = mahasiswaList.some(mahasiswa => mahasiswa.email_mahasiswa === emailValue);
-            if (emailDuplicate) {
-                emailMahasiswa.classList.add('is-invalid');
-                if (emailError) emailError.textContent = "Email sudah ada di daftar yang akan ditambahkan";
-                isValid = false;
-            } else {
-                // Check with database
-                emailMahasiswa.classList.add('is-loading');
-                try {
-                    const emailExists = await checkEmailExistsAsync(emailValue);
-                    emailMahasiswa.classList.remove('is-loading');
-                    if (emailExists) {
-                        emailMahasiswa.classList.add('is-invalid');
-                        if (emailError) {
-                            emailError.textContent = "Email sudah terdaftar di database";
-                            emailError.style.display = 'block';
-                        }
-                        isValid = false;
-                    }
-                } catch (error) {
-                    console.error('Error checking email:', error);
-                    emailMahasiswa.classList.remove('is-loading');
-                    if (formError) {
-                        formError.textContent = "Terjadi kesalahan saat memeriksa email. Silakan coba lagi.";
-                        formError.classList.remove('d-none');
-                    }
+        
+        // Validate file uploads
+        const fileInputs = ['profile_img_mahasiswa', 'cv_mahasiswa', 'ktp_mahasiswa', 'ktm_mahasiswa'];
+        fileInputs.forEach(inputId => {
+            const fileInput = document.getElementById(inputId);
+            if (fileInput && fileInput.files.length > 0) {
+                if (!validateFileUpload(fileInput)) {
                     isValid = false;
                 }
             }
-        }
-    
-        // Validate Profile Image
-        if (profileImgMahasiswa && profileImgMahasiswa.files.length > 0) {
-            const file = profileImgMahasiswa.files[0];
-            const fileSize = file.size / 1024 / 1024;
-            const validExtensions = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
-    
-            if (!validExtensions.includes(file.type)) {
-                profileImgMahasiswa.classList.add('is-invalid');
-                if (profileImgError) profileImgError.textContent = "Format file tidak valid. Gunakan jpeg, png, jpg, atau gif";
-                isValid = false;
-            } else if (fileSize > 2) {
-                profileImgMahasiswa.classList.add('is-invalid');
-                if (profileImgError) profileImgError.textContent = "Ukuran file terlalu besar. Maksimal 2MB";
-                isValid = false;
-            }
-        }
-    
+        });
+        
         return isValid;
     }
 
