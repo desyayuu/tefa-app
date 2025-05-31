@@ -82,11 +82,10 @@
             </div>
 
             <!-- Pagination untuk Partisipasi -->
-            @if($partisipasiProfesional->hasPages())
             <div class="d-flex justify-content-between align-items-center mt-3">
                 <div class="showing-text">
                     Showing {{ $partisipasiProfesional->firstItem() }} to {{ $partisipasiProfesional->lastItem() }} 
-                    of {{ $partisipasiProfesional->total() }} partisipasi
+                    of {{ $partisipasiProfesional->total() }} entries
                 </div>
                 <div class="pagination-links">
                     {{ $partisipasiProfesional->appends([
@@ -95,7 +94,6 @@
                     ])->links('vendor.pagination.custom_master') }}
                 </div>
             </div>
-            @endif
         </div>
     </div>
 </div>

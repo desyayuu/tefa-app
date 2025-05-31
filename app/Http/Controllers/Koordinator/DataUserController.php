@@ -85,7 +85,7 @@ class DataUserController extends Controller
             DB::beginTransaction();
     
             try {
-                // Update user table - only the status is actually changeable in the form
+                // Update user table - only the status
                 DB::table('d_user')
                     ->where('user_id', $id)
                     ->update([
@@ -93,11 +93,6 @@ class DataUserController extends Controller
                         'updated_at' => now(),
                         'updated_by' => session('user_id'),
                     ]);
-    
-                // We don't need to update role-specific data since those fields are disabled
-                // and no changes would be made to them anyway. The role itself cannot be changed
-                // in this form due to the disabled input.
-    
                 DB::commit();
                 return redirect()->route('koordinator.dataUser')->with('success', 'Status user berhasil diperbarui.');
             } catch (\Exception $e) {

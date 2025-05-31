@@ -54,7 +54,7 @@ class DataDosenController extends Controller{
             ->whereNull('leader.deleted_at')
             ->whereNull('proyek.deleted_at');
 
-        // Tambahkan pencarian untuk leader
+        // Searching Partisipasi Dosen 
         if ($searchPartisipasi) {
             $dosenLeaderQuery->where(function($q) use ($searchPartisipasi) {
                 $q->where('dosen.nama_dosen', 'like', "%$searchPartisipasi%")
@@ -86,7 +86,7 @@ class DataDosenController extends Controller{
             ->whereNull('member.deleted_at')
             ->whereNull('proyek.deleted_at');
 
-        // Tambahkan pencarian untuk member
+        // Searching Partisipasi Dosen
         if ($searchPartisipasi) {
             $dosenMemberQuery->where(function($q) use ($searchPartisipasi) {
                 $q->where('dosen.nama_dosen', 'like', "%$searchPartisipasi%")
@@ -96,11 +96,11 @@ class DataDosenController extends Controller{
             });
         }
 
-        // ALTERNATIF 1: Menggunakan Collection merge (lebih reliable)
+        // Collect data dosen yang berperan sebagai leader dan member
         $leaderResults = $dosenLeaderQuery->get();
         $memberResults = $dosenMemberQuery->get();
         
-        // Gabungkan hasil dan urutkan
+        // Gabungin data dosen leader dan member
         $allResults = $leaderResults->concat($memberResults)
             ->sortBy('nama_dosen')
             ->sortByDesc('role_type'); // Project Leader dulu, baru Anggota
