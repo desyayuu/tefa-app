@@ -2,7 +2,7 @@
     <div class="card shadow-sm border-0 rounded-3 h-100">
         <div class="card-body">
             <div id="data-keluar-keuangan-proyek-section" class="title-table d-flex justify-content-between align-items-center mb-3">
-                <h4 class="m-0">Rincian Dana Pengeluaran</h4>
+                <h5 class="m-0">Rincian Dana Pengeluaran</h5>
                 <div class="d-flex gap-2 align-items-center">
                     <button type="button" class="btn btn-add" data-bs-toggle="modal" data-bs-target="#addTransactionModal">
                         Tambah Data

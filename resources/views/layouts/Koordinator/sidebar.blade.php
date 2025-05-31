@@ -40,11 +40,13 @@
         <li class="has-submenu" id="dataKeuanganMenu">
             <a href="javascript:void(0);" class="main-menu-item">
                 <span class="icon">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M3 10C3 8.11438 3 7.17157 3.58579 6.58579C4.17157 6 5.11438 6 7 6H17C18.8856 6 19.8284 6 20.4142 6.58579C21 7.17157 21 8.11438 21 10V14C21 15.8856 21 16.8284 20.4142 17.4142C19.8284 18 18.8856 18 17 18H7C5.11438 18 4.17157 18 3.58579 17.4142C3 16.8284 3 15.8856 3 14V10Z" fill="#7E869E" fill-opacity="0.25"/>
-                    <circle cx="6" cy="15" r="1" fill="#878787"/>
-                    <rect x="3" y="9" width="18" height="2" fill="#878787"/>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path opacity="0.4" d="M16.6756 2H7.33333C3.92889 2 2 3.92889 2 7.33333V16.6667C2 20.0711 3.92889 22 7.33333 22H16.6756C20.08 22 22 20.0711 22 16.6667V7.33333C22 3.92889 20.08 2 16.6756 2Z" fill="#878787"/>
+                        <path d="M7.36866 9.36914C6.91533 9.36914 6.54199 9.74247 6.54199 10.2047V17.0758C6.54199 17.5291 6.91533 17.9025 7.36866 17.9025C7.83088 17.9025 8.20421 17.5291 8.20421 17.0758V10.2047C8.20421 9.74247 7.83088 9.36914 7.36866 9.36914Z" fill="#878787"/>
+                        <path d="M12.0354 6.08984C11.5821 6.08984 11.2087 6.46318 11.2087 6.9254V17.0765C11.2087 17.5298 11.5821 17.9032 12.0354 17.9032C12.4976 17.9032 12.871 17.5298 12.871 17.0765V6.9254C12.871 6.46318 12.4976 6.08984 12.0354 6.08984Z" fill="#878787"/>
+                        <path d="M16.64 12.9961C16.1778 12.9961 15.8044 13.3694 15.8044 13.8316V17.0761C15.8044 17.5294 16.1778 17.9028 16.6311 17.9028C17.0933 17.9028 17.4667 17.5294 17.4667 17.0761V13.8316C17.4667 13.3694 17.0933 12.9961 16.64 12.9961Z" fill="#878787"/>
                     </svg>
+
                 </span>
                 <span class="menu-text">Data Keuangan</span>
                 <span class="submenu-arrow">
@@ -56,24 +58,11 @@
             <ul class="submenu">
                 <li>
                     <a href="{{ route('koordinator.dataKeuanganTefa') }}" class="submenu-item {{ request()->routeIs('koordinator.dataKeuanganTefa') ? 'active' : '' }}">
-                        <span class="submenu-icon">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M4 21V3a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" stroke="#878787" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-                                <path d="M8 10h8M8 14h8M8 18h5" stroke="#878787" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                        </span>
                         <span class="submenu-text">Keuangan TEFA</span>
                     </a>
                 </li>
                 <li class="has-nested-submenu">
                     <a href="javascript:void(0);" class="submenu-item nested-menu-toggle">
-                        <span class="submenu-icon">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M21 14H3a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h18a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1z" stroke="#878787" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-                                <path d="M22 14v4a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-4" stroke="#878787" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M12 10V6m0 4l3-2m-3 2L9 8" stroke="#878787" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                        </span>
                         <span class="submenu-text">Keuangan Proyek</span>
                         <span class="nested-submenu-arrow" style="margin-left: 7px;">
                             <svg width="10" height="10" viewBox="0 0 24 24" fill="none">
@@ -133,7 +122,8 @@
             </a>
         </li>
         <li>
-            <a href="{{ route('koordinator.dataDosen') }}" class="{{ request()->routeIs('koordinator.dataDosen') ? 'active' : '' }}">
+            <a href="{{ route('koordinator.dataDosen') }}" 
+                class="{{ request()->routeIs('koordinator.dataDosen') || request()->routeIs('koordinator.detailDataDosen')  ? 'active' : '' }}">
                 <span class="icon">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M11.997 15.1743C7.684 15.1743 4 15.8543 4 18.5743C4 21.2953 7.661 21.9993 11.997 21.9993C16.31 21.9993 19.994 21.3203 19.994 18.5993C19.994 15.8783 16.334 15.1743 11.997 15.1743Z" fill="#878787"/>
@@ -144,7 +134,8 @@
             </a>
         </li>
         <li>
-            <a href="{{ route('koordinator.dataProfesional') }}" class="{{ request()->routeIs('koordinator.dataProfesional') ? 'active' : '' }}" >
+            <a href="{{ route('koordinator.dataProfesional') }}" 
+                class="{{ request()->routeIs('koordinator.dataProfesional') || request()->routeIs('koordinator.detailDataProfesional')  ? 'active' : '' }}" >
                 <span class="icon">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M11.997 15.1743C7.684 15.1743 4 15.8543 4 18.5743C4 21.2953 7.661 21.9993 11.997 21.9993C16.31 21.9993 19.994 21.3203 19.994 18.5993C19.994 15.8783 16.334 15.1743 11.997 15.1743Z" fill="#878787"/>
@@ -155,7 +146,8 @@
             </a>
         </li>
         <li>
-            <a href="{{ route('koordinator.dataMahasiswa') }}" class="{{ request()->routeIs('koordinator.dataMahasiswa') || request()->routeIs('koordinator.detailDataMahasiswa') ? 'active' : '' }}" >
+            <a href="{{ route('koordinator.dataMahasiswa') }}" 
+                class="{{ request()->routeIs('koordinator.dataMahasiswa') || request()->routeIs('koordinator.detailDataMahasiswa') ? 'active' : '' }}" >
                 <span class="icon">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M11.997 15.1743C7.684 15.1743 4 15.8543 4 18.5743C4 21.2953 7.661 21.9993 11.997 21.9993C16.31 21.9993 19.994 21.3203 19.994 18.5993C19.994 15.8783 16.334 15.1743 11.997 15.1743Z" fill="#878787"/>

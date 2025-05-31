@@ -44,6 +44,7 @@ Route::middleware([KoordinatorMiddleware::class])->prefix('koordinator')->group(
     Route::post('/check-email-nidn-exists', [DataDosenController::class, 'checkEmailNidnExists'])->name('koordinator.checkEmailNidnExists');
     Route::put('/dosen/{id}', [DataDosenController::class, 'updateDataDosen'])->name('koordinator.updateDataDosen');
     Route::delete('/dosen/{id}', [DataDosenController::class, 'deleteDataDosen'])->name('koordinator.deleteDataDosen');
+    Route::get('/data-dosen/{id}', [DataDosenController::class, 'getDataDosenById'])->name('koordinator.detailDataDosen');
 
     //Data User
     Route::get('/data-user', [DataUserController::class, 'getDataUser'])->name('koordinator.dataUser');
@@ -56,6 +57,7 @@ Route::middleware([KoordinatorMiddleware::class])->prefix('koordinator')->group(
     Route::post('/check-email-profesional-exists', [DataProfesionalController::class, 'checkEmailProfesionalExists'])->name('koordinator.checkEmailProfesionalExists');
     Route::put('/profesional/{id}', [DataProfesionalController::class, 'updateDataProfesional'])->name('koordinator.updateDataProfesional');
     Route::delete('/profesional/{id}', [DataProfesionalController::class, 'deleteDataProfesional'])->name('koordinator.deleteDataProfesional');
+    Route::get('/data-profesional/{id}', [DataProfesionalController::class, 'getDataProfesionalById'])->name('koordinator.detailDataProfesional');
 
     //Data Mahasiswa 
     Route::get('/data-mahasiswa', [DataMahasiswaController::class, 'getDataMahasiswa'])->name('koordinator.dataMahasiswa');

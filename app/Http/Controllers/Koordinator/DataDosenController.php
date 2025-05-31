@@ -12,6 +12,7 @@ class DataDosenController extends Controller{
     public function getDataDosen(Request $request){
         $search = $request->input('search'); 
 
+        // 1. query untuk get semua dosen
         $query = DB::table ('d_dosen as dosen')
             ->join('d_user as user', 'dosen.user_id', '=', 'user.user_id')
             ->select('dosen.*', 'user.*')
@@ -26,8 +27,126 @@ class DataDosenController extends Controller{
         }
 
         $dosen = $query->orderBy('user.created_at', 'desc')->paginate(10); 
-        return view('pages.Koordinator.data_dosen', compact('dosen', 'search'), [
+
+        // 2. Query untuk partisipasi dosen
+        $searchPartisipasi = $request->input('search_partisipasi');
+
+        // Query untuk mendapatkan dosen yang berperan sebagai project leader
+        $dosenLeaderQuery = DB::table('d_dosen as dosen')
+            ->join('d_user as user', 'dosen.user_id', '=', 'user.user_id')
+            ->join('t_project_leader as leader', 'dosen.dosen_id', '=', 'leader.leader_id')
+            ->join('m_proyek as proyek', 'leader.proyek_id', '=', 'proyek.proyek_id')
+            ->select(
+                'dosen.dosen_id',
+                'dosen.nama_dosen',
+                'dosen.nidn_dosen',
+                'user.email',
+                'proyek.proyek_id',
+                'proyek.nama_proyek',
+                'proyek.status_proyek',
+                DB::raw("'Project Leader' as role_type"),
+                'proyek.tanggal_mulai',
+                'proyek.tanggal_selesai'
+            )
+            ->where('leader.leader_type', 'Dosen')
+            ->where('proyek.status_proyek', 'In Progress')
+            ->whereNull('dosen.deleted_at')
+            ->whereNull('leader.deleted_at')
+            ->whereNull('proyek.deleted_at');
+
+        // Tambahkan pencarian untuk leader
+        if ($searchPartisipasi) {
+            $dosenLeaderQuery->where(function($q) use ($searchPartisipasi) {
+                $q->where('dosen.nama_dosen', 'like', "%$searchPartisipasi%")
+                ->orWhere('dosen.nidn_dosen', 'like', "%$searchPartisipasi%")
+                ->orWhere('user.email', 'like', "%$searchPartisipasi%")
+                ->orWhere('proyek.nama_proyek', 'like', "%$searchPartisipasi%");
+            });
+        }
+
+        // Query untuk mendapatkan dosen yang berperan sebagai project member
+        $dosenMemberQuery = DB::table('d_dosen as dosen')
+            ->join('d_user as user', 'dosen.user_id', '=', 'user.user_id')
+            ->join('t_project_member_dosen as member', 'dosen.dosen_id', '=', 'member.dosen_id')
+            ->join('m_proyek as proyek', 'member.proyek_id', '=', 'proyek.proyek_id')
+            ->select(
+                'dosen.dosen_id',
+                'dosen.nama_dosen',
+                'dosen.nidn_dosen',
+                'user.email',
+                'proyek.proyek_id',
+                'proyek.nama_proyek',
+                'proyek.status_proyek',
+                DB::raw("'Anggota' as role_type"),
+                'proyek.tanggal_mulai',
+                'proyek.tanggal_selesai'
+            )
+            ->where('proyek.status_proyek', 'In Progress')
+            ->whereNull('dosen.deleted_at')
+            ->whereNull('member.deleted_at')
+            ->whereNull('proyek.deleted_at');
+
+        // Tambahkan pencarian untuk member
+        if ($searchPartisipasi) {
+            $dosenMemberQuery->where(function($q) use ($searchPartisipasi) {
+                $q->where('dosen.nama_dosen', 'like', "%$searchPartisipasi%")
+                ->orWhere('dosen.nidn_dosen', 'like', "%$searchPartisipasi%")
+                ->orWhere('user.email', 'like', "%$searchPartisipasi%")
+                ->orWhere('proyek.nama_proyek', 'like', "%$searchPartisipasi%");
+            });
+        }
+
+        // ALTERNATIF 1: Menggunakan Collection merge (lebih reliable)
+        $leaderResults = $dosenLeaderQuery->get();
+        $memberResults = $dosenMemberQuery->get();
+        
+        // Gabungkan hasil dan urutkan
+        $allResults = $leaderResults->concat($memberResults)
+            ->sortBy('nama_dosen')
+            ->sortByDesc('role_type'); // Project Leader dulu, baru Anggota
+
+        // Manual pagination untuk collection
+        $perPage = 5;
+        $currentPage = request()->get('partisipasi_page', 1);
+        $offset = ($currentPage - 1) * $perPage;
+        
+        $paginatedResults = $allResults->slice($offset, $perPage)->values();
+        
+        // Buat custom pagination
+        $partisipasiDosen = new \Illuminate\Pagination\LengthAwarePaginator(
+            $paginatedResults,
+            $allResults->count(),
+            $perPage,
+            $currentPage,
+            [
+                'path' => request()->url(),
+                'pageName' => 'partisipasi_page',
+            ]
+        );
+        return view('pages.Koordinator.DataDosen.kelola_data_dosen', compact(
+            'dosen', 
+            'search', 
+            'partisipasiDosen', 
+            'searchPartisipasi'
+        ), [
             'titleSidebar' => 'Data Dosen'
+        ]);
+    }
+
+
+    public function getDataDosenById($id){
+        $dosen = DB::table('d_dosen as dosen')
+            ->join('d_user as user', 'dosen.user_id', '=', 'user.user_id')
+            ->select('dosen.*', 'user.*')
+            ->where('dosen.dosen_id', $id)
+            ->first();
+            
+        if (!$dosen) {
+            return redirect()->route('koordinator.dataDosen')->with('error', 'Data dosen tidak ditemukan.');
+        }
+        
+        return view('pages.Koordinator.DataDosen.detail_data_dosen', compact('dosen'), [
+            'titleSidebar' => 'Detail Dosen'
         ]);
     }
 
@@ -481,7 +600,7 @@ class DataDosenController extends Controller{
                     ]);
                 }
                 
-                return redirect()->route('koordinator.dataDosen')
+                return redirect()->back()
                     ->with('success', 'Data dosen berhasil diperbarui.');
             } catch (\Exception $e) {
                 DB::rollBack();

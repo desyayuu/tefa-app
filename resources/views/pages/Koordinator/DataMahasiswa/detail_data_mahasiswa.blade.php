@@ -1,3 +1,5 @@
+
+
 @extends('layouts.app')
 
 @section('title', 'TEFA | Data Mahasiswa')
@@ -7,32 +9,30 @@
     <!-- Sidebar -->
     @include('layouts.Koordinator.sidebar')
     
-    <div class="main-content" style="font-size: 14px;">
+    <div class="main-content">
         @include('layouts.Koordinator.header')
+
         <div class="breadcrumb-container">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
                     <li class="breadcrumb-item">
-                        <a href="{{ route('koordinator.dataMahasiswa') }}" class="breadcrumb-item active" aria-current="page">
+                        <a href="{{ route('koordinator.dataMahasiswa') }}">
                             <i class="fas fa-project-diagram me-1"></i>
                             Data Mahasiswa
                         </a>
                     </li>
-                    <li class="breadcrumb-item">
-                        <a href="">
-                            <i class="fas fa-project-diagram me-1"></i>
-                           
-                        </a>
+                    <li class="breadcrumb-item active" aria-current="page">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Detail Data Mahasiswa
                     </li>
                 </ol>
             </nav>
         </div>
-        <div class="section-current-mahasiswa">
-            @include('pages.Koordinator.DataMahasiswa.current_mahasiswa')
+
+        <div class="section-data-mahasiswa">
+            @include('pages.Koordinator.DataMahasiswa.data_mahasiswa')
         </div>
-        <div class="section-table-mahasiswa">
-            @include('pages.Koordinator.DataMahasiswa.table_mahasiswa')
-        </div>
+
     </div>
 </div>
 @endsection

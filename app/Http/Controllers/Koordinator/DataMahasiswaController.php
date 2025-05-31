@@ -13,6 +13,7 @@ class DataMahasiswaController extends Controller
     public function getDataMahasiswa(Request $request){
         $search = $request->input('search'); 
 
+        // 1. query untuk get semua mahasiswa
         $query = DB::table ('d_mahasiswa as mahasiswa')
             ->join('d_user as user', 'mahasiswa.user_id', '=', 'user.user_id')
             ->select('mahasiswa.*', 'user.*')
@@ -27,7 +28,108 @@ class DataMahasiswaController extends Controller
         }
 
         $mahasiswa = $query->orderBy('user.created_at', 'desc')->paginate(10); 
-        return view('pages.Koordinator.data_mahasiswa', compact('mahasiswa', 'search'), [
+
+        // 2. Query untuk partisipasi mahasiswa
+        $searchPartisipasi = $request->input('search_partisipasi');
+
+        // Query untuk mendapatkan mahasiswa yang berperan sebagai project leader
+        $mahasiswaLeaderQuery = DB::table('d_mahasiswa as mahasiswa')
+            ->join('d_user as user', 'mahasiswa.user_id', '=', 'user.user_id')
+            ->join('t_project_leader as leader', 'mahasiswa.mahasiswa_id', '=', 'leader.leader_id')
+            ->join('m_proyek as proyek', 'leader.proyek_id', '=', 'proyek.proyek_id')
+            ->select(
+                'mahasiswa.mahasiswa_id',
+                'mahasiswa.nama_mahasiswa',
+                'mahasiswa.nim_mahasiswa',
+                'user.email',
+                'proyek.proyek_id',
+                'proyek.nama_proyek',
+                'proyek.status_proyek',
+                DB::raw("'Project Leader' as role_type"),
+                'proyek.tanggal_mulai',
+                'proyek.tanggal_selesai'
+            )
+            ->where('leader.leader_type', 'Mahasiswa')
+            ->where('proyek.status_proyek', 'In Progress')
+            ->whereNull('mahasiswa.deleted_at')
+            ->whereNull('leader.deleted_at')
+            ->whereNull('proyek.deleted_at');
+
+        // Tambahkan pencarian untuk leader
+        if ($searchPartisipasi) {
+            $mahasiswaLeaderQuery->where(function($q) use ($searchPartisipasi) {
+                $q->where('mahasiswa.nama_mahasiswa', 'like', "%$searchPartisipasi%")
+                ->orWhere('mahasiswa.nim_mahasiswa', 'like', "%$searchPartisipasi%")
+                ->orWhere('user.email', 'like', "%$searchPartisipasi%")
+                ->orWhere('proyek.nama_proyek', 'like', "%$searchPartisipasi%");
+            });
+        }
+
+        // Query untuk mendapatkan mahasiswa yang berperan sebagai project member
+        $mahasiswaMemberQuery = DB::table('d_mahasiswa as mahasiswa')
+            ->join('d_user as user', 'mahasiswa.user_id', '=', 'user.user_id')
+            ->join('t_project_member_mahasiswa as member', 'mahasiswa.mahasiswa_id', '=', 'member.mahasiswa_id')
+            ->join('m_proyek as proyek', 'member.proyek_id', '=', 'proyek.proyek_id')
+            ->select(
+                'mahasiswa.mahasiswa_id',
+                'mahasiswa.nama_mahasiswa',
+                'mahasiswa.nim_mahasiswa',
+                'user.email',
+                'proyek.proyek_id',
+                'proyek.nama_proyek',
+                'proyek.status_proyek',
+                DB::raw("'Anggota' as role_type"),
+                'proyek.tanggal_mulai',
+                'proyek.tanggal_selesai'
+            )
+            ->where('proyek.status_proyek', 'In Progress')
+            ->whereNull('mahasiswa.deleted_at')
+            ->whereNull('member.deleted_at')
+            ->whereNull('proyek.deleted_at');
+
+        // Tambahkan pencarian untuk member
+        if ($searchPartisipasi) {
+            $mahasiswaMemberQuery->where(function($q) use ($searchPartisipasi) {
+                $q->where('mahasiswa.nama_mahasiswa', 'like', "%$searchPartisipasi%")
+                ->orWhere('mahasiswa.nim_mahasiswa', 'like', "%$searchPartisipasi%")
+                ->orWhere('user.email', 'like', "%$searchPartisipasi%")
+                ->orWhere('proyek.nama_proyek', 'like', "%$searchPartisipasi%");
+            });
+        }
+
+        // ALTERNATIF 1: Menggunakan Collection merge (lebih reliable)
+        $leaderResults = $mahasiswaLeaderQuery->get();
+        $memberResults = $mahasiswaMemberQuery->get();
+        
+        // Gabungkan hasil dan urutkan
+        $allResults = $leaderResults->concat($memberResults)
+            ->sortBy('nama_mahasiswa')
+            ->sortByDesc('role_type'); // Project Leader dulu, baru Anggota
+
+        // Manual pagination untuk collection
+        $perPage = 5;
+        $currentPage = request()->get('partisipasi_page', 1);
+        $offset = ($currentPage - 1) * $perPage;
+        
+        $paginatedResults = $allResults->slice($offset, $perPage)->values();
+        
+        // Buat custom pagination
+        $partisipasiMahasiswa = new \Illuminate\Pagination\LengthAwarePaginator(
+            $paginatedResults,
+            $allResults->count(),
+            $perPage,
+            $currentPage,
+            [
+                'path' => request()->url(),
+                'pageName' => 'partisipasi_page',
+            ]
+        );
+        return view('pages.Koordinator.DataMahasiswa.kelola_data_mahasiswa', compact(
+            'mahasiswa', 
+            'search', 
+            'partisipasiMahasiswa', 
+            'searchPartisipasi'
+        ), [
             'titleSidebar' => 'Data Mahasiswa'
         ]);
     }
@@ -593,7 +695,7 @@ class DataMahasiswaController extends Controller
             return redirect()->route('koordinator.dataMahasiswa')->with('error', 'Data mahasiswa tidak ditemukan.');
         }
         
-        return view('pages.Koordinator.DataMahasiswa.kelola_data_mahasiswa', compact('mahasiswa'), [
+        return view('pages.Koordinator.DataMahasiswa.detail_data_mahasiswa', compact('mahasiswa'), [
             'titleSidebar' => 'Detail Mahasiswa'
         ]);
     }

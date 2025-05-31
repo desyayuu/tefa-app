@@ -2,7 +2,7 @@
     <div class="card shadow-sm border-0 rounded-3 h-100">
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h5 class="fw-bold mb-0">Detail Data Proyek</h5>
+                <h4 class="fw-bold mb-0">Detail Data Proyek</h4>
                 <button type="submit" form="formProyek" class="btn btn-add">Simpan Perubahan</button>
             </div>
 

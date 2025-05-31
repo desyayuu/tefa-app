@@ -22,12 +22,12 @@
             </nav>
         </div>
 
-        <div class="content-table">
+        <div class="content-table" style="font-size: 14px;">
             <!-- Handling Error and Success -->
             @include('components.handling_error')
 
             <div class="title-table d-flex justify-content-between align-items-center mb-3">
-                <h4 class="m-0">Data Proyek</h4>
+                <h5 class="m-0">Data Proyek</h5>
                 <div class="d-flex gap-2 align-items-center">
                     <div class="position-relative">
                         <form action="{{ route('koordinator.dataProyek') }}" method="GET">

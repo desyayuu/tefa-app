@@ -28,7 +28,7 @@
             </nav>
         </div>
 
-        <div class="content-table">
+        <div class="content-table" style="font-size: 14px;">
             <!-- Handling Error and Success -->
             @if(session('success'))
             <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
@@ -63,7 +63,7 @@
             @endif
             
             <div class="title-table d-flex justify-content-between align-items-center mb-3">
-                <h4 class="m-0">Data User</h4>
+                <h5 class="m-0">Data User</h5>
                 <div class="d-flex gap-2 align-items-center">
                     <div class="position-relative">
                         <form action="{{ route('koordinator.dataUser') }}" method="GET">
@@ -93,7 +93,7 @@
             </div>
             @endif
 
-            <table class="table">
+            <table class="table" style="font-size: 14px;">
                 <thead>
                     <tr>
                     <!-- <th scope="col">#</th> -->

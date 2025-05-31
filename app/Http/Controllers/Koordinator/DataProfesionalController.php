@@ -12,6 +12,7 @@ class DataProfesionalController extends Controller
     public function getDataProfesional(Request $request){
         $search = $request->input('search'); 
 
+        // 1. query untuk get semua profesional
         $query = DB::table ('d_profesional as profesional')
             ->join('d_user as user', 'profesional.user_id', '=', 'user.user_id')
             ->select('profesional.*', 'user.*')
@@ -25,8 +26,122 @@ class DataProfesionalController extends Controller
         }
 
         $profesional = $query->orderBy('user.created_at', 'desc')->paginate(10); 
-        return view('pages.Koordinator.data_profesional', compact('profesional', 'search'), [
+
+        // 2. Query untuk partisipasi profesional
+        $searchPartisipasi = $request->input('search_partisipasi');
+
+        // Query untuk mendapatkan profesional yang berperan sebagai project leader
+        $profesionalLeaderQuery = DB::table('d_profesional as profesional')
+            ->join('d_user as user', 'profesional.user_id', '=', 'user.user_id')
+            ->join('t_project_leader as leader', 'profesional.profesional_id', '=', 'leader.leader_id')
+            ->join('m_proyek as proyek', 'leader.proyek_id', '=', 'proyek.proyek_id')
+            ->select(
+                'profesional.profesional_id',
+                'profesional.nama_profesional',
+                'user.email',
+                'proyek.proyek_id',
+                'proyek.nama_proyek',
+                'proyek.status_proyek',
+                DB::raw("'Project Leader' as role_type"),
+                'proyek.tanggal_mulai',
+                'proyek.tanggal_selesai'
+            )
+            ->where('leader.leader_type', 'Profesional')
+            ->where('proyek.status_proyek', 'In Progress')
+            ->whereNull('profesional.deleted_at')
+            ->whereNull('leader.deleted_at')
+            ->whereNull('proyek.deleted_at');
+
+        // Tambahkan pencarian untuk leader
+        if ($searchPartisipasi) {
+            $profesionalLeaderQuery->where(function($q) use ($searchPartisipasi) {
+                $q->where('profesional.nama_profesional', 'like', "%$searchPartisipasi%")
+                ->orWhere('user.email', 'like', "%$searchPartisipasi%")
+                ->orWhere('proyek.nama_proyek', 'like', "%$searchPartisipasi%");
+            });
+        }
+
+        // Query untuk mendapatkan profesional yang berperan sebagai project member
+        $profesionalMemberQuery = DB::table('d_profesional as profesional')
+            ->join('d_user as user', 'profesional.user_id', '=', 'user.user_id')
+            ->join('t_project_member_profesional as member', 'profesional.profesional_id', '=', 'member.profesional_id')
+            ->join('m_proyek as proyek', 'member.proyek_id', '=', 'proyek.proyek_id')
+            ->select(
+                'profesional.profesional_id',
+                'profesional.nama_profesional',
+                'user.email',
+                'proyek.proyek_id',
+                'proyek.nama_proyek',
+                'proyek.status_proyek',
+                DB::raw("'Anggota' as role_type"),
+                'proyek.tanggal_mulai',
+                'proyek.tanggal_selesai'
+            )
+            ->where('proyek.status_proyek', 'In Progress')
+            ->whereNull('profesional.deleted_at')
+            ->whereNull('member.deleted_at')
+            ->whereNull('proyek.deleted_at');
+
+        // Tambahkan pencarian untuk member
+        if ($searchPartisipasi) {
+            $profesionalMemberQuery->where(function($q) use ($searchPartisipasi) {
+                $q->where('profesional.nama_profesional', 'like', "%$searchPartisipasi%")
+                ->orWhere('user.email', 'like', "%$searchPartisipasi%")
+                ->orWhere('proyek.nama_proyek', 'like', "%$searchPartisipasi%");
+            });
+        }
+
+        // ALTERNATIF 1: Menggunakan Collection merge (lebih reliable)
+        $leaderResults = $profesionalLeaderQuery->get();
+        $memberResults = $profesionalMemberQuery->get();
+        
+        // Gabungkan hasil dan urutkan
+        $allResults = $leaderResults->concat($memberResults)
+            ->sortBy('nama_profesional')
+            ->sortByDesc('role_type'); // Project Leader dulu, baru Anggota
+
+        // Manual pagination untuk collection
+        $perPage = 5;
+        $currentPage = request()->get('partisipasi_page', 1);
+        $offset = ($currentPage - 1) * $perPage;
+        
+        $paginatedResults = $allResults->slice($offset, $perPage)->values();
+        
+        // Buat custom pagination
+        $partisipasiProfesional = new \Illuminate\Pagination\LengthAwarePaginator(
+            $paginatedResults,
+            $allResults->count(),
+            $perPage,
+            $currentPage,
+            [
+                'path' => request()->url(),
+                'pageName' => 'partisipasi_page',
+            ]
+        );
+        return view('pages.Koordinator.DataProfesional.kelola_data_profesional', compact(
+            'profesional', 
+            'search', 
+            'partisipasiProfesional', 
+            'searchPartisipasi'
+        ), [
             'titleSidebar' => 'Data Profesional'
+        ]);
+    }
+
+
+    public function getDataProfesionalById($id){
+        $profesional = DB::table('d_profesional as profesional')
+            ->join('d_user as user', 'profesional.user_id', '=', 'user.user_id')
+            ->select('profesional.*', 'user.*')
+            ->where('profesional.profesional_id', $id)
+            ->first();
+            
+        if (!$profesional) {
+            return redirect()->route('koordinator.dataProfesional')->with('error', 'Data profesional tidak ditemukan.');
+        }
+        
+        return view('pages.Koordinator.DataProfesional.detail_data_profesional', compact('profesional'), [
+            'titleSidebar' => 'Detail Profesional'
         ]);
     }
 
@@ -434,7 +549,7 @@ class DataProfesionalController extends Controller
                     ]);
                 }
                 
-                return redirect()->route('koordinator.dataProfesional')
+                return redirect()->back()
                     ->with('success', 'Data profesional berhasil diperbarui.');
             } catch (\Exception $e) {
                 DB::rollBack();

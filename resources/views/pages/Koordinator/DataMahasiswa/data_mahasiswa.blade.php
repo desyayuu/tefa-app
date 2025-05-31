@@ -16,23 +16,23 @@
                 </div>
             @endif
 
-            <!-- Form dengan ID yang jelas -->
             <form id="formEditMahasiswa" action="{{ route('koordinator.updateDataMahasiswa', $mahasiswa->mahasiswa_id) }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
                 
-                <!-- Hidden field untuk mahasiswa ID -->
                 <input type="hidden" id="mahasiswa_id" name="mahasiswa_id" value="{{ $mahasiswa->mahasiswa_id }}">
                 
                 <!-- Error container untuk JavaScript -->
                 <div id="form_mahasiswa_error" class="alert alert-danger d-none" role="alert"></div>
-                
-                <div class="row mb-4">
-                    <div class="col-12 d-flex justify-content-end">
-                        <button type="submit" class="btn btn-add">
-                            <i class="bi bi-check-circle me-1"></i>
-                            Simpan Perubahan
-                        </button>
+                <div class="title-table d-flex justify-content-between align-items-center mb-3">
+                    <h5>Data Mahasiswa</h5>
+                    <div class="row mb-4">
+                        <div class="col-12 d-flex justify-content-end">
+                            <button type="submit" class="btn btn-add">
+                                <i class="bi bi-check-circle me-1"></i>
+                                Simpan Perubahan
+                            </button>
+                        </div>
                     </div>
                 </div>
                 

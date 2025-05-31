@@ -24,8 +24,8 @@
         <div class="content-table">
             @include('components.handling_error')
             
-            <div class="title-table d-flex justify-content-between align-items-center mb-3">
-                <h4 class="m-0">Data Sub Jenis Kategori Transaksi</h4>
+            <div class="title-table d-flex justify-content-between align-items-center mb-3" style="font-size: 14px;">
+                <h5>Data Sub Jenis Kategori Transaksi</h5>
                 <div class="d-flex gap-2 align-items-center">
                     <div class="position-relative">
                         <!-- PERBAIKAN: Gunakan route yang sama untuk search -->
