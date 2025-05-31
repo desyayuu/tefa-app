@@ -128,8 +128,8 @@ class DataProfesionalController extends Controller
         ]);
     }
 
-
-    public function getDataProfesionalById($id){
+    public function getDataProfesionalById(Request $request, $id){
+        // Get data profesional utama
         $profesional = DB::table('d_profesional as profesional')
             ->join('d_user as user', 'profesional.user_id', '=', 'user.user_id')
             ->select('profesional.*', 'user.*')
@@ -139,8 +139,55 @@ class DataProfesionalController extends Controller
         if (!$profesional) {
             return redirect()->route('koordinator.dataProfesional')->with('error', 'Data profesional tidak ditemukan.');
         }
+
+        // Get riwayat proyek dengan pagination menggunakan UNION
+        // Query untuk proyek sebagai leader
+        $proyekLeaderQuery = DB::table('t_project_leader as leader')
+            ->join('m_proyek as proyek', 'leader.proyek_id', '=', 'proyek.proyek_id')
+            ->select(
+                'proyek.proyek_id',
+                'proyek.nama_proyek',
+                'proyek.tanggal_mulai',
+                'proyek.tanggal_selesai',
+                'proyek.status_proyek',
+                DB::raw("'Project Leader' as peran"),
+                'leader.created_at as tanggal_bergabung'
+            )
+            ->where('leader.leader_id', $id)
+            ->where('leader.leader_type', 'Profesional')
+            ->where('proyek.status_proyek', 'Done') 
+            ->whereNull('leader.deleted_at')
+            ->whereNull('proyek.deleted_at');
+
+        // Query untuk proyek sebagai member
+        $proyekMemberQuery = DB::table('t_project_member_profesional as member')
+            ->join('m_proyek as proyek', 'member.proyek_id', '=', 'proyek.proyek_id')
+            ->select(
+                'proyek.proyek_id',
+                'proyek.nama_proyek', 
+                'proyek.tanggal_mulai',
+                'proyek.tanggal_selesai',
+                'proyek.status_proyek',
+                DB::raw("'Project Member' as peran"),
+                'member.created_at as tanggal_bergabung'
+            )
+            ->where('member.profesional_id', $id)
+            ->where('proyek.status_proyek', 'Done') 
+            ->whereNull('member.deleted_at')
+            ->whereNull('proyek.deleted_at');
+
+        // Gabungkan kedua query dengan UNION dan buat pagination
+        $combinedQuery = $proyekLeaderQuery->union($proyekMemberQuery);
         
-        return view('pages.Koordinator.DataProfesional.detail_data_profesional', compact('profesional'), [
+        $riwayatProyek = DB::table(DB::raw("({$combinedQuery->toSql()}) as riwayat"))
+            ->mergeBindings($combinedQuery)
+            ->orderBy('riwayat.tanggal_selesai', 'desc')
+            ->paginate(5, ['*'], 'riwayat_page'); 
+
+        // Append profesional_id ke pagination links
+        $riwayatProyek->appends(['profesional_id' => $id]);
+
+        return view('pages.Koordinator.DataProfesional.detail_data_profesional', compact('profesional', 'riwayatProyek'), [
             'titleSidebar' => 'Detail Profesional'
         ]);
     }

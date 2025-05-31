@@ -32,6 +32,9 @@
         <div class="section-data-profesional">
             @include('pages.Koordinator.DataProfesional.data_profesional')
         </div>
+        <div class="section-riwayat-profesional">
+            @include('pages.Koordinator.DataProfesional.riwayat_proyek_profesional')
+        </div>
     </div>
 </div>
 @endsection

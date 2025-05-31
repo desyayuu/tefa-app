@@ -32,6 +32,9 @@
         <div class="section-data-dosen">
             @include('pages.Koordinator.DataDosen.data_dosen')
         </div>
+        <div>
+            @include('pages.Koordinator.DataDosen.riwayat_proyek_dosen')
+        </div>
 
     </div>
 </div>

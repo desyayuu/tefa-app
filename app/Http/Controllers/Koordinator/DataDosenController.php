@@ -133,8 +133,8 @@ class DataDosenController extends Controller{
         ]);
     }
 
-
-    public function getDataDosenById($id){
+    public function getDataDosenById(Request $request, $id){
+        // Get data dosen utama
         $dosen = DB::table('d_dosen as dosen')
             ->join('d_user as user', 'dosen.user_id', '=', 'user.user_id')
             ->select('dosen.*', 'user.*')
@@ -144,8 +144,55 @@ class DataDosenController extends Controller{
         if (!$dosen) {
             return redirect()->route('koordinator.dataDosen')->with('error', 'Data dosen tidak ditemukan.');
         }
+
+        // Get riwayat proyek dengan pagination menggunakan UNION
+        // Query untuk proyek sebagai leader
+        $proyekLeaderQuery = DB::table('t_project_leader as leader')
+            ->join('m_proyek as proyek', 'leader.proyek_id', '=', 'proyek.proyek_id')
+            ->select(
+                'proyek.proyek_id',
+                'proyek.nama_proyek',
+                'proyek.tanggal_mulai',
+                'proyek.tanggal_selesai',
+                'proyek.status_proyek',
+                DB::raw("'Project Leader' as peran"),
+                'leader.created_at as tanggal_bergabung'
+            )
+            ->where('leader.leader_id', $id)
+            ->where('leader.leader_type', 'Dosen')
+            ->where('proyek.status_proyek', 'Done') 
+            ->whereNull('leader.deleted_at')
+            ->whereNull('proyek.deleted_at');
+
+        // Query untuk proyek sebagai member
+        $proyekMemberQuery = DB::table('t_project_member_dosen as member')
+            ->join('m_proyek as proyek', 'member.proyek_id', '=', 'proyek.proyek_id')
+            ->select(
+                'proyek.proyek_id',
+                'proyek.nama_proyek', 
+                'proyek.tanggal_mulai',
+                'proyek.tanggal_selesai',
+                'proyek.status_proyek',
+                DB::raw("'Project Member' as peran"),
+                'member.created_at as tanggal_bergabung'
+            )
+            ->where('member.dosen_id', $id)
+            ->where('proyek.status_proyek', 'Done') 
+            ->whereNull('member.deleted_at')
+            ->whereNull('proyek.deleted_at');
+
+        // Gabungkan kedua query dengan UNION dan buat pagination
+        $combinedQuery = $proyekLeaderQuery->union($proyekMemberQuery);
         
-        return view('pages.Koordinator.DataDosen.detail_data_dosen', compact('dosen'), [
+        $riwayatProyek = DB::table(DB::raw("({$combinedQuery->toSql()}) as riwayat"))
+            ->mergeBindings($combinedQuery)
+            ->orderBy('riwayat.tanggal_selesai', 'desc')
+            ->paginate(5, ['*'], 'riwayat_page'); 
+
+        // Append dosen_id ke pagination links
+        $riwayatProyek->appends(['dosen_id' => $id]);
+
+        return view('pages.Koordinator.DataDosen.detail_data_dosen', compact('dosen', 'riwayatProyek'), [
             'titleSidebar' => 'Detail Dosen'
         ]);
     }
