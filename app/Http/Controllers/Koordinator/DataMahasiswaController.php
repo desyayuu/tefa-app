@@ -29,6 +29,24 @@ class DataMahasiswaController extends Controller
 
         $mahasiswa = $query->orderBy('user.created_at', 'desc')->paginate(10); 
 
+        // TAMBAHAN: Ambil bidang keahlian untuk setiap mahasiswa
+        $mahasiswaIds = $mahasiswa->pluck('mahasiswa_id')->toArray();
+        
+        $bidangKeahlianMahasiswa = [];
+        if (!empty($mahasiswaIds)) {
+            $bidangKeahlianData = DB::table('t_mahasiswa_bidang_keahlian as mbk')
+                ->join('m_bidang_keahlian as bk', 'mbk.bidang_keahlian_id', '=', 'bk.bidang_keahlian_id')
+                ->whereIn('mbk.mahasiswa_id', $mahasiswaIds)
+                ->whereNull('mbk.deleted_at')
+                ->whereNull('bk.deleted_at')
+                ->select('mbk.mahasiswa_id', 'bk.nama_bidang_keahlian', 'bk.bidang_keahlian_id')
+                ->orderBy('bk.nama_bidang_keahlian', 'asc')
+                ->get();
+
+            // Group bidang keahlian by mahasiswa_id
+            $bidangKeahlianMahasiswa = $bidangKeahlianData->groupBy('mahasiswa_id');
+        }
+
         // 2. Query untuk partisipasi mahasiswa
         $searchPartisipasi = $request->input('search_partisipasi');
 
@@ -129,12 +147,14 @@ class DataMahasiswaController extends Controller
             ->whereNull('deleted_at')
             ->orderBy('nama_bidang_keahlian', 'asc')
             ->get();
+
         return view('pages.Koordinator.DataMahasiswa.kelola_data_mahasiswa', compact(
             'mahasiswa', 
             'search', 
             'partisipasiMahasiswa', 
             'searchPartisipasi',
-            'bidangKeahlian'
+            'bidangKeahlian',
+            'bidangKeahlianMahasiswa'  // TAMBAHAN: Pass data bidang keahlian mahasiswa
         ), [
             'titleSidebar' => 'Data Mahasiswa'
         ]);

@@ -163,18 +163,40 @@
                 <thead>
                     <tr>
                     <!-- <th scope="col">#</th> -->
-                    <th scope="col">Nama Mahasiswa</th>
-                    <th scope="col">Email</th>
-                    <th scope="col">Telepon</th>
-                    <th scope="col">Aksi</th>
+                    <th scope="col" style="width: 30%">Nama Mahasiswa</th>
+                    <th scope="col" style="width: 10%">NIM</th>
+                    <th scope="col" style="width: 40%">Bidang Keahlian</th>
+                    <th scope="col" style="width: 15%">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse ($mahasiswa as $m)
                     <tr>
                         <td>{{ $m->nama_mahasiswa}}</td>
-                        <td>{{ $m->email }}</td>
-                        <td>{{ $m->telepon_mahasiswa}}</td>
+                        <td>{{ $m->nim_mahasiswa }}</td>
+                        <td>
+                            @if(isset($bidangKeahlianMahasiswa[$m->mahasiswa_id]) && $bidangKeahlianMahasiswa[$m->mahasiswa_id]->isNotEmpty())
+                                @php
+                                    $bidangKeahlianList = $bidangKeahlianMahasiswa[$m->mahasiswa_id];
+                                    $totalBidang = $bidangKeahlianList->count();
+                                @endphp
+                                
+                                @if($totalBidang <= 2)
+                                    <!-- Tampilkan semua jika <= 2 -->
+                                    @foreach($bidangKeahlianList as $bidang)
+                                        <span class="badge bg-primary me-1 mb-1">{{ $bidang->nama_bidang_keahlian }}</span>
+                                    @endforeach
+                                @else
+                                    <!-- Tampilkan 2 pertama + counter jika > 2 -->
+                                    @foreach($bidangKeahlianList->take(2) as $bidang)
+                                        <span class="badge bg-primary me-1 mb-1">{{ $bidang->nama_bidang_keahlian }}</span>
+                                    @endforeach
+                                    <span class="badge bg-secondary">+{{ $totalBidang - 2 }} lainnya</span>
+                                @endif
+                            @else
+                                <span class="text-muted">-</span>
+                            @endif
+                        </td>
                         <td>
                             <div class="d-flex gap-2">
                                 <a href="{{ route('koordinator.detailDataMahasiswa', ['id' => $m->mahasiswa_id]) }}" class="{{ request()->routeIs('koordinator.detailDataMahasiswa') ? 'active' : '' }}">
