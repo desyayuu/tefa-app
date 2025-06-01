@@ -30,7 +30,6 @@
                             </td>
                             <td>
                                 <span class="badge bg-success">
-                                    <i class="fas fa-check-circle me-1"></i>
                                     {{ $proyek->status_proyek }}
                                 </span>
                             </td>

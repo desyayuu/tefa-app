@@ -67,12 +67,10 @@
                             <td colspan="6" class="text-center py-4">
                                 @if(isset($searchPartisipasi) && $searchPartisipasi)
                                     <div class="text-muted">
-                                        <i class="fas fa-search mb-2"></i><br>
                                         Tidak ada hasil yang cocok dengan pencarian "{{ $searchPartisipasi }}"
                                     </div>
                                 @else
                                     <div class="text-muted">
-                                        <i class="fas fa-users mb-2"></i><br>
                                         Belum ada dosen yang berpartisipasi dalam proyek yang sedang berjalan
                                     </div>
                                 @endif

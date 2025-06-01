@@ -71,7 +71,7 @@
                                     </div>
                                 @else
                                     <div class="text-muted">
-                                        Belum ada mahasiswayang berpartisipasi dalam proyek yang sedang berjalan
+                                        Belum ada mahasiswa yang berpartisipasi dalam proyek yang sedang berjalan
                                     </div>
                                 @endif
                             </td>

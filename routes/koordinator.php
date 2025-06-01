@@ -18,6 +18,7 @@ use App\Http\Controllers\Koordinator\DataKeuangan\DataKeuanganTefaController;
 use App\Http\Controllers\Koordinator\DataKeuangan\DataMasukKeuanganProyekController;
 use App\Http\Controllers\Koordinator\DataKeuangan\DataKeluarKeuanganProyekController;
 use App\Http\Controllers\Koordinator\DataSubJenisKategoriTransaksiController;
+use App\Http\Controllers\Koordinator\DataBidangKeahlianMahasiswaController;
 
 Route::middleware([KoordinatorMiddleware::class])->prefix('koordinator')->group(function () {
     Route::get('/', [KoordinatorController::class, 'dashboard'])->name('koordinator.dashboard');
@@ -66,6 +67,8 @@ Route::middleware([KoordinatorMiddleware::class])->prefix('koordinator')->group(
     Route::put('/mahasiswa/{id}', [DataMahasiswaController::class, 'updateDataMahasiswa'])->name('koordinator.updateDataMahasiswa');
     Route::delete('/mahasiswa/{id}', [DataMahasiswaController::class, 'deleteDataMahasiswa'])->name('koordinator.deleteDataMahasiswa');
     Route::get('/data-mahasiswa/{id}', [DataMahasiswaController::class, 'getDataMahasiswaById'])->name('koordinator.detailDataMahasiswa');
+    Route::put('/mahasiswa/{id}/bidang-keahlian', [DataMahasiswaController::class, 'updateBidangKeahlianMahasiswa'])->name('koordinator.updateBidangKeahlianMahasiswa');
+    Route::get('/mahasiswa/{id}/bidang-keahlian', [DataMahasiswaController::class, 'getBidangKeahlianMahasiswa'])->name('koordinator.getBidangKeahlianMahasiswa');
 
     // Project Leader and Members
     Route::put('/proyek/{id}/project-leader', [DataAnggotaProyekController::class, 'updateProjectLeader'])->name('koordinator.updateProjectLeader');
@@ -159,5 +162,6 @@ Route::middleware([KoordinatorMiddleware::class])->prefix('koordinator')->group(
         Route::get('/get-jenis-transaksi', [DataSubJenisKategoriTransaksiController::class, 'getJenisTransaksi'])->name('koordinator.getJenisTransaksi');
         Route::get('/get-jenis-keuangan-tefa', [DataSubJenisKategoriTransaksiController::class, 'getJenisKeuanganTefa'])->name('koordinator.getJenisKeuanganTefa');
     });
+
 
 });

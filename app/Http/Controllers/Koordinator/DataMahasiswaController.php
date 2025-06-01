@@ -124,11 +124,17 @@ class DataMahasiswaController extends Controller
                 'pageName' => 'partisipasi_page',
             ]
         );
+
+        $bidangKeahlian = DB::table('m_bidang_keahlian')
+            ->whereNull('deleted_at')
+            ->orderBy('nama_bidang_keahlian', 'asc')
+            ->get();
         return view('pages.Koordinator.DataMahasiswa.kelola_data_mahasiswa', compact(
             'mahasiswa', 
             'search', 
             'partisipasiMahasiswa', 
-            'searchPartisipasi'
+            'searchPartisipasi',
+            'bidangKeahlian'
         ), [
             'titleSidebar' => 'Data Mahasiswa'
         ]);
@@ -697,6 +703,21 @@ class DataMahasiswaController extends Controller
             return redirect()->route('koordinator.dataMahasiswa')->with('error', 'Data mahasiswa tidak ditemukan.');
         }
 
+        // TAMBAHAN: Ambil data bidang keahlian
+        $bidangKeahlian = DB::table('m_bidang_keahlian')
+            ->whereNull('deleted_at')
+            ->orderBy('nama_bidang_keahlian', 'asc')
+            ->get();
+
+        // TAMBAHAN: Ambil bidang keahlian yang sudah dipilih mahasiswa
+        $selectedBidangKeahlian = DB::table('t_mahasiswa_bidang_keahlian as mbk')
+            ->join('m_bidang_keahlian as bk', 'mbk.bidang_keahlian_id', '=', 'bk.bidang_keahlian_id')
+            ->where('mbk.mahasiswa_id', $id)
+            ->whereNull('mbk.deleted_at')
+            ->whereNull('bk.deleted_at')
+            ->select('bk.bidang_keahlian_id', 'bk.nama_bidang_keahlian')
+            ->get();
+
         // Get riwayat proyek dengan pagination menggunakan UNION
         // Query untuk proyek sebagai leader
         $proyekLeaderQuery = DB::table('t_project_leader as leader')
@@ -744,8 +765,216 @@ class DataMahasiswaController extends Controller
         // Append mahasiswa_id ke pagination links
         $riwayatProyek->appends(['mahasiswa_id' => $id]);
 
-        return view('pages.Koordinator.DataMahasiswa.detail_data_mahasiswa', compact('mahasiswa', 'riwayatProyek'), [
+        return view('pages.Koordinator.DataMahasiswa.detail_data_mahasiswa', compact(
+            'mahasiswa', 
+            'riwayatProyek', 
+            'bidangKeahlian', 
+            'selectedBidangKeahlian'
+        ), [
             'titleSidebar' => 'Detail Mahasiswa'
         ]);
+    }
+
+    public function updateBidangKeahlianMahasiswa(Request $request, $id)
+    {
+        try {
+            // Validasi mahasiswa exists
+            $mahasiswa = DB::table('d_mahasiswa')
+                ->where('mahasiswa_id', $id)
+                ->whereNull('deleted_at')
+                ->first();
+                
+            if (!$mahasiswa) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Data mahasiswa tidak ditemukan.'
+                ], 404);
+            }
+
+            // Validasi input bidang keahlian
+            $request->validate([
+                'bidang_keahlian' => 'nullable|array',
+                'bidang_keahlian.*' => 'exists:m_bidang_keahlian,bidang_keahlian_id'
+            ], [
+                'bidang_keahlian.array' => 'Format bidang keahlian tidak valid.',
+                'bidang_keahlian.*.exists' => 'Bidang keahlian yang dipilih tidak valid.'
+            ]);
+
+            DB::beginTransaction();
+            
+            try {
+                // Ambil bidang keahlian yang sudah ada untuk mahasiswa ini
+                $existingBidangKeahlian = DB::table('t_mahasiswa_bidang_keahlian')
+                    ->where('mahasiswa_id', $id)
+                    ->whereNull('deleted_at')
+                    ->pluck('bidang_keahlian_id')
+                    ->toArray();
+
+                // Bidang keahlian yang baru dipilih
+                $newBidangKeahlian = $request->input('bidang_keahlian', []);
+
+                // ANALISIS PERUBAHAN:
+                // 1. Yang perlu dihapus = ada di existing tapi tidak ada di new
+                $toDelete = array_diff($existingBidangKeahlian, $newBidangKeahlian);
+                
+                // 2. Yang perlu ditambah = ada di new tapi tidak ada di existing  
+                $toInsert = array_diff($newBidangKeahlian, $existingBidangKeahlian);
+                
+                // 3. Yang tetap sama = ada di both (tidak perlu diapa-apakan)
+                $unchanged = array_intersect($existingBidangKeahlian, $newBidangKeahlian);
+
+                $deletedCount = 0;
+                $insertedCount = 0;
+
+                // HAPUS yang tidak dipilih lagi
+                if (!empty($toDelete)) {
+                    $deletedCount = DB::table('t_mahasiswa_bidang_keahlian')
+                        ->where('mahasiswa_id', $id)
+                        ->whereIn('bidang_keahlian_id', $toDelete)
+                        ->whereNull('deleted_at')
+                        ->update([
+                            'deleted_at' => now(),
+                            'deleted_by' => session('user_id', 'system')
+                        ]);
+                }
+
+                // TAMBAH yang baru dipilih
+                if (!empty($toInsert)) {
+                    foreach ($toInsert as $bidangKeahlianId) {
+                        // Double check apakah bidang keahlian valid
+                        $bidangKeahlianExists = DB::table('m_bidang_keahlian')
+                            ->where('bidang_keahlian_id', $bidangKeahlianId)
+                            ->whereNull('deleted_at')
+                            ->exists();
+                            
+                        if ($bidangKeahlianExists) {
+                            DB::table('t_mahasiswa_bidang_keahlian')->insert([
+                                'mahasiswa_bidang_keahlian_id' => Str::uuid(),
+                                'mahasiswa_id' => $id,
+                                'bidang_keahlian_id' => $bidangKeahlianId,
+                                'created_at' => now(),
+                                'created_by' => session('user_id', 'system')
+                            ]);
+                            $insertedCount++;
+                        }
+                    }
+                }
+
+                DB::commit();
+
+                // Log activity dengan detail lengkap
+                \Log::info('Bidang keahlian mahasiswa updated successfully', [
+                    'mahasiswa_id' => $id,
+                    'existing_count' => count($existingBidangKeahlian),
+                    'new_count' => count($newBidangKeahlian),
+                    'unchanged_count' => count($unchanged),
+                    'deleted_count' => $deletedCount,
+                    'inserted_count' => $insertedCount,
+                    'to_delete' => $toDelete,
+                    'to_insert' => $toInsert,
+                    'unchanged' => $unchanged,
+                    'updated_by' => session('user_id', 'system')
+                ]);
+
+                // Buat message yang lebih informatif
+                $message = "Bidang keahlian berhasil diperbarui.";
+                $details = [];
+                
+                if ($insertedCount > 0) {
+                    $details[] = "{$insertedCount} bidang keahlian ditambahkan";
+                }
+                if ($deletedCount > 0) {
+                    $details[] = "{$deletedCount} bidang keahlian dihapus";
+                }
+                if (count($unchanged) > 0) {
+                    $details[] = count($unchanged) . " bidang keahlian tetap";
+                }
+                
+                if (!empty($details)) {
+                    $message .= " (" . implode(', ', $details) . ")";
+                }
+
+                return response()->json([
+                    'status' => 'success',
+                    'message' => $message,
+                    'data' => [
+                        'mahasiswa_id' => $id,
+                        'total_bidang_keahlian' => count($newBidangKeahlian),
+                        'changes' => [
+                            'inserted' => $insertedCount,
+                            'deleted' => $deletedCount,
+                            'unchanged' => count($unchanged)
+                        ]
+                    ]
+                ]);
+
+            } catch (\Exception $e) {
+                DB::rollBack();
+                
+                \Log::error('Error updating bidang keahlian mahasiswa', [
+                    'mahasiswa_id' => $id,
+                    'error' => $e->getMessage(),
+                    'line' => $e->getLine(),
+                    'file' => $e->getFile(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Gagal memperbarui bidang keahlian: ' . $e->getMessage()
+                ], 500);
+            }
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Validasi gagal.',
+                'errors' => $e->errors()
+            ], 422);
+            
+        } catch (\Exception $e) {
+            \Log::error('Exception in updateBidangKeahlianMahasiswa', [
+                'mahasiswa_id' => $id ?? 'unknown',
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Terjadi kesalahan sistem: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getBidangKeahlianMahasiswa($id)
+    {
+        try {
+            $bidangKeahlian = DB::table('t_mahasiswa_bidang_keahlian as mbk')
+                ->join('m_bidang_keahlian as bk', 'mbk.bidang_keahlian_id', '=', 'bk.bidang_keahlian_id')
+                ->where('mbk.mahasiswa_id', $id)
+                ->whereNull('mbk.deleted_at')
+                ->whereNull('bk.deleted_at')
+                ->select('bk.bidang_keahlian_id', 'bk.nama_bidang_keahlian')
+                ->orderBy('bk.nama_bidang_keahlian', 'asc')
+                ->get();
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $bidangKeahlian
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error getting bidang keahlian mahasiswa', [
+                'mahasiswa_id' => $id,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Gagal mengambil data bidang keahlian.'
+            ], 500);
+        }
     }
 }

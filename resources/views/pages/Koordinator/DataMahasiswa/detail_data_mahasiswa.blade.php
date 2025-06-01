@@ -32,6 +32,9 @@
         <div class="section-data-mahasiswa">
             @include('pages.Koordinator.DataMahasiswa.data_mahasiswa')
         </div>
+        <div class="section-bidang-keahlian">
+            @include('pages.Koordinator.DataMahasiswa.data_bidang_keahlian')
+        </div>
         <div class="section-riwayat-proyek">
             @include('pages.Koordinator.DataMahasiswa.riwayat_proyek_mahasiswa')
         </div>

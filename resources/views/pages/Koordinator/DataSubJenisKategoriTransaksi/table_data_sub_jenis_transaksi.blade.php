@@ -17,6 +17,8 @@
                             Data Sub Jenis Kategori Transaksi
                         </a>
                     </li>
+                    <li class="breadcrumb-item">
+                    </li>
                 </ol>
             </nav>
         </div>

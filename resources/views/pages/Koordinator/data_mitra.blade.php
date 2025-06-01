@@ -19,10 +19,6 @@
                         </a>
                     </li>
                     <li class="breadcrumb-item">
-                        <a href="">
-                            <i class="fas fa-project-diagram me-1"></i>
-                           
-                        </a>
                     </li>
                 </ol>
             </nav>
@@ -299,3 +295,7 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+    @vite('resources/js/Koordinator/data_mitra.js')
+@endpush
