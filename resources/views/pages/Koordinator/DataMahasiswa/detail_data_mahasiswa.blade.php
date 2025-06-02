@@ -29,14 +29,17 @@
             </nav>
         </div>
 
-        <div class="section-data-mahasiswa">
+        <div class="section-data-mahasiswa" id="section-data-mahasiswa">
             @include('pages.Koordinator.DataMahasiswa.data_mahasiswa')
         </div>
-        <div class="section-bidang-keahlian">
+        <div class="section-bidang-keahlian" id="section-bidang-keahlian">
             @include('pages.Koordinator.DataMahasiswa.data_bidang_keahlian')
         </div>
-        <div class="section-riwayat-proyek">
+        <div class="section-riwayat-proyek" id="section-riwayat-proyek">
             @include('pages.Koordinator.DataMahasiswa.riwayat_proyek_mahasiswa')
+        </div>
+        <div class="section-portofolio-mahasiswa" id="section-portofolio">
+            @include('pages.Koordinator.DataMahasiswa.data_portofolio_mahasiswa')
         </div>
 
     </div>
@@ -44,5 +47,6 @@
 @endsection
 
 @push('scripts')
-    @vite('resources/js/Koordinator/data_mahasiswa.js')
+    @vite('resources/js/Koordinator/data_bidang_keahlian.js')
+    @vite('resources/js/Koordinator/data_portofolio.js')
 @endpush

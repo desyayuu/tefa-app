@@ -164,7 +164,7 @@
                     <tr>
                     <!-- <th scope="col">#</th> -->
                     <th scope="col" style="width: 30%">Nama Mahasiswa</th>
-                    <th scope="col" style="width: 10%">NIM</th>
+                    <th scope="col" style="width: 15%">NIM</th>
                     <th scope="col" style="width: 40%">Bidang Keahlian</th>
                     <th scope="col" style="width: 15%">Aksi</th>
                     </tr>

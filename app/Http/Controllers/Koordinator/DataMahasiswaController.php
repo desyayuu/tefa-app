@@ -711,6 +711,7 @@ class DataMahasiswaController extends Controller
         }
     }
 
+
     public function getDataMahasiswaById(Request $request, $id){
         // Get data mahasiswa utama
         $mahasiswa = DB::table('d_mahasiswa as mahasiswa')
@@ -723,13 +724,13 @@ class DataMahasiswaController extends Controller
             return redirect()->route('koordinator.dataMahasiswa')->with('error', 'Data mahasiswa tidak ditemukan.');
         }
 
-        // TAMBAHAN: Ambil data bidang keahlian
+        // Ambil data bidang keahlian
         $bidangKeahlian = DB::table('m_bidang_keahlian')
             ->whereNull('deleted_at')
             ->orderBy('nama_bidang_keahlian', 'asc')
             ->get();
 
-        // TAMBAHAN: Ambil bidang keahlian yang sudah dipilih mahasiswa
+        // Ambil bidang keahlian yang sudah dipilih mahasiswa
         $selectedBidangKeahlian = DB::table('t_mahasiswa_bidang_keahlian as mbk')
             ->join('m_bidang_keahlian as bk', 'mbk.bidang_keahlian_id', '=', 'bk.bidang_keahlian_id')
             ->where('mbk.mahasiswa_id', $id)
@@ -738,8 +739,7 @@ class DataMahasiswaController extends Controller
             ->select('bk.bidang_keahlian_id', 'bk.nama_bidang_keahlian')
             ->get();
 
-        // Get riwayat proyek dengan pagination menggunakan UNION
-        // Query untuk proyek sebagai leader
+        // TAMBAHAN: Get riwayat proyek (existing code)
         $proyekLeaderQuery = DB::table('t_project_leader as leader')
             ->join('m_proyek as proyek', 'leader.proyek_id', '=', 'proyek.proyek_id')
             ->select(
@@ -757,7 +757,6 @@ class DataMahasiswaController extends Controller
             ->whereNull('leader.deleted_at')
             ->whereNull('proyek.deleted_at');
 
-        // Query untuk proyek sebagai member
         $proyekMemberQuery = DB::table('t_project_member_mahasiswa as member')
             ->join('m_proyek as proyek', 'member.proyek_id', '=', 'proyek.proyek_id')
             ->select(
@@ -774,25 +773,324 @@ class DataMahasiswaController extends Controller
             ->whereNull('member.deleted_at')
             ->whereNull('proyek.deleted_at');
 
-        // Gabungkan kedua query dengan UNION dan buat pagination
         $combinedQuery = $proyekLeaderQuery->union($proyekMemberQuery);
-        
         $riwayatProyek = DB::table(DB::raw("({$combinedQuery->toSql()}) as riwayat"))
             ->mergeBindings($combinedQuery)
             ->orderBy('riwayat.tanggal_selesai', 'desc')
             ->paginate(5, ['*'], 'riwayat_page'); 
 
-        // Append mahasiswa_id ke pagination links
         $riwayatProyek->appends(['mahasiswa_id' => $id]);
+
+        //Get data portofolio mahasiswa dengan pagination
+        $searchPortofolio = $request->input('search_portofolio');
+        
+        $portofolioQuery = DB::table('d_portofolio')
+            ->where('mahasiswa_id', $id)
+            ->whereNull('deleted_at');
+            
+        if ($searchPortofolio) {
+            $portofolioQuery->where(function($q) use ($searchPortofolio) {
+                $q->where('nama_kegiatan', 'like', "%$searchPortofolio%")
+                ->orWhere('jenis_kegiatan', 'like', "%$searchPortofolio%")
+                ->orWhere('penyelenggara', 'like', "%$searchPortofolio%")
+                ->orWhere('peran_dalam_kegiatan', 'like', "%$searchPortofolio%");
+            });
+        }
+        
+        $portofolioMahasiswa = $portofolioQuery
+            ->orderBy('created_at', 'desc')
+            ->paginate(5, ['*'], 'portofolio_page');
+            
+        $portofolioMahasiswa->appends(['mahasiswa_id' => $id, 'search_portofolio' => $searchPortofolio]);
 
         return view('pages.Koordinator.DataMahasiswa.detail_data_mahasiswa', compact(
             'mahasiswa', 
             'riwayatProyek', 
             'bidangKeahlian', 
-            'selectedBidangKeahlian'
+            'selectedBidangKeahlian',
+            'portofolioMahasiswa',  // TAMBAHAN
+            'searchPortofolio'      // TAMBAHAN
         ), [
             'titleSidebar' => 'Detail Mahasiswa'
         ]);
+    }
+
+
+    public function tambahPortofolioMahasiswa(Request $request)
+    {
+        try {
+            $request->validate([
+                'mahasiswa_id' => 'required|exists:d_mahasiswa,mahasiswa_id',
+                'nama_kegiatan' => 'required|string|max:255',
+                'jenis_kegiatan' => 'required|in:Magang,Pelatihan,Lomba,Penelitian,Pengabdian,Lainnya',
+                'deskripsi_kegiatan' => 'nullable|string',
+                'penyelenggara' => 'nullable|string|max:255',
+                'tingkat_kegiatan' => 'required|in:Internasional,Nasional,Regional,Lainnya',
+                'link_kegiatan' => 'nullable|url|max:255',
+                'peran_dalam_kegiatan' => 'nullable|string|max:255',
+            ], [
+                'mahasiswa_id.required' => 'Data mahasiswa tidak valid.',
+                'mahasiswa_id.exists' => 'Data mahasiswa tidak ditemukan.',
+                'nama_kegiatan.required' => 'Nama kegiatan harus diisi.',
+                'jenis_kegiatan.required' => 'Jenis kegiatan harus dipilih.',
+                'tingkat_kegiatan.required' => 'Tingkat kegiatan harus dipilih.',
+                'link_kegiatan.url' => 'Format link tidak valid.',
+            ]);
+
+            DB::beginTransaction();
+            
+            try {
+                $portofolioId = Str::uuid();
+                
+                $portofolioData = [
+                    'portofolio_id' => $portofolioId,
+                    'mahasiswa_id' => $request->input('mahasiswa_id'),
+                    'nama_kegiatan' => $request->input('nama_kegiatan'),
+                    'jenis_kegiatan' => $request->input('jenis_kegiatan'),
+                    'deskripsi_kegiatan' => $request->input('deskripsi_kegiatan'),
+                    'penyelenggara' => $request->input('penyelenggara'),
+                    'tingkat_kegiatan' => $request->input('tingkat_kegiatan'),
+                    'link_kegiatan' => $request->input('link_kegiatan'),
+                    'peran_dalam_kegiatan' => $request->input('peran_dalam_kegiatan'),
+                    'created_at' => now(),
+                    'created_by' => session('user_id'),
+                ];
+
+                DB::table('d_portofolio')->insert($portofolioData);
+                
+                DB::commit();
+                
+                if ($request->ajax()) {
+                    return response()->json([
+                        'status' => 'success',
+                        'message' => 'Data portofolio berhasil ditambahkan.'
+                    ]);
+                }
+                
+                return redirect()->back()->with('success', 'Data portofolio berhasil ditambahkan.');
+                
+            } catch (\Exception $e) {
+                DB::rollBack();
+                \Log::error('Error adding portofolio data', [
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+                
+                if ($request->ajax()) {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Gagal menambahkan data: ' . $e->getMessage()
+                    ], 500);
+                }
+                
+                return redirect()->back()->with('error', 'Gagal menambahkan data: ' . $e->getMessage());
+            }
+            
+        } catch (\Exception $e) {
+            \Log::error('Exception in tambahPortofolioMahasiswa', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            if ($request->ajax()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                ], 500);
+            }
+            
+            return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+
+
+    public function updatePortofolioMahasiswa(Request $request, $id)
+    {
+        try {
+            $portofolio = DB::table('d_portofolio')
+                ->where('portofolio_id', $id)
+                ->whereNull('deleted_at')
+                ->first();
+                
+            if (!$portofolio) {
+                if ($request->ajax()) {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Data portofolio tidak ditemukan.'
+                    ], 404);
+                }
+                return redirect()->back()->with('error', 'Data portofolio tidak ditemukan.');
+            }
+
+            $request->validate([
+                'nama_kegiatan' => 'required|string|max:255',
+                'jenis_kegiatan' => 'required|in:Magang,Pelatihan,Lomba,Penelitian,Pengabdian,Lainnya',
+                'deskripsi_kegiatan' => 'nullable|string',
+                'penyelenggara' => 'nullable|string|max:255',
+                'tingkat_kegiatan' => 'required|in:Internasional,Nasional,Regional,Lainnya',
+                'link_kegiatan' => 'nullable|url|max:255',
+                'peran_dalam_kegiatan' => 'nullable|string|max:255',
+            ], [
+                'nama_kegiatan.required' => 'Nama kegiatan harus diisi.',
+                'jenis_kegiatan.required' => 'Jenis kegiatan harus dipilih.',
+                'tingkat_kegiatan.required' => 'Tingkat kegiatan harus dipilih.',
+                'link_kegiatan.url' => 'Format link tidak valid.'
+            ]);
+
+            DB::beginTransaction();
+            
+            try {
+                $portofolioData = [
+                    'nama_kegiatan' => $request->input('nama_kegiatan'),
+                    'jenis_kegiatan' => $request->input('jenis_kegiatan'),
+                    'deskripsi_kegiatan' => $request->input('deskripsi_kegiatan'),
+                    'penyelenggara' => $request->input('penyelenggara'),
+                    'tingkat_kegiatan' => $request->input('tingkat_kegiatan'),
+                    'link_kegiatan' => $request->input('link_kegiatan'),
+                    'peran_dalam_kegiatan' => $request->input('peran_dalam_kegiatan'),
+                    'updated_at' => now(),
+                    'updated_by' => session('user_id'),
+                ];
+
+                DB::table('d_portofolio')
+                    ->where('portofolio_id', $id)
+                    ->update($portofolioData);
+                    
+                DB::commit();
+                
+                if ($request->ajax()) {
+                    return response()->json([
+                        'status' => 'success',
+                        'message' => 'Data portofolio berhasil diperbarui.'
+                    ]);
+                }
+                
+                return redirect()->back()->with('success', 'Data portofolio berhasil diperbarui.');
+                
+            } catch (\Exception $e) {
+                DB::rollBack();
+                \Log::error('Error updating portofolio data', [
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+                
+                if ($request->ajax()) {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Gagal memperbarui data: ' . $e->getMessage()
+                    ], 500);
+                }
+                
+                return redirect()->back()->with('error', 'Gagal memperbarui data: ' . $e->getMessage());
+            }
+            
+        } catch (\Exception $e) {
+            \Log::error('Exception in updatePortofolioMahasiswa', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            if ($request->ajax()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                ], 500);
+            }
+            
+            return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+
+
+    public function deletePortofolioMahasiswa($id)
+    {
+        try {
+            $portofolio = DB::table('d_portofolio')
+                ->where('portofolio_id', $id)
+                ->whereNull('deleted_at')
+                ->first();
+                
+            if (!$portofolio) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Data portofolio tidak ditemukan.'
+                ], 404);
+            }
+
+            DB::beginTransaction();
+            
+            try {
+                DB::table('d_portofolio')
+                    ->where('portofolio_id', $id)
+                    ->update([
+                        'deleted_at' => now(),
+                        'deleted_by' => session('user_id'),
+                    ]);
+                    
+                DB::commit();
+                
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Data portofolio berhasil dihapus.'
+                ]);
+                
+            } catch (\Exception $e) {
+                DB::rollBack();
+                \Log::error('Error deleting portofolio data', [
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+                
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Gagal menghapus data: ' . $e->getMessage()
+                ], 500);
+            }
+            
+        } catch (\Exception $e) {
+            \Log::error('Exception in deletePortofolioMahasiswa', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getPortofolioMahasiswaById($id)
+    {
+        try {
+            $portofolio = DB::table('d_portofolio')
+                ->where('portofolio_id', $id)
+                ->whereNull('deleted_at')
+                ->first();
+                
+            if (!$portofolio) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Data portofolio tidak ditemukan.'
+                ], 404);
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $portofolio
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Exception in getPortofolioMahasiswaById', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function updateBidangKeahlianMahasiswa(Request $request, $id)
