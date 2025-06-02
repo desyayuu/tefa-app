@@ -67,7 +67,6 @@ Route::middleware([KoordinatorMiddleware::class])->prefix('koordinator')->group(
     Route::put('/mahasiswa/{id}', [DataMahasiswaController::class, 'updateDataMahasiswa'])->name('koordinator.updateDataMahasiswa');
     Route::delete('/mahasiswa/{id}', [DataMahasiswaController::class, 'deleteDataMahasiswa'])->name('koordinator.deleteDataMahasiswa');
     Route::get('/data-mahasiswa/{id}', [DataMahasiswaController::class, 'getDataMahasiswaById'])->name('koordinator.detailDataMahasiswa');
-     Route::get('/mahasiswa/{id}/delete-preview', [DataMahasiswaController::class, 'getDeletePreview'])->name('koordinator.mahasiswa.deletePreview');
     Route::put('/mahasiswa/{id}/bidang-keahlian', [DataMahasiswaController::class, 'updateBidangKeahlianMahasiswa'])->name('koordinator.updateBidangKeahlianMahasiswa');
     Route::get('/mahasiswa/{id}/bidang-keahlian', [DataMahasiswaController::class, 'getBidangKeahlianMahasiswa'])->name('koordinator.getBidangKeahlianMahasiswa');
     Route::get('/data-mahasiswa/portofolio/detail/{id}', [DataMahasiswaController::class, 'getPortofolioMahasiswaById'])->name('koordinator.portofolio.detail');

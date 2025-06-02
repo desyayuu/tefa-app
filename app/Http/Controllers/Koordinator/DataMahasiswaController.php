@@ -658,8 +658,190 @@ class DataMahasiswaController extends Controller
     }
 
     
-    public function deleteDataMahasiswa($id){
+    // public function deleteDataMahasiswa($id){
+    //     try {
+    //         $mahasiswa = DB::table('d_mahasiswa')
+    //             ->where('mahasiswa_id', $id)
+    //             ->whereNull('deleted_at')
+    //             ->first();
+                
+    //         if (!$mahasiswa) {
+    //             return redirect()->route('koordinator.dataMahasiswa')
+    //                 ->with('error', 'Data mahasiswa tidak ditemukan.');
+    //         }
+                
+    //         DB::beginTransaction();
+                
+    //         try {
+    //             DB::table('d_mahasiswa')
+    //                 ->where('mahasiswa_id', $id)
+    //                 ->update([
+    //                     'deleted_at' => now(),
+    //                     'deleted_by' => session('user_id'),
+    //                 ]);
+                    
+    //             DB::table('d_user')
+    //                 ->where('user_id', $mahasiswa->user_id)
+    //                 ->update([
+    //                     'deleted_at' => now(),
+    //                     'deleted_by' => session('user_id'),
+    //                     'status' => 'Disabled'
+    //                 ]);
+                    
+    //             DB::commit();
+                    
+    //             return redirect()->route('koordinator.dataMahasiswa')
+    //                 ->with('success', 'Data mahasiswa berhasil dihapus.');
+    //         } catch (\Exception $e) {
+    //             DB::rollBack();
+    //             \Log::error('Error deleting mahasiswa data', [
+    //                 'error' => $e->getMessage(),
+    //                 'trace' => $e->getTraceAsString()
+    //             ]);
+    //             return redirect()->route('koordinator.dataMahasiswa')
+    //                 ->with('error', 'Gagal menghapus data: ' . $e->getMessage());
+    //         }
+    //     } catch (\Exception $e) {
+    //         \Log::error('Exception in deleteDataMahasiswa', [
+    //             'message' => $e->getMessage(),
+    //             'trace' => $e->getTraceAsString()
+    //         ]);
+    //         return redirect()->route('koordinator.dataMahasiswa')
+    //             ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+    //     }
+    // }
+
+
+    public function checkMahasiswaDeletable($mahasiswaId)
+    {
+        $constraints = [];
+        $blockStatus = ['Initiation', 'In Progress'];
+
+        // 1. Cek apakah mahasiswa masih menjadi project leader di proyek yang In Progress
+        $activeAsLeader = DB::table('t_project_leader as leader')
+            ->join('m_proyek as proyek', 'leader.proyek_id', '=', 'proyek.proyek_id')
+            ->where('leader.leader_id', $mahasiswaId)
+            ->where('leader.leader_type', 'Mahasiswa')
+            ->whereIn('proyek.status_proyek', $blockStatus)
+            ->whereNull('leader.deleted_at')
+            ->whereNull('proyek.deleted_at')
+            ->select('proyek.nama_proyek', 'proyek.proyek_id')
+            ->get();
+
+        if ($activeAsLeader->isNotEmpty()) {
+            $constraints['active_as_leader'] = [
+                'status' => false,
+                'message' => 'Mahasiswa masih menjadi Project Leader di proyek yang sedang berjalan',
+                'details' => $activeAsLeader->pluck('nama_proyek')->toArray(),
+                'count' => $activeAsLeader->count()
+            ];
+        }
+
+        // 2. Cek apakah mahasiswa masih menjadi member di proyek yang In Progress
+        $activeAsMember = DB::table('t_project_member_mahasiswa as member')
+            ->join('m_proyek as proyek', 'member.proyek_id', '=', 'proyek.proyek_id')
+            ->where('member.mahasiswa_id', $mahasiswaId)
+            ->whereIn('proyek.status_proyek', $blockStatus)
+            ->whereNull('member.deleted_at')
+            ->whereNull('proyek.deleted_at')
+            ->select('proyek.nama_proyek', 'proyek.proyek_id')
+            ->get();
+
+        if ($activeAsMember->isNotEmpty()) {
+            $constraints['active_as_member'] = [
+                'status' => false,
+                'message' => 'Mahasiswa masih menjadi anggota di proyek yang sedang berjalan',
+                'details' => $activeAsMember->pluck('nama_proyek')->toArray(),
+                'count' => $activeAsMember->count()
+            ];
+        }
+
+        return [
+            'deletable' => empty($constraints),
+            'constraints' => $constraints
+        ];
+    }
+
+
+    public function getRelatedDataSummary($mahasiswaId)
+    {
+        $summary = [];
+
+        // 1. Portofolio mahasiswa
+        $portofolioCount = DB::table('d_portofolio')
+            ->where('mahasiswa_id', $mahasiswaId)
+            ->whereNull('deleted_at')
+            ->count();
+
+        if ($portofolioCount > 0) {
+            $summary['portofolio'] = [
+                'count' => $portofolioCount,
+                'description' => 'data portofolio'
+            ];
+        }
+
+        // 2. Bidang keahlian mahasiswa
+        $bidangKeahlianCount = DB::table('t_mahasiswa_bidang_keahlian')
+            ->where('mahasiswa_id', $mahasiswaId)
+            ->whereNull('deleted_at')
+            ->count();
+
+        if ($bidangKeahlianCount > 0) {
+            $summary['bidang_keahlian'] = [
+                'count' => $bidangKeahlianCount,
+                'description' => 'bidang keahlian'
+            ];
+        }
+
+        return $summary;
+    }
+
+    protected function cascadeDeleteRelatedData($mahasiswaId, $deletedBy)
+    {
+        $deletedData = [];
+
         try {
+            // 1. Soft delete portofolio mahasiswa
+            $portofolioDeleted = DB::table('d_portofolio')
+                ->where('mahasiswa_id', $mahasiswaId)
+                ->whereNull('deleted_at')
+                ->update([
+                    'deleted_at' => now(),
+                    'deleted_by' => $deletedBy
+                ]);
+
+            if ($portofolioDeleted > 0) {
+                $deletedData['portofolio'] = $portofolioDeleted;
+            }
+
+            // 2. Soft delete bidang keahlian mahasiswa
+            $bidangKeahlianDeleted = DB::table('t_mahasiswa_bidang_keahlian')
+                ->where('mahasiswa_id', $mahasiswaId)
+                ->whereNull('deleted_at')
+                ->update([
+                    'deleted_at' => now(),
+                    'deleted_by' => $deletedBy
+                ]);
+
+            if ($bidangKeahlianDeleted > 0) {
+                $deletedData['bidang_keahlian'] = $bidangKeahlianDeleted;
+            }
+
+            return $deletedData;
+
+        } catch (\Exception $e) {
+            \Log::error('Error in cascade delete related data', [
+                'mahasiswa_id' => $mahasiswaId,
+                'error' => $e->getMessage()
+            ]);
+            throw $e;
+        }
+    }
+
+    public function deleteDataMahasiswa($id)
+    {
+        try {
+            // 1. Validasi mahasiswa exists
             $mahasiswa = DB::table('d_mahasiswa')
                 ->where('mahasiswa_id', $id)
                 ->whereNull('deleted_at')
@@ -669,10 +851,35 @@ class DataMahasiswaController extends Controller
                 return redirect()->route('koordinator.dataMahasiswa')
                     ->with('error', 'Data mahasiswa tidak ditemukan.');
             }
+
+            // 2. Check apakah mahasiswa bisa dihapus
+            $deletableCheck = $this->checkMahasiswaDeletable($id);
+            
+            if (!$deletableCheck['deletable']) {
+                $constraints = $deletableCheck['constraints'];
+                $errorMessages = [];
                 
+                foreach ($constraints as $constraint) {
+                    $errorMessages[] = $constraint['message'];
+                    if (isset($constraint['details']) && !empty($constraint['details'])) {
+                        $errorMessages[] = '- Proyek: ' . implode(', ', $constraint['details']);
+                    }
+                }
+                
+                return redirect()->route('koordinator.dataMahasiswa')
+                    ->with('error', 'Tidak dapat menghapus mahasiswa. ' . implode(' ', $errorMessages));
+            }
+
+            // 3. Get summary data yang akan terhapus
+            $relatedDataSummary = $this->getRelatedDataSummary($id);
+
             DB::beginTransaction();
                 
             try {
+                // 4. Cascade delete related data
+                $deletedRelatedData = $this->cascadeDeleteRelatedData($id, session('user_id'));
+
+                // 5. Soft delete mahasiswa
                 DB::table('d_mahasiswa')
                     ->where('mahasiswa_id', $id)
                     ->update([
@@ -680,6 +887,7 @@ class DataMahasiswaController extends Controller
                         'deleted_by' => session('user_id'),
                     ]);
                     
+                // 6. Soft delete user account
                 DB::table('d_user')
                     ->where('user_id', $mahasiswa->user_id)
                     ->update([
@@ -689,22 +897,46 @@ class DataMahasiswaController extends Controller
                     ]);
                     
                 DB::commit();
+
+                // 7. Logging
+                \Log::info('Mahasiswa deleted successfully with cascade operations', [
+                    'mahasiswa_id' => $id,
+                    'mahasiswa_name' => $mahasiswa->nama_mahasiswa,
+                    'deleted_related_data' => $deletedRelatedData
+                ]);
+
+                // 8. Success message
+                $successMessage = "Data mahasiswa {$mahasiswa->nama_mahasiswa} berhasil dihapus";
+                $additionalInfo = [];
+                
+                if (isset($deletedRelatedData['portofolio']) && $deletedRelatedData['portofolio'] > 0) {
+                    $additionalInfo[] = "{$deletedRelatedData['portofolio']} portofolio";
+                }
+                if (isset($deletedRelatedData['bidang_keahlian']) && $deletedRelatedData['bidang_keahlian'] > 0) {
+                    $additionalInfo[] = "{$deletedRelatedData['bidang_keahlian']} bidang keahlian";
+                }
+                
+                if (!empty($additionalInfo)) {
+                    $successMessage .= " beserta " . implode(' dan ', $additionalInfo);
+                }
+                $successMessage .= ".";
                     
                 return redirect()->route('koordinator.dataMahasiswa')
-                    ->with('success', 'Data mahasiswa berhasil dihapus.');
+                    ->with('success', $successMessage);
+
             } catch (\Exception $e) {
                 DB::rollBack();
-                \Log::error('Error deleting mahasiswa data', [
-                    'error' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString()
+                \Log::error('Error deleting mahasiswa data with cascade', [
+                    'mahasiswa_id' => $id,
+                    'error' => $e->getMessage()
                 ]);
                 return redirect()->route('koordinator.dataMahasiswa')
                     ->with('error', 'Gagal menghapus data: ' . $e->getMessage());
             }
+            
         } catch (\Exception $e) {
             \Log::error('Exception in deleteDataMahasiswa', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'message' => $e->getMessage()
             ]);
             return redirect()->route('koordinator.dataMahasiswa')
                 ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());

@@ -680,8 +680,61 @@ class DataDosenController extends Controller{
         }
     }
 
-    public function deleteDataDosen($id){
+    // Cek apkah dosen bisa dihapus atau ngga (berkaitan apa jadi project leader atau member)
+    public function checkDosenDeletable($dosenId)
+    {
+        $constraints = [];
+        $blockStatus = ['In Progress', 'Initiation'];
+        
+        // 1. Cek apakah dosen masih menjadi project leader di proyek yang In Progress atau inisiasi
+        $activeAsLeader = DB::table('t_project_leader as leader')
+            ->join('m_proyek as proyek', 'leader.proyek_id', '=', 'proyek.proyek_id')
+            ->where('leader.leader_id', $dosenId)
+            ->where('leader.leader_type', 'Dosen')
+            ->whereIn('proyek.status_proyek', $blockStatus)
+            ->whereNull('leader.deleted_at')
+            ->whereNull('proyek.deleted_at')
+            ->select('proyek.nama_proyek', 'proyek.proyek_id')
+            ->get();
+
+        if ($activeAsLeader->isNotEmpty()) {
+            $constraints['active_as_leader'] = [
+                'status' => false,
+                'message' => 'Dosen masih menjadi Project Leader di proyek yang sedang berjalan',
+                'details' => $activeAsLeader->pluck('nama_proyek')->toArray(),
+                'count' => $activeAsLeader->count()
+            ];
+        }
+
+        // 2. Cek apakah dosen masih menjadi member di proyek yang In Progress atau inisiasi
+        $activeAsMember = DB::table('t_project_member_dosen as member')
+            ->join('m_proyek as proyek', 'member.proyek_id', '=', 'proyek.proyek_id')
+            ->where('member.dosen_id', $dosenId)
+            ->whereIn('proyek.status_proyek', $blockStatus)
+            ->whereNull('member.deleted_at')
+            ->whereNull('proyek.deleted_at')
+            ->select('proyek.nama_proyek', 'proyek.proyek_id')
+            ->get();
+
+        if ($activeAsMember->isNotEmpty()) {
+            $constraints['active_as_member'] = [
+                'status' => false,
+                'message' => 'Dosen masih menjadi anggota di proyek yang sedang berjalan',
+                'details' => $activeAsMember->pluck('nama_proyek')->toArray(),
+                'count' => $activeAsMember->count()
+            ];
+        }
+
+        return [
+            'deletable' => empty($constraints),
+            'constraints' => $constraints
+        ];
+    }
+
+    public function deleteDataDosen($id)
+    {
         try {
+            // 1. Validasi dosen exists
             $dosen = DB::table('d_dosen')
                 ->where('dosen_id', $id)
                 ->whereNull('deleted_at')
@@ -691,10 +744,29 @@ class DataDosenController extends Controller{
                 return redirect()->route('koordinator.dataDosen')
                     ->with('error', 'Data dosen tidak ditemukan.');
             }
+
+            // 2. Check apakah dosen bisa dihapus
+            $deletableCheck = $this->checkDosenDeletable($id);
+            
+            if (!$deletableCheck['deletable']) {
+                $constraints = $deletableCheck['constraints'];
+                $errorMessages = [];
                 
+                foreach ($constraints as $constraint) {
+                    $errorMessages[] = $constraint['message'];
+                    if (isset($constraint['details']) && !empty($constraint['details'])) {
+                        $errorMessages[] = '- Proyek: ' . implode(', ', $constraint['details']);
+                    }
+                }
+                
+                return redirect()->route('koordinator.dataDosen')
+                    ->with('error', 'Tidak dapat menghapus dosen. ' . implode(' ', $errorMessages));
+            }
+
             DB::beginTransaction();
                 
             try {
+                // 3. Soft delete dosen
                 DB::table('d_dosen')
                     ->where('dosen_id', $id)
                     ->update([
@@ -702,6 +774,7 @@ class DataDosenController extends Controller{
                         'deleted_by' => session('user_id'),
                     ]);
                     
+                // 4. Soft delete user account
                 DB::table('d_user')
                     ->where('user_id', $dosen->user_id)
                     ->update([
@@ -710,24 +783,32 @@ class DataDosenController extends Controller{
                         'status' => 'Disabled'
                     ]);
                     
-                    
                 DB::commit();
-                    
+
+                // 5. Logging
+                \Log::info('Dosen deleted successfully with cascade operations', [
+                    'dosen_id' => $id,
+                    'dosen_name' => $dosen->nama_dosen,
+                ]);
+
+                // 6. Success message
+                $successMessage = "Data dosen {$dosen->nama_dosen} berhasil dihapus";
                 return redirect()->route('koordinator.dataDosen')
-                    ->with('success', 'Data dosen berhasil dihapus.');
+                    ->with('success', $successMessage);
+
             } catch (\Exception $e) {
                 DB::rollBack();
-                \Log::error('Error deleting dosen data', [
-                    'error' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString()
+                \Log::error('Error deleting dosen data with cascade', [
+                    'dosen_id' => $id,
+                    'error' => $e->getMessage()
                 ]);
                 return redirect()->route('koordinator.dataDosen')
                     ->with('error', 'Gagal menghapus data: ' . $e->getMessage());
             }
+            
         } catch (\Exception $e) {
             \Log::error('Exception in deleteDataDosen', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'message' => $e->getMessage()
             ]);
             return redirect()->route('koordinator.dataDosen')
                 ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());

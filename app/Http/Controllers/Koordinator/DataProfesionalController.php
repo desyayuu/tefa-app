@@ -629,8 +629,62 @@ class DataProfesionalController extends Controller
         }
     }
 
-    public function deleteDataProfesional($id){
+    // Cek apkah profesional bisa dihapus atau ngga (berkaitan apa jadi project leader atau member)
+    public function checkProfesionalDeletable($profesionalId)
+    {
+        $constraints = [];
+        $blockStatus = ['Initiation', 'In Progress'];
+        
+        // 1. Cek apakah profesional masih menjadi project leader di proyek yang In Progress atau inisiasi
+        $activeAsLeader = DB::table('t_project_leader as leader')
+            ->join('m_proyek as proyek', 'leader.proyek_id', '=', 'proyek.proyek_id')
+            ->where('leader.leader_id', $profesionalId)
+            ->where('leader.leader_type', 'Profesional')
+            ->whereIn('proyek.status_proyek', $blockStatus)
+            ->whereNull('leader.deleted_at')
+            ->whereNull('proyek.deleted_at')
+            ->select('proyek.nama_proyek', 'proyek.proyek_id')
+            ->get();
+
+        if ($activeAsLeader->isNotEmpty()) {
+            $constraints['active_as_leader'] = [
+                'status' => false,
+                'message' => 'Profesional masih menjadi Project Leader di proyek yang akan atau sedang berjalan',
+                'details' => $activeAsLeader->pluck('nama_proyek')->toArray(),
+                'count' => $activeAsLeader->count()
+            ];
+        }
+
+        // 2. Cek apakah profesional masih menjadi member di proyek yang In Progress atau inisiasi
+        $activeAsMember = DB::table('t_project_member_profesional as member')
+            ->join('m_proyek as proyek', 'member.proyek_id', '=', 'proyek.proyek_id')
+            ->where('member.profesional_id', $profesionalId)
+            ->whereIn('proyek.status_proyek', $blockStatus)
+            ->whereNull('member.deleted_at')
+            ->whereNull('proyek.deleted_at')
+            ->select('proyek.nama_proyek', 'proyek.proyek_id')
+            ->get();
+
+        
+        if ($activeAsMember->isNotEmpty()) {
+            $constraints['active_as_member'] = [
+                'status' => false,
+                'message' => 'Profesional masih menjadi anggota di proyek yang akan atau sedang berjalan',
+                'details' => $activeAsMember->pluck('nama_proyek')->toArray(),
+                'count' => $activeAsMember->count()
+            ];
+        }
+
+        return [
+            'deletable' => empty($constraints),
+            'constraints' => $constraints
+        ];
+    }
+
+    public function deleteDataProfesional($id)
+    {
         try {
+            // 1. Validasi profesional exists
             $profesional = DB::table('d_profesional')
                 ->where('profesional_id', $id)
                 ->whereNull('deleted_at')
@@ -640,10 +694,29 @@ class DataProfesionalController extends Controller
                 return redirect()->route('koordinator.dataProfesional')
                     ->with('error', 'Data profesional tidak ditemukan.');
             }
+
+            // 2. Check apakah profesional bisa dihapus
+            $deletableCheck = $this->checkProfesionalDeletable($id);
+            
+            if (!$deletableCheck['deletable']) {
+                $constraints = $deletableCheck['constraints'];
+                $errorMessages = [];
                 
+                foreach ($constraints as $constraint) {
+                    $errorMessages[] = $constraint['message'];
+                    if (isset($constraint['details']) && !empty($constraint['details'])) {
+                        $errorMessages[] = '- Proyek: ' . implode(', ', $constraint['details']);
+                    }
+                }
+                
+                return redirect()->route('koordinator.dataProfesional')
+                    ->with('error', 'Tidak dapat menghapus profesional. ' . implode(' ', $errorMessages));
+            }
+
             DB::beginTransaction();
                 
             try {
+                // 3. Soft delete profesional
                 DB::table('d_profesional')
                     ->where('profesional_id', $id)
                     ->update([
@@ -651,6 +724,7 @@ class DataProfesionalController extends Controller
                         'deleted_by' => session('user_id'),
                     ]);
                     
+                // 4. Soft delete user account
                 DB::table('d_user')
                     ->where('user_id', $profesional->user_id)
                     ->update([
@@ -659,24 +733,32 @@ class DataProfesionalController extends Controller
                         'status' => 'Disabled'
                     ]);
                     
-                    
                 DB::commit();
-                    
+
+                // 5. Logging
+                \Log::info('Profesional deleted successfully with cascade operations', [
+                    'profesional_id' => $id,
+                    'profesional_name' => $profesional->nama_profesional,
+                ]);
+
+                // 6. Success message
+                $successMessage = "Data profesional {$profesional->nama_profesional} berhasil dihapus";
                 return redirect()->route('koordinator.dataProfesional')
-                    ->with('success', 'Data profesional berhasil dihapus.');
+                    ->with('success', $successMessage);
+
             } catch (\Exception $e) {
                 DB::rollBack();
-                \Log::error('Error deleting profesional data', [
-                    'error' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString()
+                \Log::error('Error deleting profesional data with cascade', [
+                    'profesional_id' => $id,
+                    'error' => $e->getMessage()
                 ]);
                 return redirect()->route('koordinator.dataProfesional')
                     ->with('error', 'Gagal menghapus data: ' . $e->getMessage());
             }
+            
         } catch (\Exception $e) {
             \Log::error('Exception in deleteDataProfesional', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'message' => $e->getMessage()
             ]);
             return redirect()->route('koordinator.dataProfesional')
                 ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
