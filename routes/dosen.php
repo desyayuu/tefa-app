@@ -6,7 +6,18 @@ use App\Http\Middleware\DosenMiddleware;
 use App\Http\Controllers\Dosen\DataProyekController;
 
 Route::middleware([DosenMiddleware::class])->prefix('dosen')->group(function () {
-    Route::get('/dashboard', [DosenController::class, 'dashboard'])->name('dosen.dashboard');
-    Route::get('/data-proyek', [DataProyekController::class, 'getDataProyek'])->name('dosen.getDataProyek');
-    Route::get('/data-proyek/{id}', [DataProyekController::class, 'getDataProyekById'])->name('dosen.detailProyek');
+    
+    Route::prefix('dashboard')->group(function () {
+        Route::get('/', [DosenController::class, 'dashboard'])->name('dosen.dashboard');
+        Route::get('/proyek-data', [DosenController::class, 'getProyekData'])->name('dosen.getProyekData');
+        Route::get('/mitra-data', [DosenController::class, 'getMitraData'])->name('dosen.getMitraData');
+    });
+
+
+    
+    Route::prefix('data-proyek')->group(function () {
+        Route::get('/', [DataProyekController::class, 'getDataProyek'])->name('dosen.getDataProyek');
+        Route::get('/{id}', [DataProyekController::class, 'getDataProyekById'])->name('dosen.detailProyek');
+    });
+
 });

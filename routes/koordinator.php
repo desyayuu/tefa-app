@@ -23,6 +23,13 @@ use App\Http\Controllers\Koordinator\DataBidangKeahlianMahasiswaController;
 Route::middleware([KoordinatorMiddleware::class])->prefix('koordinator')->group(function () {
     Route::get('/', [KoordinatorController::class, 'dashboard'])->name('koordinator.dashboard');
     Route::get('/dashboard', [KoordinatorController::class, 'dashboard'])->name('koordinator.dashboard');
+    Route::get('/keuangan-data', [KoordinatorController::class, 'getKeuanganData'])->name('koordinator.getKeuanganData');
+    Route::get('/data-proyek', [KoordinatorController::class, 'getProyekData'])->name('koordinator.getProyekData');
+    Route::get('/keuangan-summary', [KoordinatorController::class, 'getKeuanganSummary'])->name('getKeuanganSummary');
+    Route::get('/koordinator/proyek-data', [KoordinatorController::class, 'getProyekData'])->name('koordinator.getProyekData');
+    Route::get('/koordinator/mitra-data', [KoordinatorController::class, 'getMitraData'])->name('koordinator.getMitraData');
+    Route::get('/koordinator/dashboard-data', [KoordinatorController::class, 'getDashboardData'])->name('koordinator.getDashboardData');
+
 
     //Data Mitra
     Route::get('/data-mitra', [DataMitraController::class, 'getDataMitra'])->name('koordinator.dataMitra');
