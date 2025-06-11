@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Koordinator;
+namespace App\Http\Controllers\Dosen;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -10,9 +10,38 @@ use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Response;
 
-class DataTimelineController extends Controller
+class DataTimelineDosenController extends Controller
 {
+    private function checkDosenRole($proyekId, $dosenId)
+    {
+        $isLeader = DB::table('t_project_leader')
+            ->where('proyek_id', $proyekId)
+            ->where('leader_type', 'Dosen')
+            ->where('leader_id', $dosenId)
+            ->exists();
+
+        $isMember = DB::table('t_project_member_dosen')
+            ->where('proyek_id', $proyekId)
+            ->where('dosen_id', $dosenId)
+            ->whereNull('deleted_at')
+            ->exists();
+
+        return ['isLeader' => $isLeader, 'isMember' => $isMember];
+    }
+
     public function getDataTimeline($id, Request $request){
+        $dosenId = session('dosen_id');
+        
+        if (!$dosenId) {
+            return redirect()->route('dosen.dashboard')->with('error', 'Data dosen tidak ditemukan');
+        }
+
+        // Check role dosen dalam proyek
+        $roleCheck = $this->checkDosenRole($id, $dosenId);
+        if (!$roleCheck['isLeader'] && !$roleCheck['isMember']) {
+            return redirect()->route('dosen.dataProyek')->with('error', 'Anda tidak memiliki akses ke proyek ini');
+        }
+    
         $proyek = DB::table('m_proyek')
             ->join('d_mitra_proyek', 'm_proyek.mitra_proyek_id', '=', 'd_mitra_proyek.mitra_proyek_id')
             ->join('m_jenis_proyek', 'm_proyek.jenis_proyek_id', '=', 'm_jenis_proyek.jenis_proyek_id')
@@ -25,7 +54,7 @@ class DataTimelineController extends Controller
             ->first();
         
         if (!$proyek) {
-            return redirect()->route('koordinator.dataProyek')->with('error', 'Data proyek tidak ditemukan.');
+            return redirect()->route('dosen.dataProyek')->with('error', 'Data proyek tidak ditemukan.');
         }
         
         // Get search parameter
@@ -60,6 +89,8 @@ class DataTimelineController extends Controller
         if ($request->ajax()) {
             return response()->json([
                 'success' => true,
+                'isLeader' => $roleCheck['isLeader'],
+                'isMember' => $roleCheck['isMember'],
                 'data' => $timelines->items(),
                 'proyek_dates' => [
                     'tanggal_mulai' => $proyek->tanggal_mulai,

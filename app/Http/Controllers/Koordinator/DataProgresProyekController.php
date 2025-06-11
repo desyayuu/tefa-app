@@ -311,7 +311,7 @@ class DataProgresProyekController extends Controller
                     'status_progres' => $request->status_progres,
                     'persentase_progres' => $request->persentase_progres,
                     'created_at' => Carbon::now(),
-                    'created_by' => auth()->id(),
+                    'created_by' => session('user_id', auth()->id()),
                 ]);
                 
                 return response()->json([
@@ -380,7 +380,7 @@ class DataProgresProyekController extends Controller
                             'status_progres' => $progres['status_progres'],
                             'persentase_progres' => $progres['persentase_progres'],
                             'created_at' => Carbon::now(),
-                            'created_by' => auth()->id(),
+                            'created_by' => session('user_id', auth()->id()),
                         ]);
                         
                         $insertedIds[] = $progresId;
@@ -462,183 +462,183 @@ class DataProgresProyekController extends Controller
         }
     }
 
-public function getProgresDetail($id)
-{
-    try {
-        // Find the progress record
-        $progres = DB::table('t_progres_proyek')
-            ->where('progres_proyek_id', $id)
-            ->whereNull('deleted_at')
-            ->first();
-            
-        if (!$progres) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Data progres tidak ditemukan'
-            ], 404);
-        }
-        
-        // Get assigned name based on the assignment
-        $assignedName = 'Tidak ditugaskan';
-        $assignedType = null;
-        
-        if (!empty($progres->project_leader_id)) {
-            $leader = DB::table('t_project_leader')
-                ->where('project_leader_id', $progres->project_leader_id)
+    public function getProgresDetail($id)
+    {
+        try {
+            // Find the progress record
+            $progres = DB::table('t_progres_proyek')
+                ->where('progres_proyek_id', $id)
                 ->whereNull('deleted_at')
                 ->first();
                 
-            if ($leader) {
-                if ($leader->leader_type === 'Dosen') {
-                    $leaderDetail = DB::table('d_dosen')
-                        ->where('dosen_id', $leader->leader_id)
-                        ->first();
-                    $assignedName = $leaderDetail ? $leaderDetail->nama_dosen : 'Project Leader';
-                } else if ($leader->leader_type === 'Profesional') {
-                    $leaderDetail = DB::table('d_profesional')
-                        ->where('profesional_id', $leader->leader_id)
-                        ->first();
-                    $assignedName = $leaderDetail ? $leaderDetail->nama_profesional : 'Project Leader';
+            if (!$progres) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data progres tidak ditemukan'
+                ], 404);
+            }
+            
+            // Get assigned name based on the assignment
+            $assignedName = 'Tidak ditugaskan';
+            $assignedType = null;
+            
+            if (!empty($progres->project_leader_id)) {
+                $leader = DB::table('t_project_leader')
+                    ->where('project_leader_id', $progres->project_leader_id)
+                    ->whereNull('deleted_at')
+                    ->first();
+                    
+                if ($leader) {
+                    if ($leader->leader_type === 'Dosen') {
+                        $leaderDetail = DB::table('d_dosen')
+                            ->where('dosen_id', $leader->leader_id)
+                            ->first();
+                        $assignedName = $leaderDetail ? $leaderDetail->nama_dosen : 'Project Leader';
+                    } else if ($leader->leader_type === 'Profesional') {
+                        $leaderDetail = DB::table('d_profesional')
+                            ->where('profesional_id', $leader->leader_id)
+                            ->first();
+                        $assignedName = $leaderDetail ? $leaderDetail->nama_profesional : 'Project Leader';
+                    }
+                    $assignedType = 'leader';
                 }
-                $assignedType = 'leader';
+            } 
+            else if (!empty($progres->project_member_dosen_id)) {
+                $dosen = DB::table('t_project_member_dosen')
+                    ->join('d_dosen', 't_project_member_dosen.dosen_id', '=', 'd_dosen.dosen_id')
+                    ->where('t_project_member_dosen.project_member_dosen_id', $progres->project_member_dosen_id)
+                    ->select('d_dosen.nama_dosen')
+                    ->first();
+                
+                $assignedName = $dosen ? $dosen->nama_dosen : 'Unknown Dosen';
+                $assignedType = 'dosen';
+            } 
+            else if (!empty($progres->project_member_profesional_id)) {
+                $profesional = DB::table('t_project_member_profesional')
+                    ->join('d_profesional', 't_project_member_profesional.profesional_id', '=', 'd_profesional.profesional_id')
+                    ->where('t_project_member_profesional.project_member_profesional_id', $progres->project_member_profesional_id)
+                    ->select('d_profesional.nama_profesional')
+                    ->first();
+                
+                $assignedName = $profesional ? $profesional->nama_profesional : 'Unknown Profesional';
+                $assignedType = 'profesional';
+            } 
+            else if (!empty($progres->project_member_mahasiswa_id)) {
+                $mahasiswa = DB::table('t_project_member_mahasiswa')
+                    ->join('d_mahasiswa', 't_project_member_mahasiswa.mahasiswa_id', '=', 'd_mahasiswa.mahasiswa_id')
+                    ->where('t_project_member_mahasiswa.project_member_mahasiswa_id', $progres->project_member_mahasiswa_id)
+                    ->select('d_mahasiswa.nama_mahasiswa')
+                    ->first();
+                
+                $assignedName = $mahasiswa ? $mahasiswa->nama_mahasiswa : 'Unknown Mahasiswa';
+                $assignedType = 'mahasiswa';
             }
-        } 
-        else if (!empty($progres->project_member_dosen_id)) {
-            $dosen = DB::table('t_project_member_dosen')
-                ->join('d_dosen', 't_project_member_dosen.dosen_id', '=', 'd_dosen.dosen_id')
-                ->where('t_project_member_dosen.project_member_dosen_id', $progres->project_member_dosen_id)
-                ->select('d_dosen.nama_dosen')
-                ->first();
             
-            $assignedName = $dosen ? $dosen->nama_dosen : 'Unknown Dosen';
-            $assignedType = 'dosen';
-        } 
-        else if (!empty($progres->project_member_profesional_id)) {
-            $profesional = DB::table('t_project_member_profesional')
-                ->join('d_profesional', 't_project_member_profesional.profesional_id', '=', 'd_profesional.profesional_id')
-                ->where('t_project_member_profesional.project_member_profesional_id', $progres->project_member_profesional_id)
-                ->select('d_profesional.nama_profesional')
-                ->first();
+            // Add assigned name and type to response
+            $progres->assigned_name = $assignedName;
+            $progres->assigned_type = $assignedType;
             
-            $assignedName = $profesional ? $profesional->nama_profesional : 'Unknown Profesional';
-            $assignedType = 'profesional';
-        } 
-        else if (!empty($progres->project_member_mahasiswa_id)) {
-            $mahasiswa = DB::table('t_project_member_mahasiswa')
-                ->join('d_mahasiswa', 't_project_member_mahasiswa.mahasiswa_id', '=', 'd_mahasiswa.mahasiswa_id')
-                ->where('t_project_member_mahasiswa.project_member_mahasiswa_id', $progres->project_member_mahasiswa_id)
-                ->select('d_mahasiswa.nama_mahasiswa')
-                ->first();
-            
-            $assignedName = $mahasiswa ? $mahasiswa->nama_mahasiswa : 'Unknown Mahasiswa';
-            $assignedType = 'mahasiswa';
-        }
-        
-        // Add assigned name and type to response
-        $progres->assigned_name = $assignedName;
-        $progres->assigned_type = $assignedType;
-        
-        return response()->json([
-            'success' => true,
-            'data' => $progres
-        ]);
-        
-    } catch (\Exception $e) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Terjadi kesalahan saat mengambil data progres: ' . $e->getMessage()
-        ], 500);
-    }
-}
-
-public function update($id, Request $request)
-{
-    try {
-        // Validate the request
-        $validator = Validator::make($request->all(), [
-            'nama_progres' => 'required|string|max:255',
-            'status_progres' => 'required|in:Inisiasi,In Progress,Done',
-            'persentase_progres' => 'required|integer|min:0|max:100',
-            'deskripsi_progres' => 'nullable|string',
-            'assigned_to' => 'nullable|string',
-            'assigned_type' => 'nullable|in:leader,dosen,profesional,mahasiswa',
-        ]);
-        
-        if ($validator->fails()) {
             return response()->json([
-                'success' => false,
-                'message' => 'Validasi gagal',
-                'errors' => $validator->errors()
-            ], 422);
-        }
-        
-        // Check if record exists
-        $progres = DB::table('t_progres_proyek')
-            ->where('progres_proyek_id', $id)
-            ->whereNull('deleted_at')
-            ->first();
-            
-        if (!$progres) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Data progres tidak ditemukan'
-            ], 404);
-        }
-        
-        // Prepare assignment data
-        $projectLeaderId = null;
-        $projectMemberDosenId = null;
-        $projectMemberProfesionalId = null;
-        $projectMemberMahasiswaId = null;
-        $assignedTo = $request->input('assigned_to');
-        
-        if ($request->has('assigned_type') && !empty($assignedTo)) {
-            switch ($request->assigned_type) {
-                case 'leader':
-                    $projectLeaderId = $assignedTo;
-                    break;
-                case 'dosen':
-                    $projectMemberDosenId = $assignedTo;
-                    break;
-                case 'profesional':
-                    $projectMemberProfesionalId = $assignedTo;
-                    break;
-                case 'mahasiswa':
-                    $projectMemberMahasiswaId = $assignedTo;
-                    break;
-            }
-        }
-        
-        // Update the record
-        DB::table('t_progres_proyek')
-            ->where('progres_proyek_id', $id)
-            ->update([
-                'nama_progres' => $request->nama_progres,
-                'status_progres' => $request->status_progres,
-                'persentase_progres' => $request->persentase_progres,
-                'deskripsi_progres' => $request->deskripsi_progres,
-                'project_leader_id' => $projectLeaderId,
-                'project_member_dosen_id' => $projectMemberDosenId,
-                'project_member_profesional_id' => $projectMemberProfesionalId,
-                'project_member_mahasiswa_id' => $projectMemberMahasiswaId,
-                'assigned_to' => $assignedTo,
-                'updated_at' => Carbon::now(),
-                'updated_by' => auth()->id()
+                'success' => true,
+                'data' => $progres
             ]);
             
-        return response()->json([
-            'success' => true,
-            'message' => 'Data progres berhasil diperbarui',
-            'data' => [
-                'progres_id' => $id
-            ]
-        ]);
-        
-    } catch (\Exception $e) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Terjadi kesalahan saat memperbarui data: ' . $e->getMessage()
-        ], 500);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat mengambil data progres: ' . $e->getMessage()
+            ], 500);
+        }
     }
+
+    public function update($id, Request $request)
+    {
+        try {
+            // Validate the request
+            $validator = Validator::make($request->all(), [
+                'nama_progres' => 'required|string|max:255',
+                'status_progres' => 'required|in:Inisiasi,In Progress,Done',
+                'persentase_progres' => 'required|integer|min:0|max:100',
+                'deskripsi_progres' => 'nullable|string',
+                'assigned_to' => 'nullable|string',
+                'assigned_type' => 'nullable|in:leader,dosen,profesional,mahasiswa',
+            ]);
+            
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validasi gagal',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+            
+            // Check if record exists
+            $progres = DB::table('t_progres_proyek')
+                ->where('progres_proyek_id', $id)
+                ->whereNull('deleted_at')
+                ->first();
+                
+            if (!$progres) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data progres tidak ditemukan'
+                ], 404);
+            }
+            
+            // Prepare assignment data
+            $projectLeaderId = null;
+            $projectMemberDosenId = null;
+            $projectMemberProfesionalId = null;
+            $projectMemberMahasiswaId = null;
+            $assignedTo = $request->input('assigned_to');
+            
+            if ($request->has('assigned_type') && !empty($assignedTo)) {
+                switch ($request->assigned_type) {
+                    case 'leader':
+                        $projectLeaderId = $assignedTo;
+                        break;
+                    case 'dosen':
+                        $projectMemberDosenId = $assignedTo;
+                        break;
+                    case 'profesional':
+                        $projectMemberProfesionalId = $assignedTo;
+                        break;
+                    case 'mahasiswa':
+                        $projectMemberMahasiswaId = $assignedTo;
+                        break;
+                }
+            }
+            
+            // Update the record
+            DB::table('t_progres_proyek')
+                ->where('progres_proyek_id', $id)
+                ->update([
+                    'nama_progres' => $request->nama_progres,
+                    'status_progres' => $request->status_progres,
+                    'persentase_progres' => $request->persentase_progres,
+                    'deskripsi_progres' => $request->deskripsi_progres,
+                    'project_leader_id' => $projectLeaderId,
+                    'project_member_dosen_id' => $projectMemberDosenId,
+                    'project_member_profesional_id' => $projectMemberProfesionalId,
+                    'project_member_mahasiswa_id' => $projectMemberMahasiswaId,
+                    'assigned_to' => $assignedTo,
+                    'updated_at' => Carbon::now(),
+                    'updated_by' => auth()->id()
+                ]);
+                
+            return response()->json([
+                'success' => true,
+                'message' => 'Data progres berhasil diperbarui',
+                'data' => [
+                    'progres_id' => $id
+                ]
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat memperbarui data: ' . $e->getMessage()
+            ], 500);
+        }
 }
 }

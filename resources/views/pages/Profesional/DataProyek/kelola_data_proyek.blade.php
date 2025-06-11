@@ -5,16 +5,16 @@
 @section('content')
 <div class="main-layout">
     <!-- Sidebar -->
-    @include('layouts.Dosen.sidebar')
+    @include('layouts.Profesional.sidebar')
     
     <div class="main-content">
-        @include('layouts.Dosen.header')
+        @include('layouts.Profesional.header')
 
         <div class="breadcrumb-container">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
                     <li class="breadcrumb-item">
-                        <a href="{{ route('dosen.dataProyek') }}">
+                        <a href="{{ route('profesional.dataProyek') }}">
                             <i class="fas fa-project-diagram me-1"></i>
                             Data Proyek
                         </a>
@@ -29,32 +29,33 @@
 
         <div style="display: grid; grid-template-columns: 3fr 1fr; align-items: stretch;">
             <div style="display: flex; flex-direction: column;">
-                @include('pages.Dosen.DataProyek.data_proyek')
+                @include('pages.Profesional.DataProyek.data_proyek')
             </div>
             <div style="display: flex; flex-direction: column;">
-                @include('pages.Dosen.DataProyek.data_anggota_proyek')
+                @include('pages.Profesional.DataProyek.data_anggota_proyek')
             </div>
         </div>
         <div class="section-dokumen-penunjang">
-            @include('pages.Dosen.DataProyek.data_dokumen_penunjang')
+            @include('pages.Profesional.DataProyek.data_dokumen_penunjang')
         </div>
         <div class="section-timeline-proyek">
-            @include('pages.Dosen.DataProyek.data_timeline_proyek')
+            @include('pages.Profesional.DataProyek.data_timeline_proyek')
         </div>
         <div>
-            @include('pages.Dosen.DataProyek.my_progres_proyek')
+            @include('pages.Profesional.DataProyek.my_progres_proyek')
         </div>
         <div>
-            @include('pages.Dosen.DataProyek.data_progres_proyek')
+            @include('pages.Profesional.DataProyek.data_progres_proyek')
         </div>
+
     </div>
 </div>
 @endsection
 
 @push('scripts')
-    @vite('resources/js/Dosen/data_proyek.js')
-    @vite('resources/js/Dosen/detail_data_proyek.js')
-    @vite('resources/js/Dosen/data_dokumen_penunjang.js')
-    @vite('resources/js/Dosen/data_timeline.js')
-    @vite('resources/js/Dosen/data_progres_proyek.js')
+    @vite('resources/js/Profesional/data_proyek.js')
+    @vite('resources/js/Profesional/detail_data_proyek.js')
+    @vite('resources/js/Profesional/data_dokumen_penunjang.js')
+    @vite('resources/js/Profesional/data_timeline.js')
+    @vite('resources/js/Profesional/data_progres_proyek.js')
 @endpush

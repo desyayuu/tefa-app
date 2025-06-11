@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Dosen;
+namespace App\Http\Controllers\Profesional;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -10,19 +10,19 @@ use Illuminate\Support\Str;
 
 class DataProyekController extends Controller
 {
-    private function getDosenId(){
-        $dosenId = session('dosen_id');
+    private function getProfesionalId(){
+        $profesionalId = session('profesional_id');
     
-        if (!$dosenId) {
-            return response()->json(['message' => 'Data dosen tidak ditemukan'], 404);
+        if (!$profesionalId) {
+            return response()->json(['message' => 'Data profesional tidak ditemukan'], 404);
         }
 
-        return $dosenId;
+        return $profesionalId;
     }
     public function getDataProyek(Request $request)
     {
 
-        $dosenId = $this->getDosenId();
+        $profesionalId = $this->getProfesionalId();
         
         // Query dasar untuk mengambil proyek
         $query = DB::table('m_proyek')
@@ -39,23 +39,23 @@ class DataProyekController extends Controller
                 'd_mitra_proyek.nama_mitra',
                 'm_jenis_proyek.nama_jenis_proyek',
                 DB::raw("CASE 
-                    WHEN t_project_leader.leader_type = 'Dosen' AND t_project_leader.leader_id = '$dosenId' THEN 'Project Leader'
+                    WHEN t_project_leader.leader_type = 'Profesional' AND t_project_leader.leader_id = '$profesionalId' THEN 'Project Leader'
                     ELSE 'Anggota'
                 END as peran")
             )
             ->whereNull('m_proyek.deleted_at')
-            ->where(function($query) use ($dosenId) {
-                $query->where(function($q) use ($dosenId) {
-                    $q->where('t_project_leader.leader_type', 'Dosen')
-                      ->where('t_project_leader.leader_id', $dosenId);
+            ->where(function($query) use ($profesionalId) {
+                $query->where(function($q) use ($profesionalId) {
+                    $q->where('t_project_leader.leader_type', 'Profesional')
+                      ->where('t_project_leader.leader_id', $profesionalId);
                 })
-                // ATAU proyek dimana dosen menjadi anggota
-                ->orWhereExists(function($subquery) use ($dosenId) {
+                // ATAU proyek dimana profesional menjadi anggota
+                ->orWhereExists(function($subquery) use ($profesionalId) {
                     $subquery->select(DB::raw(1))
-                        ->from('t_project_member_dosen')
-                        ->whereRaw('t_project_member_dosen.proyek_id = m_proyek.proyek_id')
-                        ->where('t_project_member_dosen.dosen_id', $dosenId)
-                        ->whereNull('t_project_member_dosen.deleted_at');
+                        ->from('t_project_member_profesional')
+                        ->whereRaw('t_project_member_profesional.proyek_id = m_proyek.proyek_id')
+                        ->where('t_project_member_profesional.profesional_id', $profesionalId)
+                        ->whereNull('t_project_member_profesional.deleted_at');
                 });
             });
     
@@ -72,33 +72,33 @@ class DataProyekController extends Controller
         // Ambil data dengan paginasi
         $data = $query->orderBy('m_proyek.created_at', 'desc')->paginate(10);
         
-        return view('pages.Dosen.DataProyek.table_data_proyek', compact('data', 'search'), [
+        return view('pages.Profesional.DataProyek.table_data_proyek', compact('data', 'search'), [
             'titleSidebar' => 'Data Proyek',
         ]);
     }
     
     public function detailProyek($id, Request $request)
     {
-        $dosenId = session('dosen_id');
+        $profesionalId = session('profesional_id');
             
-        if (!$dosenId) {
-            return redirect()->route('dosen.dashboard')->with('error', 'Data dosen tidak ditemukan');
+        if (!$profesionalId) {
+            return redirect()->route('profesional.dashboard')->with('error', 'Data profesional tidak ditemukan');
         }
         
         $isLeader = DB::table('t_project_leader')
             ->where('proyek_id', $id)
-            ->where('leader_type', 'Dosen')
-            ->where('leader_id', $dosenId)
+            ->where('leader_type', 'Profesional')
+            ->where('leader_id', $profesionalId)
             ->exists();
             
-        $isMember = DB::table('t_project_member_dosen')
+        $isMember = DB::table('t_project_member_profesional')
             ->where('proyek_id', $id)
-            ->where('dosen_id', $dosenId)
+            ->where('profesional_id', $profesionalId)
             ->whereNull('deleted_at')
             ->exists();
             
         if (!$isLeader && !$isMember) {
-            return redirect()->route('dosen.dataProyek')->with('error', 'Anda tidak memiliki akses ke proyek ini');
+            return redirect()->route('profesional.dataProyek')->with('error', 'Anda tidak memiliki akses ke proyek ini');
         }
         
         $proyek = DB::table('m_proyek')
@@ -113,7 +113,7 @@ class DataProyekController extends Controller
             ->first();
             
         if (!$proyek) {
-            return redirect()->route('dosen.dataProyek')->with('error', 'Data proyek tidak ditemukan');
+            return redirect()->route('profesional.dataProyek')->with('error', 'Data proyek tidak ditemukan');
         }
 
         $jenisProyek = DB::table('m_jenis_proyek')->whereNull('deleted_at')->get();
@@ -162,12 +162,12 @@ class DataProyekController extends Controller
                     ->first();
             }
         }
-        // Ambil data anggota dosen, profesional, dan mahasiswa
+        // Ambil data anggota profesional, profesional, dan mahasiswa
         $anggotaDosen = $this->getAnggotaDosen($id);
         $anggotaMahasiswa = $this->getAnggotaMahasiswa($id);
         $anggotaProfesional = $this->getAnggotaProfesional($id);
         
-        return view('pages.Dosen.DataProyek.kelola_data_proyek', compact(
+        return view('pages.Profesional.DataProyek.kelola_data_proyek', compact(
             'proyek',
             'projectLeader',
             'leaderInfo',
@@ -219,7 +219,7 @@ class DataProyekController extends Controller
                     'tanggal_selesai'  => $request->input('tanggal_selesai'),
                     'dana_pendanaan'   => $danaPendanaan,
                     'updated_at'       => now(),
-                    'updated_by'       => session('user_id'),
+                    'updated_by'       => auth()->user()->id ?? session('user_id')
                 ]);
     
             DB::commit();

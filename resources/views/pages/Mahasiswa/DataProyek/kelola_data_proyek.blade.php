@@ -5,16 +5,16 @@
 @section('content')
 <div class="main-layout">
     <!-- Sidebar -->
-    @include('layouts.Dosen.sidebar')
+    @include('layouts.Mahasiswa.sidebar')
     
     <div class="main-content">
-        @include('layouts.Dosen.header')
+        @include('layouts.Mahasiswa.header')
 
         <div class="breadcrumb-container">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
                     <li class="breadcrumb-item">
-                        <a href="{{ route('dosen.dataProyek') }}">
+                        <a href="{{ route('mahasiswa.dataProyek') }}">
                             <i class="fas fa-project-diagram me-1"></i>
                             Data Proyek
                         </a>
@@ -29,32 +29,30 @@
 
         <div style="display: grid; grid-template-columns: 3fr 1fr; align-items: stretch;">
             <div style="display: flex; flex-direction: column;">
-                @include('pages.Dosen.DataProyek.data_proyek')
+                @include('pages.Mahasiswa.DataProyek.data_proyek')
             </div>
             <div style="display: flex; flex-direction: column;">
-                @include('pages.Dosen.DataProyek.data_anggota_proyek')
+                @include('pages.Mahasiswa.DataProyek.data_anggota_proyek')
             </div>
         </div>
         <div class="section-dokumen-penunjang">
-            @include('pages.Dosen.DataProyek.data_dokumen_penunjang')
+            @include('pages.Mahasiswa.DataProyek.data_dokumen_penunjang')
         </div>
-        <div class="section-timeline-proyek">
-            @include('pages.Dosen.DataProyek.data_timeline_proyek')
-        </div>
-        <div>
-            @include('pages.Dosen.DataProyek.my_progres_proyek')
+        <div class="section-timeline">
+            @include('pages.Mahasiswa.DataProyek.data_timeline_proyek')
         </div>
         <div>
-            @include('pages.Dosen.DataProyek.data_progres_proyek')
+            @include('pages.Mahasiswa.DataProyek.my_progres_proyek')
+        </div>
+        <div>
+            @include('pages.Mahasiswa.DataProyek.data_progres_proyek')
         </div>
     </div>
 </div>
 @endsection
 
 @push('scripts')
-    @vite('resources/js/Dosen/data_proyek.js')
-    @vite('resources/js/Dosen/detail_data_proyek.js')
-    @vite('resources/js/Dosen/data_dokumen_penunjang.js')
-    @vite('resources/js/Dosen/data_timeline.js')
-    @vite('resources/js/Dosen/data_progres_proyek.js')
+    @vite('resources/js/Mahasiswa/data_dokumen_penunjang.js')
+    @vite('resources/js/Mahasiswa/data_timeline.js')
+    @vite('resources/js/Mahasiswa/data_progres_proyek.js')
 @endpush

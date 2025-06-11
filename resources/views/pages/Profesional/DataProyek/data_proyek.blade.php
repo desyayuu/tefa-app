@@ -4,7 +4,7 @@
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h4 class="fw-bold mb-0">Detail Data Proyek</h4>
                 
-                {{-- Hanya tampilkan button simpan jika dosen adalah Project Leader --}}
+                {{-- Hanya tampilkan button simpan jika profesional adalah Project Leader --}}
                 @if($isLeader)
                     <button type="submit" form="formProyek" class="btn btn-add">Simpan Perubahan</button>
                 @endif
@@ -113,3 +113,7 @@
         </div>
     </div>
 </div>
+<script>
+    const isLeader = @json($isLeader);
+    const isMember = @json($isMember);
+</script>
