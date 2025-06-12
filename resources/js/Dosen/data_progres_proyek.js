@@ -103,7 +103,7 @@ document.addEventListener('DOMContentLoaded', function () {
         $("#progresProyekPagination").html('');
         
         $.ajax({
-            url: `/dosen/proyek/${proyekId}/progres-proyek`,
+            url: `/dosen/progres-proyek/${proyekId}/get`,
             type: 'GET',
             data: {
                 search: searchParam,
@@ -219,7 +219,7 @@ document.addEventListener('DOMContentLoaded', function () {
         $("#myProgresPagination").html('');
         
         $.ajax({
-            url: `/dosen/proyek/${proyekId}/my-progres`,
+            url: `/dosen/progres-proyek/${proyekId}/my-progres/get`,
             type: 'GET',
             data: {
                 search_my_progres_proyek: searchParam,
@@ -502,7 +502,7 @@ document.addEventListener('DOMContentLoaded', function () {
         $('#formEditProgres input, #formEditProgres select, #formEditProgres textarea').prop('disabled', true);
         
         $.ajax({
-            url: `/dosen/proyek/progres-proyek/${id}`,
+            url: `/dosen/progres-proyek/${id}/detail`,
             type: 'GET',
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -731,7 +731,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function deleteProgresProyek(progresProyekId) {
         $.ajax({
-            url: `/dosen/proyek/progres-proyek/${progresProyekId}`,
+            url: `/dosen/progres-proyek/${progresProyekId}/delete`,
             type: 'DELETE',
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -788,7 +788,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const proyekId = $('input[name="proyek_id"]').val();
         
         $.ajax({
-            url: `/dosen/proyek/${proyekId}/my-progres`,
+            url: `/dosen/progres-proyek/${proyekId}/my-progres/get`,
             type: 'GET',
             data: {
                 page: 1,
@@ -941,7 +941,7 @@ document.addEventListener('DOMContentLoaded', function () {
         $('#edit_leder_assign_id, #edit_dosen_assign_id, #edit_profesional_assign_id, #edit_mahasiswa_assign_id').html('<option value="">Loading...</option>');
         
         $.ajax({
-            url: `/dosen/proyek/${proyekId}/team-members`,
+            url: `/dosen/progres-proyek/${proyekId}/team-members`,
             method: 'GET',
             dataType: 'json',
             success: function(response) {
@@ -1104,7 +1104,7 @@ document.addEventListener('DOMContentLoaded', function () {
         submitBtn.prop('disabled', true);
         
         $.ajax({
-            url: `/dosen/proyek/progres-proyek/${progresId}`,
+            url: `/dosen/progres-proyek/${progresId}/update`,
             type: 'POST',
             data: formData,
             contentType: false,
@@ -1195,7 +1195,7 @@ document.addEventListener('DOMContentLoaded', function () {
         $('#leder_assign_id, #dosen_assign_id, #profesional_assign_id, #mahasiswa_assign_id').html('<option value="">Loading...</option>');
         
         $.ajax({
-            url: `/dosen/proyek/${proyekId}/team-members`,
+            url: `/dosen/progres-proyek/${proyekId}/team-members`,
             method: 'GET',
             dataType: 'json',
             success: function(response) {
@@ -1530,7 +1530,7 @@ document.addEventListener('DOMContentLoaded', function () {
         submitBtn.prop('disabled', true);
         
         // Determine endpoint
-        const endpoint = isMyProgres ? '/dosen/proyek/my-progres' : '/dosen/proyek/progres-proyek';
+        const endpoint = isMyProgres ? '/dosen/progres-proyek/my-progres/store' : '/dosen/proyek/progres-proyek';
         
         $.ajax({
             url: endpoint,

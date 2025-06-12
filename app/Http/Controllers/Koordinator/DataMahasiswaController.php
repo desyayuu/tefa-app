@@ -115,26 +115,20 @@ class DataMahasiswaController extends Controller
             });
         }
 
-        // ALTERNATIF 1: Menggunakan Collection merge (lebih reliable)
-        $leaderResults = $mahasiswaLeaderQuery->get();
+
         $memberResults = $mahasiswaMemberQuery->get();
         
-        // Gabungkan hasil dan urutkan
-        $allResults = $leaderResults->concat($memberResults)
-            ->sortBy('nama_mahasiswa')
-            ->sortByDesc('role_type'); // Project Leader dulu, baru Anggota
-
         // Manual pagination untuk collection
         $perPage = 5;
         $currentPage = request()->get('partisipasi_page', 1);
         $offset = ($currentPage - 1) * $perPage;
         
-        $paginatedResults = $allResults->slice($offset, $perPage)->values();
+        $paginatedResults = $memberResults->slice($offset, $perPage)->values();
         
         // Buat custom pagination
         $partisipasiMahasiswa = new \Illuminate\Pagination\LengthAwarePaginator(
             $paginatedResults,
-            $allResults->count(),
+            $memberResults->count(),
             $perPage,
             $currentPage,
             [
@@ -154,7 +148,7 @@ class DataMahasiswaController extends Controller
             'partisipasiMahasiswa', 
             'searchPartisipasi',
             'bidangKeahlian',
-            'bidangKeahlianMahasiswa'  // TAMBAHAN: Pass data bidang keahlian mahasiswa
+            'bidangKeahlianMahasiswa' 
         ), [
             'titleSidebar' => 'Data Mahasiswa'
         ]);
@@ -656,61 +650,6 @@ class DataMahasiswaController extends Controller
             return back()->withInput()->with('error', 'Terjadi kesalahan sistem: ' . $e->getMessage());
         }
     }
-
-    
-    // public function deleteDataMahasiswa($id){
-    //     try {
-    //         $mahasiswa = DB::table('d_mahasiswa')
-    //             ->where('mahasiswa_id', $id)
-    //             ->whereNull('deleted_at')
-    //             ->first();
-                
-    //         if (!$mahasiswa) {
-    //             return redirect()->route('koordinator.dataMahasiswa')
-    //                 ->with('error', 'Data mahasiswa tidak ditemukan.');
-    //         }
-                
-    //         DB::beginTransaction();
-                
-    //         try {
-    //             DB::table('d_mahasiswa')
-    //                 ->where('mahasiswa_id', $id)
-    //                 ->update([
-    //                     'deleted_at' => now(),
-    //                     'deleted_by' => session('user_id'),
-    //                 ]);
-                    
-    //             DB::table('d_user')
-    //                 ->where('user_id', $mahasiswa->user_id)
-    //                 ->update([
-    //                     'deleted_at' => now(),
-    //                     'deleted_by' => session('user_id'),
-    //                     'status' => 'Disabled'
-    //                 ]);
-                    
-    //             DB::commit();
-                    
-    //             return redirect()->route('koordinator.dataMahasiswa')
-    //                 ->with('success', 'Data mahasiswa berhasil dihapus.');
-    //         } catch (\Exception $e) {
-    //             DB::rollBack();
-    //             \Log::error('Error deleting mahasiswa data', [
-    //                 'error' => $e->getMessage(),
-    //                 'trace' => $e->getTraceAsString()
-    //             ]);
-    //             return redirect()->route('koordinator.dataMahasiswa')
-    //                 ->with('error', 'Gagal menghapus data: ' . $e->getMessage());
-    //         }
-    //     } catch (\Exception $e) {
-    //         \Log::error('Exception in deleteDataMahasiswa', [
-    //             'message' => $e->getMessage(),
-    //             'trace' => $e->getTraceAsString()
-    //         ]);
-    //         return redirect()->route('koordinator.dataMahasiswa')
-    //             ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
-    //     }
-    // }
-
 
     public function checkMahasiswaDeletable($mahasiswaId)
     {

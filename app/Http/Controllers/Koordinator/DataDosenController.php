@@ -156,7 +156,6 @@ class DataDosenController extends Controller{
                 'proyek.tanggal_selesai',
                 'proyek.status_proyek',
                 DB::raw("'Project Leader' as peran"),
-                'leader.created_at as tanggal_bergabung'
             )
             ->where('leader.leader_id', $id)
             ->where('leader.leader_type', 'Dosen')
@@ -174,7 +173,6 @@ class DataDosenController extends Controller{
                 'proyek.tanggal_selesai',
                 'proyek.status_proyek',
                 DB::raw("'Project Member' as peran"),
-                'member.created_at as tanggal_bergabung'
             )
             ->where('member.dosen_id', $id)
             ->where('proyek.status_proyek', 'Done') 

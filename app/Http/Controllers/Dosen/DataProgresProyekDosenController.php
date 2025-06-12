@@ -569,7 +569,7 @@ class DataProgresProyekDosenController extends Controller
     }
 
     
-    public function store(Request $request)
+    public function storeProgresProyek(Request $request)
     {
         try {
             $dosenId = session('dosen_id');
@@ -1060,7 +1060,7 @@ class DataProgresProyekDosenController extends Controller
         }
     }
 
-    public function update($id, Request $request)
+    public function updateProgresProyek($id, Request $request)
     {
         try {
             $dosenId = session('dosen_id');

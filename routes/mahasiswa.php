@@ -7,6 +7,8 @@ use App\Http\Controllers\Mahasiswa\DataProyekController;
 use App\Http\Controllers\Mahasiswa\DataDokumenPenunjangMahasiswaController;
 use App\Http\Controllers\Mahasiswa\DataTimelineMahasiswaController;
 use App\Http\Controllers\Mahasiswa\DataProgresProyekMahasiswaController;
+use App\Http\Controllers\Mahasiswa\DataMahasiswaController;
+use App\Http\Controllers\Mahasiswa\DataBidangKeahlianController;
 
 Route::middleware([MahasiswaMiddleware::class])->prefix('mahasiswa')->group(function () {
     Route::prefix('dashboard')->group(function () {
@@ -44,4 +46,23 @@ Route::middleware([MahasiswaMiddleware::class])->prefix('mahasiswa')->group(func
 
     });
 
+    Route::prefix('profil')->group(function () {
+        Route::get('/', [DataMahasiswaController::class, 'getProfil'])->name('mahasiswa.getProfilMahasiswa');
+        Route::put('/update-profil-mahasiswa', [DataMahasiswaController::class, 'updateProfil'])->name('mahasiswa.updateProfilMahasiswa');
+        Route::post('/check-email-nim-exists', [DataMahasiswaController::class, 'checkEmailNimExists'])->name('mahasiswa.checkEmailNimExists');
+    });
+
+    Route::prefix('bidang-keahlian')->group(function () {
+        Route::get('/', [DataBidangKeahlianController::class, 'index'])->name('mahasiswa.portofolio');
+        Route::put('/update', [DataBidangKeahlianController::class, 'updateBidangKeahlianMahasiswa'])->name('mahasiswa.updateBidangKeahlian');
+        Route::get('/get', [DataBidangKeahlianController::class, 'getBidangKeahlianMahasiswa'])->name('mahasiswa.getBidangKeahlian');
+        Route::get('/all', [DataBidangKeahlianController::class, 'getAllBidangKeahlian'])->name('mahasiswa.getAllBidangKeahlian');
+    });
+
+    Route::prefix('portofolio')->group(function () {
+        Route::post('/store', [DataBidangKeahlianController::class, 'tambahPortofolioMahasiswa'])->name('mahasiswa.portofolio.tambah');
+        Route::put('/update/{id}', [DataBidangKeahlianController::class, 'updatePortofolioMahasiswa'])->name('mahasiswa.portofolio.update');
+        Route::delete('/delete/{id}', [DataBidangKeahlianController::class, 'deletePortofolioMahasiswa'])->name('mahasiswa.portofolio.delete');
+        Route::get('/detail/{id}', [DataBidangKeahlianController::class, 'getPortofolioMahasiswaById'])->name('mahasiswa.portofolio.detail');
+    });
 });

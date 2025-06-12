@@ -9,6 +9,8 @@ use App\Http\Controllers\Koordinator\DataAnggotaProyekController;
 use App\Http\Controllers\Profesional\DataDokumenPenunjangProfesionalController;
 use App\Http\Controllers\Profesional\DataTimelineProfesionalController;
 use App\Http\Controllers\Profesional\DataProgresProyekProfesionalController;
+use App\Http\Controllers\Profesional\DataKeluarKeuanganProyekProfesionalController;
+use App\Http\Controllers\Profesional\DataProfesionalController;
 
 Route::middleware([ProfesionalMiddleware::class])->prefix('profesional')->group(function () {
     
@@ -57,7 +59,27 @@ Route::middleware([ProfesionalMiddleware::class])->prefix('profesional')->group(
         Route::get('/{id}/current-user-info', [DataProgresProyekProfesionalController::class, 'getCurrentUserInfo'])->name('profesional.proyek.current-user-info');
         Route::get('/{id}/my-progres/get', [DataProgresProyekProfesionalController::class, 'getMyProgresByProyek'])->name('profesional.getMyProgresByProyek');
         Route::post('/my-progres/store', [DataProgresProyekProfesionalController::class, 'storeMyProgres'])->name('profesional.storeMyProgres');
+    });
 
+    Route::prefix('data-keluar-keuangan-proyek')->group(function () {
+        Route::get('/', [DataKeluarKeuanganProyekProfesionalController::class, 'getDataProyek'])->name('profesional.dataKeluarKeuanganProyek');
+        Route::get('/get-kategori-pengeluaran', [DataKeluarKeuanganProyekProfesionalController::class, 'getKategoriPengeluaranForFilter'])->name('profesional.getKategoriPengeluaran');
+        Route::get('/{proyekId}', [DataKeluarKeuanganProyekProfesionalController::class, 'getDataKeluarKeuanganProyek'])->name('profesional.detailDataKeluarKeuanganProyek');
+        Route::get('/{proyekId}/transaksi', [DataKeluarKeuanganProyekProfesionalController::class, 'getDataTransaksiProyek'])->name('profesional.getDataTransaksiProyek');
+        Route::get('/{proyekId}/transaksi/{transaksiId}/detail', [DataKeluarKeuanganProyekProfesionalController::class, 'getTransaksiDetailForEdit'])->name('transaksi.detail');
+        Route::post('/tambah-transaksi', [DataKeluarKeuanganProyekProfesionalController::class, 'tambahTransaksiPengeluaran'])->name('tambah-transaksi');
+        Route::post('/store-with-files', [DataKeluarKeuanganProyekProfesionalController::class, 'storeWithFiles'])->name('store-with-files');
+        Route::put('/update-transaksi/{transaksiId}', [DataKeluarKeuanganProyekProfesionalController::class, 'updateTransaksiPengeluaran'])->name('update-transaksi');
+        Route::delete('/hapus-transaksi/{transaksiId}', [DataKeluarKeuanganProyekProfesionalController::class, 'hapusTransaksi'])->name('hapus-transaksi');
+        Route::get('/download/{fileName}', [DataKeluarKeuanganProyekProfesionalController::class, 'downloadBuktiTransaksi'])->name('download-bukti')->where('fileName', '.*');
+        Route::get('/sub-jenis-transaksi', [DataKeluarKeuanganProyekProfesionalController::class, 'getSubJenisTransaksi'])->name('sub-jenis-transaksi');
+        Route::get('/{proyekId}/summary', [DataKeluarKeuanganProyekProfesionalController::class, 'getSummary']);
+    });
+
+    Route::prefix('profil')->group(function () {
+        Route::get('/', [DataProfesionalController::class, 'getProfil'])->name('profesional.getProfilProfesional');
+        Route::put('/update-profil-profesional', [DataProfesionalController::class, 'updateProfil'])->name('profesional.updateProfilProfesional');
+        Route::post('/check-email-nidn-exists', [DataProfesionalController::class, 'checkEmailNidnExists'])->name('profesional.checkEmailNidnExists');
     });
 
 });

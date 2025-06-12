@@ -1,5 +1,3 @@
-<!-- File: pages/Koordinator/DataMahasiswa/data_portofolio_mahasiswa.blade.php -->
-
 <div class="content-table" id="section-portofolio">
     @include('components.handling_error')
     
@@ -40,8 +38,8 @@
     @endif
 
     <div class="table-responsive">
-        <table class="table">
-            <thead>
+        <table class="table table-hover">
+            <thead class="table-light">
                 <tr>
                     <th scope="col" width="25%">Nama Kegiatan</th>
                     <th scope="col" width="15%">Jenis Kegiatan</th>
@@ -54,15 +52,35 @@
                 @forelse($portofolioMahasiswa as $portofolio)
                 <tr>
                     <td>
-                        <div>{{ $portofolio->nama_kegiatan }}</div>
-                        @if($portofolio->tingkat_kegiatan)
-                            <small class="text-muted">
-                                <span class="badge bg-secondary">{{ $portofolio->tingkat_kegiatan }}</span>
+                        <div class="d-flex align-items-center">
+                            <div>{{ $portofolio->nama_kegiatan }}</div>
+                            @if($portofolio->tingkat_kegiatan)
+                                <span class="badge bg-secondary ms-2">{{ $portofolio->tingkat_kegiatan }}</span>
+                            @endif
+                        </div>
+                                
+                        @if($portofolio->link_kegiatan)
+                            <small>
+                                <a href="{{ $portofolio->link_kegiatan }}" target="_blank" class="text-primary d-inline-block mt-1">
+                                    <i class="fas fa-external-link-alt me-1"></i>
+                                    Link Kegiatan
+                                </a>
                             </small>
                         @endif
                     </td>
                     <td>
-                        <span class="">{{ $portofolio->jenis_kegiatan }}</span>
+                        @php
+                        $jenisColors = [
+                            'Magang' => 'primary',
+                            'Pelatihan' => 'success',
+                            'Lomba' => 'warning',
+                            'Penelitian' => 'info',
+                            'Pengabdian' => 'secondary',
+                            'Lainnya' => 'dark'
+                        ];
+                        $color = $jenisColors[$portofolio->jenis_kegiatan] ?? 'secondary';
+                        @endphp
+                        <span class="badge bg-{{ $color }}">{{ $portofolio->jenis_kegiatan }}</span>
                     </td>
                     <td>{{ $portofolio->penyelenggara ?: '-' }}</td>
                     <td>{{ $portofolio->peran_dalam_kegiatan ?: '-' }}</td>

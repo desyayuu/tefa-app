@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('proyek_id', 36);
             $table->string('poster_proyek')->nullable();
             $table->string('link_proyek')->nullable();
-            $table->string('deskripsi_luaran')->nullable();
+            $table->text('deskripsi_luaran')->nullable();
 
             $table->dateTime('created_at')->nullable();
             $table->string('created_by', 36)->nullable();

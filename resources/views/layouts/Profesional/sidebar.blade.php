@@ -50,14 +50,14 @@
                     </a>
                 </li>
                 <li class="has-nested-submenu">
-                    <a href="javascript:void(0);" class="submenu-item nested-menu-toggle">
+                    <a href="{{ route('profesional.dataKeluarKeuanganProyek') }}" class="submenu-item {{ request()->routeIs('profesional.dataKeluarKeuanganProyek')  || request()->routeIs('profesional.dataKeluarKeuanganProyek') || request()->routeIs('profesional.detailDataKeluarKeuanganProyek') ? 'active' : '' }}">
                         <span class="submenu-text">Laporan Keuangan</span>
                     </a>
                 </li>
             </ul>
         </li>
         <li>
-            <a href="">
+            <a href="{{ route('profesional.getProfilProfesional') }}" class="{{ request()->routeIs('profesional.getProfilProfesional') ? 'active' : '' }}">
                 <span class="icon">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <g id="Iconly/Bulk/Setting">
@@ -68,7 +68,7 @@
                         </g>
                     </svg>
                 </span>
-                <span class="menu-text">Pengaturan</span>
+                <span class="menu-text">Profil Akun</span>
             </a>
         </li>
         <li>

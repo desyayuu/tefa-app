@@ -9,6 +9,8 @@ use App\Http\Controllers\Koordinator\DataAnggotaProyekController;
 use App\Http\Controllers\Dosen\DataDokumenPenunjangDosenController;
 use App\Http\Controllers\Dosen\DataTimelineDosenController;
 use App\Http\Controllers\Dosen\DataProgresProyekDosenController;
+use App\Http\Controllers\Dosen\DataKeluarKeuanganProyekDosenController;
+use App\Http\Controllers\Dosen\DataDosenController;
 
 Route::middleware([DosenMiddleware::class])->prefix('dosen')->group(function () {
     
@@ -45,15 +47,39 @@ Route::middleware([DosenMiddleware::class])->prefix('dosen')->group(function () 
     Route::delete('/proyek/timeline/{id}', [DataTimelineDosenController::class, 'deleteDataTimeline'])->name('dosen.deleteDataTimeline');
 
     //Data Progres Proyek
-    Route::get('/proyek/{id}/progres-proyek', [DataProgresProyekDosenController::class, 'getProgresByProyek'])->name('dosen.getProgresByProyek');
-    Route::get('/proyek/{id}/team-members', [DataProgresProyekDosenController::class, 'getTeamMembers'])->name('getTeamMembers');
-    Route::get('/proyek/progres-proyek/{id}', [DataProgresProyekDosenController::class, 'getProgresDetail'])->name('getProgresDetail');
-    Route::post('/proyek/progres-proyek', [DataProgresProyekDosenController::class, 'store'])->name('addProgres');
-    Route::get('/proyek/progres-proyek/{id}', [DataProgresProyekDosenController::class, 'getProgresDetail'])->name('getProgresDetail');
-    Route::put('/proyek/progres-proyek/{id}', [DataProgresProyekDosenController::class, 'update'])->name('updateProgres');
-    Route::delete('/proyek/progres-proyek/{id}', [DataProgresProyekDosenController::class, 'deleteDataProgresProyek'])->name('dosen.deleteDataProgres');
-    Route::get('/proyek/{id}/current-user-info', [DataProgresProyekDosenController::class, 'getCurrentUserInfo'])->name('dosen.proyek.current-user-info');
-    Route::get('/proyek/{id}/my-progres', [DataProgresProyekDosenController::class, 'getMyProgresByProyek'])->name('dosen.getMyProgresByProyek');
-    Route::post('/proyek/my-progres', [DataProgresProyekDosenController::class, 'storeMyProgres'])->name('dosen.storeMyProgres');
+    Route::prefix('progres-proyek')->group(function (){
+        Route::get('/{id}/get', [DataProgresProyekDosenController::class, 'getProgresByProyek'])->name('dosen.getProgresByProyek');
+        Route::get('/{id}/team-members', [DataProgresProyekDosenController::class, 'getTeamMembers'])->name('dosen.getTeamMembers');
+        Route::get('/{id}/detail', [DataProgresProyekDosenController::class, 'getProgresDetail'])->name('dosen.getProgresDetail');
+        Route::post('/store', [DataProgresProyekDosenController::class, 'storeProgresProyek'])->name('dosen.storeProgres');
+        Route::put('/{id}/update', [DataProgresProyekDosenController::class, 'updateProgresProyek'])->name('dosen.updateProgres');
+        Route::delete('{id}/delete', [DataProgresProyekDosenController::class, 'deleteDataProgresProyek'])->name('dosen.deleteDataProgres');
+        //My Progres
+        Route::get('{id}/current-user-info', [DataProgresProyekDosenController::class, 'getCurrentUserInfo'])->name('dosen.proyek.current-user-info');
+        Route::get('{id}/my-progres/get', [DataProgresProyekDosenController::class, 'getMyProgresByProyek'])->name('dosen.getMyProgresByProyek');
+        Route::post('/my-progres/store', [DataProgresProyekDosenController::class, 'storeMyProgres'])->name('dosen.storeMyProgres');
+    });
+    
+
+    Route::prefix('data-keluar-keuangan-proyek')->group(function () {
+        Route::get('/', [DataKeluarKeuanganProyekDosenController::class, 'getDataProyek'])->name('dosen.dataKeluarKeuanganProyek');
+        Route::get('/get-kategori-pengeluaran', [DataKeluarKeuanganProyekDosenController::class, 'getKategoriPengeluaranForFilter'])->name('dosen.getKategoriPengeluaran');
+        Route::get('/{proyekId}', [DataKeluarKeuanganProyekDosenController::class, 'getDataKeluarKeuanganProyek'])->name('dosen.detailDataKeluarKeuanganProyek');
+        Route::get('/{proyekId}/transaksi', [DataKeluarKeuanganProyekDosenController::class, 'getDataTransaksiProyek'])->name('dosen.getDataTransaksiProyek');
+        Route::get('/{proyekId}/transaksi/{transaksiId}/detail', [DataKeluarKeuanganProyekDosenController::class, 'getTransaksiDetailForEdit'])->name('transaksi.detail');
+        Route::post('/tambah-transaksi', [DataKeluarKeuanganProyekDosenController::class, 'tambahTransaksiPengeluaran'])->name('tambah-transaksi');
+        Route::post('/store-with-files', [DataKeluarKeuanganProyekDosenController::class, 'storeWithFiles'])->name('store-with-files');
+        Route::put('/update-transaksi/{transaksiId}', [DataKeluarKeuanganProyekDosenController::class, 'updateTransaksiPengeluaran'])->name('update-transaksi');
+        Route::delete('/hapus-transaksi/{transaksiId}', [DataKeluarKeuanganProyekDosenController::class, 'hapusTransaksi'])->name('hapus-transaksi');
+        Route::get('/download/{fileName}', [DataKeluarKeuanganProyekDosenController::class, 'downloadBuktiTransaksi'])->name('download-bukti')->where('fileName', '.*');
+        Route::get('/sub-jenis-transaksi', [DataKeluarKeuanganProyekDosenController::class, 'getSubJenisTransaksi'])->name('sub-jenis-transaksi');
+        Route::get('/{proyekId}/summary', [DataKeluarKeuanganProyekDosenController::class, 'getSummary']);
+    });
+
+    Route::prefix('profil')->group(function () {
+        Route::get('/', [DataDosenController::class, 'getProfil'])->name('dosen.getProfilDosen');
+        Route::put('/update-profil-dosen', [DataDosenController::class, 'updateProfil'])->name('dosen.updateProfilDosen');
+        Route::post('/check-email-nidn-exists', [DataDosenController::class, 'checkEmailNidnExists'])->name('dosen.checkEmailNidnExists');
+    });
 
 });

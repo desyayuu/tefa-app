@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('mitra_proyek_id', 36);
             $table->string('jenis_proyek_id', 36);
             $table->string('nama_proyek');
-            $table->string('deskripsi_proyek')->nullable();
+            $table->text('deskripsi_proyek')->nullable();
             $table->enum('status_proyek', ['Initiation', 'In Progress', 'Done']);
             $table->date('tanggal_mulai');
             $table->date('tanggal_selesai');

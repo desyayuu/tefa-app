@@ -17,11 +17,11 @@
                 </div>
 
                 <div class="col-lg-6">
-                    <div class="row g-3">
+                    <div class="row g-3 justify-content-center">
                         <div class="col-12 col-md-4">
                             <div class="card shadow-sm h-100 card-info text-center">
                                 <div class="card-body">
-                                    <h5 class="card-title font-total">50</h5>
+                                    <h5 class="card-title font-total">{{ $summaryData['total_proyek'] ?? 0 }}</h5>
                                     <p class="card-text">Total Proyek</p>
                                 </div>
                             </div>
@@ -29,7 +29,7 @@
                         <div class="col-12 col-md-4">
                             <div class="card shadow-sm h-100 card-info text-center">
                                 <div class="card-body">
-                                    <h5 class="card-title font-total">100</h5>
+                                    <h5 class="card-title font-total">{{ $summaryData['total_mahasiswa'] ?? 0 }}</h5>
                                     <p class="card-text">Total Partisipasi Mahasiswa</p>
                                 </div>
                             </div>
@@ -37,13 +37,31 @@
                         <div class="col-12 col-md-4">
                             <div class="card shadow-sm h-100 card-info text-center">
                                 <div class="card-body">
-                                    <h5 class="card-title font-total">9</h5>
+                                    <h5 class="card-title font-total">{{ $summaryData['total_dosen'] ?? 0 }}</h5>
+                                    <p class="card-text">Total Partisipasi Dosen</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <div class="card shadow-sm h-100 card-info text-center">
+                                <div class="card-body">
+                                    <h5 class="card-title font-total">{{ $summaryData['total_mitra'] ?? 0 }}</h5>
                                     <p class="card-text">Total Mitra Industri</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-md-4">
+                            <div class="card shadow-sm h-100 card-info text-center">
+                                <div class="card-body">
+                                    <h5 class="card-title font-total">{{ $summaryData['total_profesional'] ?? 0 }}</h5>
+                                    <p class="card-text">Total Partisipasi Profesional</p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
     </section>
@@ -111,6 +129,8 @@
         </div>
     </section>
 
+    @include('pages.carousel')
+
     {{-- Section 4 --}}
     <section class="container my-5">
         <h2 class="text-center mb-4">Layanan Kami</h2>
@@ -136,55 +156,50 @@
 
     <!-- Section 6 -->
     <section class="fifth-section py-5">
-    <div class="container">
-        <h2 class="text-center mb-4">Gabung Ide Proyek Bersama Kami !</h2>
-        <h5 class="text-center mb-5">
-            Tertarik bekerja sama dengan TEFA JTI Polinema? Beri tahu kami melalui form di bawah untuk diskusi mewujudkan ide proyek anda
-        </h5>
+        <div class="container">
+            <h2 class="text-center mb-4">Gabung Ide Proyek Bersama Kami !</h2>
+            <h5 class="text-center mb-5">
+                Tertarik bekerja sama dengan TEFA JTI Polinema? Beri tahu kami melalui form di bawah untuk diskusi mewujudkan ide proyek anda
+            </h5>
 
-        <form>
-            <div class="row">
-                <!-- Kolom Pertama -->
-                <div class="col-md-6 mb-4">
-                    <div class="mb-3">
-                        <label for="nama" class="form-label">Nama</label>
-                        <input type="text" class="form-control" id="nama" placeholder="Masukkan nama">
+            <form>
+                <div class="row">
+                    <!-- Kolom Pertama -->
+                    <div class="col-md-6 mb-4">
+                        <div class="mb-3">
+                            <label for="nama" class="form-label">Nama</label>
+                            <input type="text" class="form-control" id="nama" placeholder="Masukkan nama">
+                        </div>
+                        <div class="mb-3">
+                            <label for="perusahaan" class="form-label">Perusahaan</label>
+                            <input type="text" class="form-control" id="perusahaan" placeholder="Masukkan Perusahaan Anda">
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" placeholder="Masukkan Email Anda">
+                        </div>
+                        <div class="mb-3">
+                            <label for="telepon" class="form-label">Telepon</label>
+                            <input type="text" class="form-control" id="telepon" placeholder="Masukkan Telepon Anda">
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="perusahaan" class="form-label">Perusahaan</label>
-                        <input type="text" class="form-control" id="perusahaan" placeholder="Masukkan Perusahaan Anda">
+
+
+                    <div class="col-md-6 mb-4 d-flex flex-column justify-content-between h-100">
+                        <div class="mb-3">
+                            <label for="pesan" class="form-label">Pesan</label>
+                            <textarea class="form-control" id="pesan" rows="8" placeholder="Tulis pesan Anda di sini..."></textarea>
+                        </div>
+
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-kirim px-4">Kirim</button>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="email" class="form-label">Email</label>
-                        <input type="email" class="form-control" id="email" placeholder="Masukkan Email Anda">
-                    </div>
-                    <div class="mb-3">
-                        <label for="telepon" class="form-label">Telepon</label>
-                        <input type="text" class="form-control" id="telepon" placeholder="Masukkan Telepon Anda">
-                    </div>
+
                 </div>
-
-
-                <div class="col-md-6 mb-4 d-flex flex-column justify-content-between h-100">
-                    <div class="mb-3">
-                        <label for="pesan" class="form-label">Pesan</label>
-                        <textarea class="form-control" id="pesan" rows="8" placeholder="Tulis pesan Anda di sini..."></textarea>
-                    </div>
-
-                    <div class="text-end">
-                        <button type="submit" class="btn btn-kirim px-4">Kirim</button>
-                    </div>
-                </div>
-
-            </div>
-        </form>
-    </div>
-</section>
-
-
-
-
+            </form>
+        </div>
+    </section>
     {{-- Footer --}}
     @include('layouts.footer')
-
 @endsection
