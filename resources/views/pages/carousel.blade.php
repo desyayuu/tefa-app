@@ -25,21 +25,36 @@
                                     @foreach($chunk as $proyek)
                                         <div class="col">
                                             <div class="poster-card text-center">
-                                                <div class="poster-image-wrapper">
-                                                    <img src="{{ $proyek->poster_proyek }}" 
-                                                         class="poster-image" 
-                                                         alt="Poster {{ $proyek->nama_proyek }}"
-                                                    >
-                                                    <div class="poster-overlay">
-                                                        <h5 class="poster-title">{{ $proyek->nama_proyek }}</h5>
-                                                        <p class="poster-category">{{ $proyek->nama_jenis_proyek }}</p>
-                                                        @if($proyek->link_proyek)
-                                                            <a href="{{ $proyek->link_proyek }}" target="_blank" class="btn btn-light btn-sm">
-                                                                <i class="fas fa-external-link-alt"></i>
-                                                            </a>
-                                                        @endif
+                                                {{-- Wrap the entire poster in a clickable link --}}
+                                                <a href="{{ route('detail-portofolio-proyek', $proyek->proyek_id) }}" 
+                                                   class="poster-link" 
+                                                   style="text-decoration: none; color: inherit;">
+                                                    <div class="poster-image-wrapper">
+                                                        <img src="{{ $proyek->poster_proyek }}" 
+                                                             class="poster-image" 
+                                                             alt="Poster {{ $proyek->nama_proyek }}"
+                                                        >
+                                                        <div class="poster-overlay">
+                                                            <h5 class="poster-title">{{ $proyek->nama_proyek }}</h5>
+                                                            <p class="poster-category">{{ $proyek->nama_jenis_proyek }}</p>
+                                                            <div class="poster-actions">
+                                                                {{-- Detail button --}}
+                                                                <span class="btn btn-add btn-sm me-2">
+                                                                     Lihat Detail
+                                                                </span>
+                                                                {{-- External link button (if available) --}}
+                                                                @if($proyek->link_proyek)
+                                                                    <a href="{{ $proyek->link_proyek }}" 
+                                                                       target="_blank" 
+                                                                       class="btn btn-light btn-add"
+                                                                       onclick="event.stopPropagation(); event.preventDefault(); window.open('{{ $proyek->link_proyek }}', '_blank');">
+                                                                        <i class="fas fa-external-link-alt"></i>
+                                                                    </a>
+                                                                @endif
+                                                            </div>
+                                                        </div>
                                                     </div>
-                                                </div>
+                                                </a>
                                             </div>
                                         </div>
                                     @endforeach

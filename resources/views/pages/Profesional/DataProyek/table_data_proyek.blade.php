@@ -85,7 +85,7 @@
                             $statusClass = match($item->status_proyek) {
                                 'Done' => 'bg-success',    
                                 'In Progress' => 'bg-primary', 
-                                'Initiation' => 'bg-warning',
+                                'Initiation' => 'bg-secondary',
                                 default => 'bg-info'    
                             };
                             @endphp

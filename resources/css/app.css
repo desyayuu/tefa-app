@@ -22,6 +22,10 @@ body {
     }
 }
 
+.detail-proyek{
+    margin-top:80px; 
+}
+
 .breadcrumb-item.active {
     color: #3C21F7 !important;
     font-weight: 600;
@@ -1507,8 +1511,8 @@ select,
 }
 
 .poster-image {
-    width:  85%;
-    height: 85%;
+    width:  100%;
+    height: 100%;
     border-radius: 15px;
     object-fit: cover;
     transition: transform 0.3s ease;

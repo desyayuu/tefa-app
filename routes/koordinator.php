@@ -19,6 +19,7 @@ use App\Http\Controllers\Koordinator\DataKeuangan\DataMasukKeuanganProyekControl
 use App\Http\Controllers\Koordinator\DataKeuangan\DataKeluarKeuanganProyekController;
 use App\Http\Controllers\Koordinator\DataSubJenisKategoriTransaksiController;
 use App\Http\Controllers\Koordinator\DataBidangKeahlianMahasiswaController;
+use App\Http\Controllers\JoinTefaController;
 
 Route::middleware([KoordinatorMiddleware::class])->prefix('koordinator')->group(function () {
     Route::get('/', [KoordinatorController::class, 'dashboard'])->name('koordinator.dashboard');
@@ -174,8 +175,11 @@ Route::middleware([KoordinatorMiddleware::class])->prefix('koordinator')->group(
         Route::get('/get-jenis-keuangan-tefa', [DataSubJenisKategoriTransaksiController::class, 'getJenisKeuanganTefa'])->name('koordinator.getJenisKeuanganTefa');
     });
 
-
-
-
+    Route::prefix('pesan-pengujung')->group(function () {
+        Route::get('/', [JoinTefaController::class, 'getPesanPengunjung'])->name('koordinator.getPesanPengunjung');
+        Route::post('/tambah-pesan', [JoinTefaController::class, 'tambahPesanPengunjung'])->name('koordinator.tambahPesanPengunjung');
+        Route::put('/update-pesan/{id}', [JoinTefaController::class, 'updatePesanPengunjung'])->name('koordinator.updatePesanPengunjung');
+        Route::delete('/hapus-pesan/{id}', [JoinTefaController::class, 'hapusPesanPengunjung'])->name('koordinator.hapusPesanPengunjung');
+    });
 
 });

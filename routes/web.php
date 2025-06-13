@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\LandingPageController;
+use App\Http\Controllers\JoinTefaController;
 
 
 //Landing Page
@@ -13,6 +14,12 @@ Route::get('/register-dosen', [AuthController::class, 'showRegisterDosenForm'])-
 Route::get('/register-profesional', [AuthController::class, 'showRegisterProfesionalForm'])->name('register-profesional');
 Route::get('/login-landing-page', function () {return view('pages.login'); })->name('login-landing-page');
 
+// Portofolio Proyek
+Route::get('portofolio-proyek', [LandingPageController::class, 'getAllProyek'])->name('get-portofolio-proyek');
+Route::get('portofolio-proyek/{id}', [LandingPageController::class, 'getProyekDetail'])->name('detail-portofolio-proyek');
+
+// Pesan Pengunjung
+Route::post('join-proyek', [JoinTefaController::class, 'tambahPesanPengunjung'])->name('join-proyek');
 
 // Auth Routes
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
