@@ -37,7 +37,7 @@
                         <label for="nama_proyek" class="col-md-3 col-form-label">Nama Proyek <span class="text-danger">*</span></label>
                         <div class="col-md-9">
                             <input type="text" class="form-control form-selection" id="nama_proyek" name="nama_proyek" 
-                                   value="{{ $proyek->nama_proyek }}" {{ $isLeader ? '' : 'readonly' }} required>
+                                   value="{{ $proyek->nama_proyek }}" {{ $isLeader ? '' : 'disabled' }} required>
                         </div>
                     </div>
 
@@ -74,7 +74,7 @@
                         <label for="tanggal_mulai" class="col-md-3 col-form-label">Tanggal Mulai <span class="text-danger">*</span></label>
                         <div class="col-md-9">
                             <input type="date" class="form-control form-selection" id="tanggal_mulai" name="tanggal_mulai" 
-                                   value="{{ $proyek->tanggal_mulai }}" {{ $isLeader ? '' : 'readonly' }} required>
+                                   value="{{ $proyek->tanggal_mulai }}" {{ $isLeader ? '' : 'disabled' }} required>
                         </div>
                     </div>
 
@@ -83,11 +83,12 @@
                         <label for="tanggal_selesai" class="col-md-3 col-form-label">Tanggal Selesai <span class="text-danger">*</span></label>
                         <div class="col-md-9">
                             <input type="date" class="form-control form-selection" id="tanggal_selesai" name="tanggal_selesai" 
-                                   value="{{ $proyek->tanggal_selesai }}" {{ $isLeader ? '' : 'readonly' }} required>
+                                   value="{{ $proyek->tanggal_selesai }}" {{ $isLeader ? '' : 'disabled' }} required>
                         </div>
                     </div>
 
                     <!-- Dana Pendanaan -->
+                    @if($isLeader)
                     <div class="mb-3 row align-items-center">
                         <label for="dana_pendanaan" class="col-md-3 col-form-label">Dana Pendanaan <span class="text-danger">*</span></label>
                         <div class="col-md-9">
@@ -95,17 +96,18 @@
                                 <span class="input-group-text">Rp</span>
                                 <input type="text" class="form-control form-selection" id="dana_pendanaan" name="dana_pendanaan" 
                                        value="{{ number_format($proyek->dana_pendanaan, 0, ',', '.') }}" 
-                                       {{ $isLeader ? '' : 'readonly' }} required>
+                                       {{ $isLeader ? '' : 'disabled' }} required>
                             </div>
                         </div>    
                     </div>
+                    @endif
 
                     <!-- Deskripsi Proyek -->
                     <div class="mb-3 row align-items-center">
                         <label for="deskripsi_proyek" class="col-md-3 col-form-label">Deskripsi Proyek</label>
                         <div class="col-md-9">
                             <textarea class="form-control form-selection" id="deskripsi_proyek" name="deskripsi_proyek" 
-                                      rows="3" {{ $isLeader ? '' : 'readonly' }}>{{ $proyek->deskripsi_proyek }}</textarea>
+                                      rows="3" {{ $isLeader ? '' : 'disabled' }}>{{ $proyek->deskripsi_proyek }}</textarea>
                         </div>
                     </div>
                 </div>

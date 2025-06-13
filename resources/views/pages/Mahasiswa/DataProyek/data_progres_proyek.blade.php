@@ -145,7 +145,7 @@
                         <!-- Mahasiswa Section -->
                         <div class="mb-3 col-md-6 d-none" id="mahasiswa_section">
                             <label for="mahasiswa_assign_id" class="form-label">Pilih Mahasiswa <span class="text-danger">*</span></label>
-                            <select class="form-select select2-assign-mahasiswa" id="mahasiswa_assign_id">
+                            <select class="form-select select2-assign-mahasiswa" id="mahasiswa_assign_id" disabled>
                                 
                             </select>
                             <div class="invalid-feedback" id="mahasiswa_assign_id_error"></div>
@@ -225,7 +225,7 @@
                         <!-- Nama Progres -->
                         <div class="mb-3 col-md-6">
                             <label for="edit_nama_progres" class="form-label">Nama Progres <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="edit_nama_progres" name="nama_progres" required>
+                            <input type="text" class="form-control"  id="edit_nama_progres" name="nama_progres" required>
                             <div class="invalid-feedback" id="edit_nama_progres_error"></div>
                         </div>
                         
@@ -299,7 +299,7 @@
                         <div class="mb-3 col-md-6 d-none" id="edit_mahasiswa_section">
                             <label for="edit_mahasiswa_assign_id" class="form-label">Pilih Mahasiswa <span class="text-danger">*</span></label>
                             <select class="form-select select2-edit-mahasiswa" id="edit_mahasiswa_assign_id" >
-                                <option value="">Cari nama...</option>
+                                
                             </select>
                             <div class="invalid-feedback" id="edit_mahasiswa_assign_id_error"></div>
                         </div>

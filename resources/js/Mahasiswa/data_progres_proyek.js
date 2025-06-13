@@ -589,25 +589,40 @@ document.addEventListener('DOMContentLoaded', function () {
         
         if (!canEdit && !isLeader) {
             // ===============================
-            // READ-ONLY MODE (Cannot Edit)
+            // READ-ONLY MODE (Cannot Edit) - PAKSA SEMUA JADI ABU-ABU!
             // ===============================
-            Object.values(allFields).forEach(fieldSelector => {
-                $(fieldSelector).prop('disabled', true);
-                $(fieldSelector).addClass('bg-light text-muted');
-                $(fieldSelector).attr('title', 'Anda tidak dapat mengedit progres yang tidak ditugaskan kepada Anda');
+            
+
+            $('#edit_nama_progres').prop('disabled', true).addClass('text-muted').attr('readonly', true);
+            $('#edit_status_progres').prop('disabled', true).addClass('text-muted');
+            $('#edit_persentase_progres').prop('disabled', true).addClass('text-muted').attr('readonly', true);
+            $('#edit_deskripsi').prop('disabled', true).addClass('text-muted').attr('readonly', true);
+            $('#edit_assigned_type').prop('disabled', true).addClass('text-muted');
+            
+            $('#edit_leder_assign_id').prop('disabled', true).addClass('text-muted');
+            $('#edit_dosen_assign_id').prop('disabled', true).addClass('text-muted');
+            $('#edit_profesional_assign_id').prop('disabled', true).addClass('text-muted');
+            $('#edit_mahasiswa_assign_id').prop('disabled', true).addClass('text-muted');
+            
+            $('#edit_assigned_to').prop('disabled', true);
+            $('#edit_assigned_type_hidden').prop('disabled', true);
+            
+            $('#modalEditProgres input, #modalEditProgres select, #modalEditProgres textarea').each(function() {
+                $(this).prop('disabled', true).addClass('text-muted');
+                if ($(this).is('input[type="text"], input[type="number"], textarea')) {
+                    $(this).attr('readonly', true);
+                }
+                $(this).attr('title', 'Anda tidak dapat mengedit progres yang tidak ditugaskan kepada Anda');
             });
             
-            assignmentSelects.forEach(selector => {
-                $(selector).prop('disabled', true);
-                $(selector).addClass('bg-light text-muted');
-            });
-            
+
             $('#btnUpdateProgres').prop('disabled', true);
             $('#btnUpdateProgres').html('<i class="bi bi-eye me-2"></i>Lihat Saja (Read Only)');
             
+
             $('#edit_nama_progres').closest('.mb-3').before(`
                 <div id="readonly-notice" class="alert alert-info alert-sm mb-3">
-                    <small>Sebagai mahasiswa, Anda sedang melihat progres yang tidak ditugaskan kepada Anda. Progres ini hanya dapat dibaca (read-only).</small>
+                    <small>Sebagai mahasiswa, Anda sedang melihat progres yang tidak ditugaskan kepada Anda. Semua field hanya dapat dibaca saja.</small>
                 </div>
             `);
             
@@ -622,8 +637,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 $(fieldSelector).prop('disabled', !isEditable);
                 
                 if (!isEditable) {
-                    $(fieldSelector).addClass('bg-light text-muted');
-                    
                     // Different tooltip based on field type
                     if (fieldName === 'nama_progres' && !isCreatedByCurrentUser) {
                         $(fieldSelector).attr('title', 'Nama progres hanya dapat diedit oleh yang membuatnya');
@@ -633,22 +646,33 @@ document.addEventListener('DOMContentLoaded', function () {
                         $(fieldSelector).attr('title', 'Field ini tidak dapat diedit oleh mahasiswa');
                     }
                 } else {
-                    $(fieldSelector).removeClass('bg-light text-muted');
+                    $(fieldSelector).removeClass('text-muted');
                     $(fieldSelector).removeAttr('title');
                 }
             });
             
+            
+            const canEditDescription = editableFields.includes('deskripsi_progres');
+            $('#edit_deskripsi').prop('disabled', !canEditDescription);
+            
+            if (!canEditDescription) {
+                $('#edit_deskripsi').addClass('text-muted');
+                $('#edit_deskripsi').attr('title', 'Field ini tidak dapat diedit oleh mahasiswa');
+            } else {
+                $('#edit_deskripsi').removeClass('text-muted');
+                $('#edit_deskripsi').removeAttr('title');
+            }
+            
             // Assignment selects always disabled for mahasiswa
             assignmentSelects.forEach(selector => {
                 $(selector).prop('disabled', true);
-                $(selector).addClass('bg-light text-muted');
                 $(selector).attr('title', 'Mahasiswa tidak dapat mengubah assignment progres');
             });
             
             $('#btnUpdateProgres').prop('disabled', false);
             $('#btnUpdateProgres').html('<i class="bi bi-save me-2"></i>Update Progress');
             
-            // differet warning berkaitan dengan data yang dibuat sendiri dengan data yang dituaskan ke dia
+            // Different warning berkaitan dengan data yang dibuat sendiri dengan data yang dituaskan ke dia
             if (isCreatedByCurrentUser) {
                 // Mahasiswa yang membuat progres sendiri
                 $('#edit_nama_progres').closest('.mb-3').before(`
@@ -671,13 +695,17 @@ document.addEventListener('DOMContentLoaded', function () {
             // ===============================
             Object.values(allFields).forEach(fieldSelector => {
                 $(fieldSelector).prop('disabled', false);
-                $(fieldSelector).removeClass('bg-light text-muted');
+                $(fieldSelector).removeClass('text-muted');
                 $(fieldSelector).removeAttr('title');
             });
             
+            $('#edit_deskripsi').prop('disabled', false);
+            $('#edit_deskripsi').removeClass('text-muted');
+            $('#edit_deskripsi').removeAttr('title');
+            
             assignmentSelects.forEach(selector => {
                 $(selector).prop('disabled', false);
-                $(selector).removeClass('bg-light text-muted');
+                $(selector).removeClass('text-muted');
                 $(selector).removeAttr('title');
             });
             
@@ -1139,7 +1167,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
         
-        $('#formEditProgres input, #formEditProgres select, #formEditProgres textarea').removeClass('bg-light text-muted');
+        $('#formEditProgres input, #formEditProgres select, #formEditProgres textarea').removeClass('text-muted');
         $('#formEditProgres input, #formEditProgres select, #formEditProgres textarea').removeAttr('title');
         $('#formEditProgres input, #formEditProgres select, #formEditProgres textarea').prop('disabled', false);
         $('#assignment-restriction-notice').remove();

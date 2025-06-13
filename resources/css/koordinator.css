@@ -259,11 +259,18 @@ body {
 
 .form-control{
     border-radius: 10px;
-    background-color: #E9ECEF;
-    border-color: #333;
     border: none;
+    font-size: 14px;
+    border-radius: 6px;
+    border: 1px solid #dee2e6;
 }
 
+.form-disabled{
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    border: none;
+    font-size: 14px;
+}
 
 .btn-add{
     background-color: #E2DEFF;

@@ -3,7 +3,7 @@
         <div class="card-body">
             <div id="my-progres-proyek-section" class="title-table d-flex justify-content-between align-items-center mb-3">
                 <h4 class="m-0">
-                    My Progres Proyek
+                    Progres Saya
                 </h4>
                 <div class="d-flex gap-2 align-items-center">
                     <div class="position-relative">
@@ -128,7 +128,7 @@
                         <div class="mb-3 col-md-6">
                             <label for="my_assignment_display" class="form-label">Ditugaskan Kepada</label>
                             <div class="input-group">
-                                <input type="text" class="form-control bg-light" id="my_assignment_display" readonly value="{{ $mahasiswaInfo->nama_mahasiswa ?? 'Nama tidak ditemukan' }}">
+                                <input type="text" class="form-control" id="my_assignment_display" disabled value="{{ $mahasiswaInfo->nama_mahasiswa ?? 'Nama tidak ditemukan' }}">
                             </div>
                             <small class="form-text text-muted">Otomatis ditugasakan kepada Anda</small>
                         </div>

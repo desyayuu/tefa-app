@@ -515,13 +515,16 @@ document.addEventListener('DOMContentLoaded', function () {
                     const isLeader = response.isLeader || false;
                     const canEdit = response.canEdit || false;
                     const editableFields = response.editableFields || [];
+                    const isCreatedByCurrentUser = response.isCreatedByCurrentUser || false; // ✅ FIX: Ambil dari response
                     
-                    // Set basic field values
+                    // ✅ FIX: Set ALL field values SEBELUM load team members
                     $('#edit_progres_id').val(progres.progres_proyek_id);
                     $('#edit_nama_progres').val(progres.nama_progres);
                     $('#edit_status_progres').val(progres.status_progres);
                     $('#edit_persentase_progres').val(progres.persentase_progres);
-                    $('#edit_deskripsi').val(progres.deskripsi_progres);
+                    $('#edit_deskripsi').val(progres.deskripsi_progres || ''); // ✅ FIX: Pastikan tidak undefined
+                    
+                    console.log('Setting deskripsi value:', progres.deskripsi_progres); // ✅ DEBUG: untuk cek nilai
                     
                     $('#edit_assigned_to').val(progres.assigned_to || '');
                     $('#edit_assigned_type_hidden').val(progres.assigned_type || '');
@@ -549,8 +552,21 @@ document.addEventListener('DOMContentLoaded', function () {
                             }
                         }
                         
-                        // Apply restrictions AFTER setting values
-                        applyFieldRestrictions(isLeader, canEdit, editableFields, progres);
+                        // ✅ FIX: Re-set deskripsi sebelum apply restrictions
+                        $('#edit_deskripsi').val(progres.deskripsi_progres);
+                        console.log('Re-setting deskripsi before restrictions:', progres.deskripsi_progres); // ✅ DEBUG
+                        
+                        // ✅ FIX: Apply restrictions dengan parameter yang BENAR
+                        applyFieldRestrictions(isLeader, canEdit, editableFields, isCreatedByCurrentUser);
+                        
+                        // ✅ FIX: Set deskripsi SEKALI LAGI setelah apply restrictions (untuk memastikan value tidak hilang)
+                        setTimeout(function() {
+                            const currentDesc = $('#edit_deskripsi').val();
+                            if (!currentDesc && progres.deskripsi_progres) {
+                                $('#edit_deskripsi').val(progres.deskripsi_progres);
+                                console.log('Final re-setting deskripsi after timeout:', progres.deskripsi_progres); // ✅ DEBUG
+                            }
+                        }, 100);
                     });
                 } else {
                     $('#edit_form_error').removeClass('d-none').text(response.message || 'Gagal memuat data progres');
@@ -565,7 +581,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    function applyFieldRestrictions(isLeader, canEdit, editableFields, progres = null) {
+    function applyFieldRestrictions(isLeader, canEdit, editableFields, isCreatedByCurrentUser = false) {
         const allFields = {
             'nama_progres': '#edit_nama_progres',
             'status_progres': '#edit_status_progres', 
@@ -582,62 +598,65 @@ document.addEventListener('DOMContentLoaded', function () {
             '#edit_mahasiswa_assign_id'
         ];
         
+        // ✅ PRESERVE deskripsi value SEBELUM manipulasi
+        const currentDeskripsiValue = $('#edit_deskripsi').val();
+        console.log('✅ Preserving deskripsi value before restrictions:', currentDeskripsiValue);
+        
         // Remove existing notices
         $('#assignment-restriction-notice').remove();
         $('#member-edit-notice').remove();
         $('#readonly-notice').remove();
+        $('#created-edit-notice').remove();
+        $('#assigned-edit-notice').remove();
         
         if (!canEdit && !isLeader) {
-            // READ-ONLY MODE
-            Object.values(allFields).forEach(fieldSelector => {
-                $(fieldSelector).prop('disabled', true);
-                $(fieldSelector).addClass('bg-light text-muted');
-                $(fieldSelector).attr('title', 'Anda tidak dapat mengedit progres yang tidak ditugaskan kepada Anda');
+            // ===============================
+            // READ-ONLY MODE (Cannot Edit) - PAKSA SEMUA JADI ABU-ABU!
+            // ===============================
+            
+            $('#edit_nama_progres').prop('disabled', true).addClass('text-muted').attr('readonly', true);
+            $('#edit_status_progres').prop('disabled', true).addClass('text-muted');
+            $('#edit_persentase_progres').prop('disabled', true).addClass('text-muted').attr('readonly', true);
+            
+            // ✅ Handle deskripsi dengan hati-hati
+            $('#edit_deskripsi').prop('disabled', true).addClass('text-muted').attr('readonly', true);
+            // ✅ RESTORE deskripsi value setelah manipulation
+            $('#edit_deskripsi').val(currentDeskripsiValue);
+            
+            $('#edit_assigned_type').prop('disabled', true).addClass('text-muted');
+            
+            $('#edit_leder_assign_id').prop('disabled', true).addClass('text-muted');
+            $('#edit_dosen_assign_id').prop('disabled', true).addClass('text-muted');
+            $('#edit_profesional_assign_id').prop('disabled', true).addClass('text-muted');
+            $('#edit_mahasiswa_assign_id').prop('disabled', true).addClass('text-muted');
+            
+            $('#edit_assigned_to').prop('disabled', true);
+            $('#edit_assigned_type_hidden').prop('disabled', true);
+            
+            $('#modalEditProgres input, #modalEditProgres select, #modalEditProgres textarea').each(function() {
+                $(this).prop('disabled', true).addClass('text-muted');
+                if ($(this).is('input[type="text"], input[type="number"], textarea')) {
+                    $(this).attr('readonly', true);
+                }
+                $(this).attr('title', 'Anda tidak dapat mengedit progres yang tidak ditugaskan kepada Anda');
             });
             
-            // For read-only mode, show assigned name in a read-only display
-            if (progres && progres.assigned_name) {
-                // Hide all assignment dropdowns
-                assignmentSelects.forEach(selector => {
-                    $(selector).closest('.mb-3').hide();
-                });
-                
-                // Show assigned type dropdown as disabled
-                $('#edit_assigned_type').prop('disabled', true);
-                $('#edit_assigned_type').addClass('bg-light text-muted');
-                
-                // Add a read-only display field for assigned person
-                const assignedTypeSection = $('#edit_assigned_type').closest('.mb-3');
-                
-                // Remove existing read-only display if any
-                $('.readonly-assigned-display').remove();
-                
-                // Add read-only display after assigned type
-                assignedTypeSection.after(`
-                    <div class="mb-3 col-md-6 readonly-assigned-display">
-                        <label class="form-label">Ditugaskan Kepada</label>
-                        <input type="text" class="form-control bg-light" value="${progres.assigned_name}" readonly>
-                    </div>
-                `);
-            } else {
-                // If no assignment, just disable the selects
-                assignmentSelects.forEach(selector => {
-                    $(selector).prop('disabled', true);
-                    $(selector).addClass('bg-light text-muted');
-                });
-            }
+            // ✅ FORCE restore deskripsi value lagi
+            $('#edit_deskripsi').val(currentDeskripsiValue);
             
             $('#btnUpdateProgres').prop('disabled', true);
             $('#btnUpdateProgres').html('<i class="bi bi-eye me-2"></i>Lihat Saja (Read Only)');
             
             $('#edit_nama_progres').closest('.mb-3').before(`
                 <div id="readonly-notice" class="alert alert-info alert-sm mb-3">
-                    <small>Sebagai member proyek, Anda sedang melihat progres yang tidak ditugaskan kepada Anda. Progres ini hanya dapat dibaca (read-only).</small>
+                    <small>Sebagai member, Anda sedang melihat progres yang tidak ditugaskan kepada Anda. Semua field hanya dapat dibaca saja.</small>
                 </div>
             `);
             
         } else if (!isLeader && canEdit) {
-            // MEMBER EDIT MODE
+            // ===============================
+            // EDIT MODE FOR DOSEN (Member)
+            // ===============================
             Object.keys(allFields).forEach(fieldName => {
                 const fieldSelector = allFields[fieldName];
                 const isEditable = editableFields.includes(fieldName);
@@ -645,78 +664,96 @@ document.addEventListener('DOMContentLoaded', function () {
                 $(fieldSelector).prop('disabled', !isEditable);
                 
                 if (!isEditable) {
-                    $(fieldSelector).addClass('bg-light text-muted');
-                    $(fieldSelector).attr('title', 'Field ini tidak dapat diedit oleh member proyek');
+                    // Different tooltip based on field type
+                    if (fieldName === 'nama_progres' && !isCreatedByCurrentUser) {
+                        $(fieldSelector).attr('title', 'Nama progres hanya dapat diedit oleh yang membuatnya');
+                    } else if (fieldName === 'assigned_type' || fieldName === 'assigned_to') {
+                        $(fieldSelector).attr('title', 'Member tidak dapat mengubah assignment progres');
+                    } else {
+                        $(fieldSelector).attr('title', 'Field ini tidak dapat diedit oleh member');
+                    }
                 } else {
-                    $(fieldSelector).removeClass('bg-light text-muted');
+                    $(fieldSelector).removeClass('text-muted');
                     $(fieldSelector).removeAttr('title');
                 }
             });
             
-            if (!editableFields.includes('assigned_to')) {
-                // Show current assignment in read-only mode for members
-                if (progres && progres.assigned_name) {
-                    assignmentSelects.forEach(selector => {
-                        $(selector).closest('.mb-3').hide();
-                    });
-                    
-                    $('#edit_assigned_type').prop('disabled', true);
-                    $('#edit_assigned_type').addClass('bg-light text-muted');
-                    
-                    const assignedTypeSection = $('#edit_assigned_type').closest('.mb-3');
-                    $('.readonly-assigned-display').remove();
-                    
-                    assignedTypeSection.after(`
-                        <div class="mb-3 col-md-6 readonly-assigned-display">
-                            <label class="form-label">Ditugaskan Kepada</label>
-                            <input type="text" class="form-control bg-light" value="${progres.assigned_name}" readonly>
-                        </div>
-                    `);
-                } else {
-                    assignmentSelects.forEach(selector => {
-                        $(selector).prop('disabled', true);
-                        $(selector).addClass('bg-light text-muted');
-                    });
-                }
+            // ✅ Handle deskripsi dengan khusus
+            const canEditDescription = editableFields.includes('deskripsi_progres');
+            $('#edit_deskripsi').prop('disabled', !canEditDescription);
+            
+            if (!canEditDescription) {
+                $('#edit_deskripsi').addClass('text-muted');
+                $('#edit_deskripsi').attr('title', 'Field ini tidak dapat diedit oleh member');
             } else {
-                // Member can edit assignment - show dropdowns normally
-                $('.readonly-assigned-display').remove();
-                assignmentSelects.forEach(selector => {
-                    $(selector).closest('.mb-3').show();
-                    $(selector).prop('disabled', false);
-                    $(selector).removeClass('bg-light text-muted');
-                });
+                $('#edit_deskripsi').removeClass('text-muted');
+                $('#edit_deskripsi').removeAttr('title');
             }
             
-            $('#btnUpdateProgres').prop('disabled', false);
-            $('#btnUpdateProgres').html('Update Progress');
+            // ✅ RESTORE deskripsi value
+            $('#edit_deskripsi').val(currentDeskripsiValue);
             
-            $('#edit_nama_progres').closest('.mb-3').before(`
-                <div id="member-edit-notice" class="alert alert-warning alert-sm mb-3">
-                    <i class="bi bi-exclamation-triangle me-2"></i>
-                    <small>Sebagai member proyek, Anda dapat mengedit status, persentase, dan deskripsi progres yang ditugaskan kepada Anda.</small>
-                </div>
-            `);
+            // Assignment selects always disabled for member
+            assignmentSelects.forEach(selector => {
+                $(selector).prop('disabled', true);
+                $(selector).attr('title', 'Dosen tidak dapat mengubah assignment progres');
+            });
+            
+            $('#btnUpdateProgres').prop('disabled', false);
+            $('#btnUpdateProgres').html('<i class="bi bi-save me-2"></i>Update Progress');
+            
+            // Different warning berkaitan dengan data yang dibuat sendiri dengan data yang dituaskan ke dia
+            if (isCreatedByCurrentUser) {
+                // Dosen yang membuat progres sendiri
+                $('#edit_nama_progres').closest('.mb-3').before(`
+                    <div id="created-edit-notice" class="alert alert-success alert-sm mb-3">
+                        <small><strong>Progres yang Anda buat:</strong> Anda dapat mengedit nama, status, persentase, dan deskripsi progres.</small>
+                    </div>
+                `);
+            } else {
+                // Dosen yang hanya ditugaskan (bukan pembuat)
+                $('#edit_nama_progres').closest('.mb-3').before(`
+                    <div id="assigned-edit-notice" class="alert alert-warning alert-sm mb-3">
+                        <small><strong>Progres yang ditugaskan:</strong> Anda dapat mengedit status, persentase, dan deskripsi progres</small>
+                    </div>
+                `);
+            }
             
         } else {
-            // LEADER MODE - can edit everything
-            $('.readonly-assigned-display').remove();
-            
+            // ===============================
+            // LEADER MODE (Full Access)
+            // ===============================
             Object.values(allFields).forEach(fieldSelector => {
                 $(fieldSelector).prop('disabled', false);
-                $(fieldSelector).removeClass('bg-light text-muted');
+                $(fieldSelector).removeClass('text-muted');
                 $(fieldSelector).removeAttr('title');
             });
             
+            $('#edit_deskripsi').prop('disabled', false);
+            $('#edit_deskripsi').removeClass('text-muted');
+            $('#edit_deskripsi').removeAttr('title');
+            
+            // ✅ RESTORE deskripsi value untuk leader
+            $('#edit_deskripsi').val(currentDeskripsiValue);
+            
             assignmentSelects.forEach(selector => {
-                $(selector).closest('.mb-3').show();
                 $(selector).prop('disabled', false);
-                $(selector).removeClass('bg-light text-muted');
+                $(selector).removeClass('text-muted');
+                $(selector).removeAttr('title');
             });
             
             $('#btnUpdateProgres').prop('disabled', false);
-            $('#btnUpdateProgres').html('Simpan Perubahan');
+            $('#btnUpdateProgres').html('<i class="bi bi-save me-2"></i>Simpan Perubahan');
         }
+        
+        // ✅ FINAL CHECK - pastikan deskripsi value tidak hilang
+        setTimeout(function() {
+            const finalDeskripsiValue = $('#edit_deskripsi').val();
+            if (finalDeskripsiValue !== currentDeskripsiValue && currentDeskripsiValue) {
+                console.log('✅ FINAL RESTORE deskripsi value:', currentDeskripsiValue);
+                $('#edit_deskripsi').val(currentDeskripsiValue);
+            }
+        }, 50);
     }
 
     function confirmDeleteProgresProyek(progresProyekId) {
@@ -1172,7 +1209,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
         
-        $('#formEditProgres input, #formEditProgres select, #formEditProgres textarea').removeClass('bg-light text-muted');
+        $('#formEditProgres input, #formEditProgres select, #formEditProgres textarea').removeClass(' text-muted');
         $('#formEditProgres input, #formEditProgres select, #formEditProgres textarea').removeAttr('title');
         $('#formEditProgres input, #formEditProgres select, #formEditProgres textarea').prop('disabled', false);
         $('#assignment-restriction-notice').remove();

@@ -126,7 +126,7 @@
                         <div class="mb-3 col-md-6">
                             <label for="my_assignment_display" class="form-label">Ditugaskan Kepada</label>
                             <div class="input-group">
-                                <input type="text" class="form-control bg-light" id="my_assignment_display" readonly value="{{ $profesionalInfo->nama_profesional ?? 'Nama tidak ditemukan' }}">
+                                <input type="text" class="form-control" id="my_assignment_display" readonly value="{{ $profesionalInfo->nama_profesional ?? 'Nama tidak ditemukan' }}">
                             </div>
                             <small class="form-text text-muted">Otomatis ditugasakan kepada Anda</small>
                         </div>

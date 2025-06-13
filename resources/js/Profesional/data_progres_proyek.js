@@ -592,7 +592,6 @@ document.addEventListener('DOMContentLoaded', function () {
             // READ-ONLY MODE
             Object.values(allFields).forEach(fieldSelector => {
                 $(fieldSelector).prop('disabled', true);
-                $(fieldSelector).addClass('bg-light text-muted');
                 $(fieldSelector).attr('title', 'Anda tidak dapat mengedit progres yang tidak ditugaskan kepada Anda');
             });
             
@@ -605,7 +604,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 
                 // Show assigned type dropdown as disabled
                 $('#edit_assigned_type').prop('disabled', true);
-                $('#edit_assigned_type').addClass('bg-light text-muted');
                 
                 // Add a read-only display field for assigned person
                 const assignedTypeSection = $('#edit_assigned_type').closest('.mb-3');
@@ -617,14 +615,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 assignedTypeSection.after(`
                     <div class="mb-3 col-md-6 readonly-assigned-display">
                         <label class="form-label">Ditugaskan Kepada</label>
-                        <input type="text" class="form-control bg-light" value="${progres.assigned_name}" readonly>
+                        <input type="text" class="form-control " value="${progres.assigned_name}" readonly>
                     </div>
                 `);
             } else {
                 // If no assignment, just disable the selects
                 assignmentSelects.forEach(selector => {
                     $(selector).prop('disabled', true);
-                    $(selector).addClass('bg-light text-muted');
                 });
             }
             
@@ -646,10 +643,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 $(fieldSelector).prop('disabled', !isEditable);
                 
                 if (!isEditable) {
-                    $(fieldSelector).addClass('bg-light text-muted');
+                
                     $(fieldSelector).attr('title', 'Field ini tidak dapat diedit oleh member proyek');
                 } else {
-                    $(fieldSelector).removeClass('bg-light text-muted');
+                    
                     $(fieldSelector).removeAttr('title');
                 }
             });
@@ -662,7 +659,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     });
                     
                     $('#edit_assigned_type').prop('disabled', true);
-                    $('#edit_assigned_type').addClass('bg-light text-muted');
+                    $('#edit_assigned_type').addClass(' text-muted');
                     
                     const assignedTypeSection = $('#edit_assigned_type').closest('.mb-3');
                     $('.readonly-assigned-display').remove();
@@ -670,13 +667,13 @@ document.addEventListener('DOMContentLoaded', function () {
                     assignedTypeSection.after(`
                         <div class="mb-3 col-md-6 readonly-assigned-display">
                             <label class="form-label">Ditugaskan Kepada</label>
-                            <input type="text" class="form-control bg-light" value="${progres.assigned_name}" readonly>
+                            <input type="text" class="form-control " value="${progres.assigned_name}" readonly>
                         </div>
                     `);
                 } else {
                     assignmentSelects.forEach(selector => {
                         $(selector).prop('disabled', true);
-                        $(selector).addClass('bg-light text-muted');
+                        $(selector).addClass(' text-muted');
                     });
                 }
             } else {
@@ -685,7 +682,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 assignmentSelects.forEach(selector => {
                     $(selector).closest('.mb-3').show();
                     $(selector).prop('disabled', false);
-                    $(selector).removeClass('bg-light text-muted');
+                    $(selector).removeClass(' text-muted');
                 });
             }
             
@@ -705,14 +702,14 @@ document.addEventListener('DOMContentLoaded', function () {
             
             Object.values(allFields).forEach(fieldSelector => {
                 $(fieldSelector).prop('disabled', false);
-                $(fieldSelector).removeClass('bg-light text-muted');
+                
                 $(fieldSelector).removeAttr('title');
             });
             
             assignmentSelects.forEach(selector => {
                 $(selector).closest('.mb-3').show();
                 $(selector).prop('disabled', false);
-                $(selector).removeClass('bg-light text-muted');
+                $(selector).removeClass(' text-muted');
             });
             
             $('#btnUpdateProgres').prop('disabled', false);
@@ -1173,7 +1170,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
         
-        $('#formEditProgres input, #formEditProgres select, #formEditProgres textarea').removeClass('bg-light text-muted');
+        $('#formEditProgres input, #formEditProgres select, #formEditProgres textarea').removeClass(' text-muted');
         $('#formEditProgres input, #formEditProgres select, #formEditProgres textarea').removeAttr('title');
         $('#formEditProgres input, #formEditProgres select, #formEditProgres textarea').prop('disabled', false);
         $('#assignment-restriction-notice').remove();
