@@ -8,6 +8,20 @@
 
     <!-- Section Login -->
     <section class="py-5 card-auth">
+        <div class="breadcrumb-container-rg">
+                <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item">
+                            <a href="{{ route('beranda') }}">
+                                Beranda
+                            </a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">
+                            Masuk
+                        </li>
+                    </ol>
+                </nav>
+        </div>
         <div class="container d-flex justify-content-center align-items-center">
             <div class="card shadow-lg p-4" style="width: 100%; max-width: 500px; border-radius: 20px;">
                 <h3 class="text-center mb-4">Login</h3>
