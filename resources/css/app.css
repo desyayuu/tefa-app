@@ -856,6 +856,12 @@ select,
     font-size: 12px;
 }
 
+.breadcrumb-container-lp{
+    margin-top: 10px;
+    margin-bottom: 30px;
+    font-size: 12px;
+}
+
 
 .dropdown-bidang-keahlian {
     border: 2px solid #e3e6f0;

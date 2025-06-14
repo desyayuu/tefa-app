@@ -8,6 +8,20 @@
 
     <section class="first-section-layanan text-black py-5">
         <div class="container">
+            <div class="breadcrumb-container-lp">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item">
+                            <a href="{{ route('beranda') }}">
+                                Beranda
+                            </a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">
+                            Layanan Kami
+                        </li>
+                    </ol>
+                </nav>
+            </div>
             <div class="title-layanan">Layanan Kami</div>
             <div class="font-description mt-2">
                 Telusuri layanan yang kami tawarkan untuk mewujudkan ide proyek Anda!

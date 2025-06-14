@@ -6,8 +6,27 @@
     {{-- Navbar --}}
     @include('layouts.navbar')
 
-    <section class="detail-proyek text-black py-5">
+    <section class="detail-proyek text-black py-2">
         <div class="container">
+            <div class="breadcrumb-container-lp">
+                <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item">
+                            <a href="{{ route('beranda') }}">
+                                Beranda
+                            </a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="{{route('get-portofolio-proyek')}}">
+                                Portofolio Proyek
+                            </a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">
+                                Detail Portofolio Proyek
+                        </li>
+                    </ol>
+                </nav>
+            </div>
             <div class="row">
                 <div class="col-lg-4 mb-4 mb-lg-0" style="display: flex; justify-content: center; align-items: center;">
                     {{-- Poster Proyek --}}
