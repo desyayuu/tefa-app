@@ -96,7 +96,7 @@
                                 <span class="input-group-text">Rp</span>
                                 <input type="text" class="form-control form-selection" id="dana_pendanaan" name="dana_pendanaan" 
                                        value="{{ number_format($proyek->dana_pendanaan, 0, ',', '.') }}" 
-                                       {{ $isLeader ? '' : 'disabled' }} required>
+                                       disabled required>
                             </div>
                         </div>    
                     </div>
