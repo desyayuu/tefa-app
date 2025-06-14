@@ -35,7 +35,7 @@
                         <circle opacity="0.4" cx="19.5" cy="4.5" r="2.5" fill="#878787"/>
                     </svg>
                 </span>
-                <span class="menu-text">My Project</span>
+                <span class="menu-text">Proyek</span>
             </a>
         </li>
         <li>
@@ -50,7 +50,7 @@
                     </g>
                 </svg>
                 </span>
-                <span class="menu-text">My Portofolio</span>
+                <span class="menu-text">Portofolio</span>
             </a>
         </li>
         <li>

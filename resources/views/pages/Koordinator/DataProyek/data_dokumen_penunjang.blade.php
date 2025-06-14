@@ -11,7 +11,7 @@
                         <div class="mb-3 row align-items-center">
                             <label for="nama_dokumen_penunjang" class="col-md-2 col-form-label">Nama Dokumen<span class="text-danger">*</span></label>
                             <div class="col-md-10">
-                                <input type="text" class="form-control form-selection" id="nama_dokumen_penunjang" name="nama_dokumen_penunjang" required>
+                                <input type="text" class="form-control form-selection" id="nama_dokumen_penunjang" name="nama_dokumen_penunjang" placeholder="Masukkan Nama Dokumen"  required>
                             </div>
                         </div>
                         <div class="mb-3 row align-items-center">

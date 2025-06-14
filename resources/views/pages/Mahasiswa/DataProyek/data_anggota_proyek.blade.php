@@ -23,26 +23,24 @@
                 @endif
             </div>
 
-            <!-- Anggota Mahasiswa Section -->
+            <!-- Anggota Dosen Section -->
             <div class="card-project-leader mt-4">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h6 class="card-subtitle mb-0">Mahasiswa</h6>
+                    <h6 class="card-subtitle mb-0">Dosen</h6>
                 </div>
                 
-                @if(isset($anggotaMahasiswa) && count($anggotaMahasiswa) > 0)
+                @if(isset($anggotaDosen) && count($anggotaDosen) > 0)
                     <div class="list-anggota">
-                        @foreach($anggotaMahasiswa as $anggota)
+                        @foreach($anggotaDosen as $anggota)
                             <div class="d-flex align-items-center justify-content-between py-2">
                                 <div>
-                                    <div class="text-anggota">{{ $anggota->nama_mahasiswa }}</div>
-                                </div>
-                                <div>
+                                    <div class="text-anggota">{{ $anggota->nama_dosen }}</div>
                                 </div>
                             </div>
                         @endforeach
                     </div>
                 @else
-                    <p class="text-muted small">Belum ada anggota mahasiswa</p>
+                    <p class="text-muted small">Belum ada anggota dosen</p>
                 @endif
             </div>
 

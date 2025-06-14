@@ -5,12 +5,12 @@
         <div class="card-body">
             <div id="my-progres-proyek-section" class="title-table d-flex justify-content-between align-items-center mb-3">
                 <h4 class="m-0">
-                    My Progres Proyek
+                    Progres Saya
                 </h4>
                 <div class="d-flex gap-2 align-items-center">
                     <div class="position-relative">
                         <form id="searchMyProgresForm">
-                            <input type="text" name="search_my_progres_proyek" id="searchMyProgres" class="form-control pe-5 form-search" placeholder="Cari My Progres..." value="">
+                            <input type="text" name="search_my_progres_proyek" id="searchMyProgres" class="form-control pe-5 form-search" placeholder="Cari Progres Saya..." value="">
                             <button type="submit" class="btn position-absolute top-50 end-0 translate-middle-y pe-2 py-2 border-0 bg-transparent">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <circle cx="11.7664" cy="11.7669" r="8.98856" stroke="#130F26" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -21,15 +21,15 @@
                     </div>
                     <button type="button" class="btn btn-add" data-bs-toggle="modal" data-bs-target="#modalTambahProgresFromDosenSelf">
                         <i class="bi bi-plus-circle me-1"></i>
-                        Tambah My Progres
+                        Tambah Data
                     </button>
                 </div>
             </div>
 
-            <!-- Info Section untuk My Progres -->
+            <!-- Info Section untuk Progres Saya -->
             <div class="alert alert-info alert-sm mb-3" id="myProgresInfo">
                 <small>
-                    <strong>My Progres</strong> menampilkan progres yang Anda buat atau yang ditugaskan kepada Anda di proyek ini.
+                    Progres Saya menampilkan progres yang Anda buat atau yang ditugaskan kepada Anda di proyek <strong>{{ $proyek->nama_proyek ?? 'Proyek' }}</strong>.
                 </small>
             </div>
 
@@ -69,7 +69,7 @@
  </div>
 
 
- <!-- Modal Tambah My Progres -->
+ <!-- Modal Tambah Progres Saya -->
 <div class="modal fade" id="modalTambahProgresFromDosenSelf" aria-hidden="true" aria-labelledby="modalTambahMyProgresLabel" tabindex="-1">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
@@ -80,7 +80,7 @@
                 
                 <div class="modal-header">
                     <h1 class="modal-title fs-5" id="modalTambahMyProgresLabel">
-                        Tambah My Progres - {{ $proyek->nama_proyek ?? 'Proyek' }}
+                        Tambah Progres Saya
                     </h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
@@ -88,11 +88,11 @@
                     <!-- Alert untuk error keseluruhan form -->
                     <div class="alert alert-danger d-none" id="form_progres_error"></div>
                     
-                    <!-- Info untuk My Progres -->
+                    <!-- Info untuk Progres Saya -->
                     <div class="alert alert-info alert-sm mb-3">
                         <i class="bi bi-info-circle me-2"></i>
                         <small>
-                            <strong>My Progres:</strong> Progres yang Anda buat akan otomatis ditugaskan kepada Anda sesuai dengan posisi Anda di proyek ini.
+                            <strong>Progres Saya:</strong> Progres yang Anda buat akan otomatis ditugaskan kepada Anda sesuai dengan posisi Anda di proyek ini.
                         </small>
                     </div>
                     

@@ -28,7 +28,7 @@
             @include('components.handling_error')
             
             <div class="title-table d-flex justify-content-between align-items-center mb-3">
-                <h4 class="m-0">My Project</h4>
+                <h4 class="m-0">Proyek Saya</h4>
                 <div class="d-flex gap-2 align-items-center">
                     <div class="position-relative">
                         <form action="{{ route('mahasiswa.dataProyek') }}" method="GET">
