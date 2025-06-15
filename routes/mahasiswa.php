@@ -52,11 +52,20 @@ Route::middleware([MahasiswaMiddleware::class])->prefix('mahasiswa')->group(func
         Route::post('/check-email-nim-exists', [DataMahasiswaController::class, 'checkEmailNimExists'])->name('mahasiswa.checkEmailNimExists');
     });
 
+
     Route::prefix('bidang-keahlian')->group(function () {
         Route::get('/', [DataBidangKeahlianController::class, 'index'])->name('mahasiswa.portofolio');
+        
+        // Bidang Keahlian
         Route::put('/update', [DataBidangKeahlianController::class, 'updateBidangKeahlianMahasiswa'])->name('mahasiswa.updateBidangKeahlian');
         Route::get('/get', [DataBidangKeahlianController::class, 'getBidangKeahlianMahasiswa'])->name('mahasiswa.getBidangKeahlian');
         Route::get('/all', [DataBidangKeahlianController::class, 'getAllBidangKeahlian'])->name('mahasiswa.getAllBidangKeahlian');
+        
+        // Keahlian, Bahasa & Tools (Gabungan)
+        Route::put('/keahlian-bahasa-tools', [DataBidangKeahlianController::class, 'updateKeahlianBahasaDanTools'])->name('mahasiswa.updateKeahlianBahasaTools');
+        Route::get('/bahasa-pemrograman', [DataBidangKeahlianController::class, 'getBahasaPemrogramanMahasiswa'])->name('mahasiswa.getBahasaPemrograman');
+        Route::get('/tools', [DataBidangKeahlianController::class, 'getToolsMahasiswa'])->name('mahasiswa.getTools');
+        Route::get('/all-data', [DataBidangKeahlianController::class, 'getAllKeahlianBahasaTools'])->name('mahasiswa.getAllKeahlianBahasaTools');
     });
 
     Route::prefix('portofolio')->group(function () {

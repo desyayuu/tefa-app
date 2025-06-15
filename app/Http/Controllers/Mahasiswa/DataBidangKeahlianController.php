@@ -41,6 +41,28 @@ class DataBidangKeahlianController extends Controller
             return redirect()->route('login')->with('error', 'Data mahasiswa tidak ditemukan.');
         }
 
+        // === GET ALL MASTER DATA ===
+        
+        // Ambil semua bidang keahlian yang tersedia
+        $bidangKeahlian = DB::table('m_bidang_keahlian')
+            ->whereNull('deleted_at')
+            ->orderBy('nama_bidang_keahlian', 'asc')
+            ->get();
+
+        // Ambil semua bahasa pemrograman yang tersedia
+        $bahasaPemrograman = DB::table('m_bahasa_pemrograman')
+            ->whereNull('deleted_at')
+            ->orderBy('nama_bahasa_pemrograman', 'asc')
+            ->get();
+
+        // Ambil semua tools yang tersedia
+        $tools = DB::table('m_tools')
+            ->whereNull('deleted_at')
+            ->orderBy('nama_tool', 'asc')
+            ->get();
+
+        // === GET SELECTED DATA FOR THIS MAHASISWA ===
+
         // Ambil bidang keahlian yang sudah dipilih mahasiswa
         $selectedBidangKeahlian = DB::table('t_mahasiswa_bidang_keahlian as mbk')
             ->join('m_bidang_keahlian as bk', 'mbk.bidang_keahlian_id', '=', 'bk.bidang_keahlian_id')
@@ -51,13 +73,51 @@ class DataBidangKeahlianController extends Controller
             ->orderBy('bk.nama_bidang_keahlian', 'asc')
             ->get();
 
-        // Ambil semua bidang keahlian yang tersedia
-        $bidangKeahlian = DB::table('m_bidang_keahlian')
-            ->whereNull('deleted_at')
-            ->orderBy('nama_bidang_keahlian', 'asc')
+        // Ambil bahasa pemrograman yang sudah dipilih mahasiswa
+        $selectedBahasaPemrograman = DB::table('t_mahasiswa_bahasa_pemrograman as mbp')
+            ->join('m_bahasa_pemrograman as bp', 'mbp.bahasa_pemrograman_id', '=', 'bp.bahasa_pemrograman_id')
+            ->where('mbp.mahasiswa_id', $mahasiswaId)
+            ->whereNull('mbp.deleted_at')
+            ->whereNull('bp.deleted_at')
+            ->select('bp.bahasa_pemrograman_id', 'bp.nama_bahasa_pemrograman')
+            ->orderBy('bp.nama_bahasa_pemrograman', 'asc')
             ->get();
 
-        // TAMBAHAN: Get data portofolio mahasiswa dengan pagination dan search
+        // Ambil tools yang sudah dipilih mahasiswa (termasuk custom tools)
+        $selectedToolsQuery = DB::table('t_mahasiswa_tools as mt')
+            ->where('mt.mahasiswa_id', $mahasiswaId)
+            ->whereNull('mt.deleted_at')
+            ->select(
+                'mt.tool_id',
+                'mt.custom_nama_tool',
+                'mt.custom_deskripsi_tool',
+                'm_tools.nama_tool'
+            )
+            ->leftJoin('m_tools', 'mt.tool_id', '=', 'm_tools.tool_id')
+            ->get();
+
+        // Transform selected tools untuk frontend
+        $selectedTools = $selectedToolsQuery->map(function($tool) {
+            if ($tool->tool_id) {
+                // Tool dari master data
+                return [
+                    'tool_id' => $tool->tool_id,
+                    'nama_tool' => $tool->nama_tool,
+                    'is_custom' => false
+                ];
+            } else {
+                // Custom tool
+                return [
+                    'tool_id' => null,
+                    'nama_tool' => $tool->custom_nama_tool,
+                    'custom_nama_tool' => $tool->custom_nama_tool,
+                    'custom_deskripsi_tool' => $tool->custom_deskripsi_tool,
+                    'is_custom' => true
+                ];
+            }
+        });
+
+        // === GET PORTOFOLIO DATA ===
         $searchPortofolio = $request->input('search_portofolio');
         
         $portofolioQuery = DB::table('d_portofolio')
@@ -81,12 +141,19 @@ class DataBidangKeahlianController extends Controller
 
         return view('pages.Mahasiswa.DataPortofolio.detail_data_portofolio', compact(
             'mahasiswa', 
+            // Master data
             'bidangKeahlian',
+            'bahasaPemrograman',
+            'tools',
+            // Selected data
             'selectedBidangKeahlian',
-            'portofolioMahasiswa',  // TAMBAHAN
-            'searchPortofolio'      // TAMBAHAN
+            'selectedBahasaPemrograman',
+            'selectedTools',
+            // Portofolio data
+            'portofolioMahasiswa',
+            'searchPortofolio'
         ), [
-            'titleSidebar' => 'Bidang Keahlian & Portofolio Mahasiswa'
+            'titleSidebar' => 'Keahlian, Bahasa Pemrograman & Tools'
         ]);
     }
 
@@ -334,6 +401,596 @@ class DataBidangKeahlianController extends Controller
             return response()->json([
                 'status' => 'error',
                 'message' => 'Gagal mengambil data bidang keahlian.'
+            ], 500);
+        }
+    }
+
+    // ========== BAHASA PEMROGRAMAN METHODS ==========
+    public function getBahasaPemrogramanMahasiswa(Request $request)
+    {
+        try {
+            $mahasiswaId = $this->getMahasiswaId();
+            
+            if (!$mahasiswaId) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Sesi telah berakhir. Silakan login kembali.'
+                ], 401);
+            }
+
+            $bahasaPemrograman = DB::table('t_mahasiswa_bahasa_pemrograman as mbp')
+                ->join('m_bahasa_pemrograman as bp', 'mbp.bahasa_pemrograman_id', '=', 'bp.bahasa_pemrograman_id')
+                ->where('mbp.mahasiswa_id', $mahasiswaId)
+                ->whereNull('mbp.deleted_at')
+                ->whereNull('bp.deleted_at')
+                ->select('bp.bahasa_pemrograman_id', 'bp.nama_bahasa_pemrograman')
+                ->orderBy('bp.nama_bahasa_pemrograman', 'asc')
+                ->get();
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $bahasaPemrograman
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error getting bahasa pemrograman mahasiswa', [
+                'mahasiswa_id' => $mahasiswaId ?? 'unknown',
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Gagal mengambil data bahasa pemrograman.'
+            ], 500);
+        }
+    }
+
+    // ========== TOOLS METHODS ==========
+
+    public function getToolsMahasiswa(Request $request)
+    {
+        try {
+            $mahasiswaId = $this->getMahasiswaId();
+            
+            if (!$mahasiswaId) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Sesi telah berakhir. Silakan login kembali.'
+                ], 401);
+            }
+
+            $tools = DB::table('t_mahasiswa_tools as mt')
+                ->where('mt.mahasiswa_id', $mahasiswaId)
+                ->whereNull('mt.deleted_at')
+                ->select(
+                    'mt.tool_id',
+                    'mt.custom_nama_tool',
+                    'mt.custom_deskripsi_tool',
+                    'm_tools.nama_tool'
+                )
+                ->leftJoin('m_tools', 'mt.tool_id', '=', 'm_tools.tool_id')
+                ->get();
+
+            // Transform untuk frontend
+            $transformedTools = $tools->map(function($tool) {
+                if ($tool->tool_id) {
+                    // Tool dari master data
+                    return [
+                        'tool_id' => $tool->tool_id,
+                        'nama_tool' => $tool->nama_tool,
+                        'is_custom' => false
+                    ];
+                } else {
+                    // Custom tool
+                    return [
+                        'tool_id' => null,
+                        'nama_tool' => $tool->custom_nama_tool,
+                        'custom_nama_tool' => $tool->custom_nama_tool,
+                        'custom_deskripsi_tool' => $tool->custom_deskripsi_tool,
+                        'is_custom' => true
+                    ];
+                }
+            });
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $transformedTools
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error getting tools mahasiswa', [
+                'mahasiswa_id' => $mahasiswaId ?? 'unknown',
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Gagal mengambil data tools.'
+            ], 500);
+        }
+    }
+
+    // ========== GABUNGAN ALL DATA ==========
+
+    public function getAllKeahlianBahasaTools(Request $request)
+    {
+        try {
+            $mahasiswaId = $this->getMahasiswaId();
+            
+            if (!$mahasiswaId) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Sesi telah berakhir. Silakan login kembali.'
+                ], 401);
+            }
+
+            // Get all master data
+            $allBidangKeahlian = DB::table('m_bidang_keahlian')
+                ->whereNull('deleted_at')
+                ->orderBy('nama_bidang_keahlian', 'asc')
+                ->get();
+
+            $allBahasaPemrograman = DB::table('m_bahasa_pemrograman')
+                ->whereNull('deleted_at')
+                ->orderBy('nama_bahasa_pemrograman', 'asc')
+                ->get();
+
+            $allTools = DB::table('m_tools')
+                ->whereNull('deleted_at')
+                ->orderBy('nama_tool', 'asc')
+                ->get();
+
+            // Get selected data for this mahasiswa
+            $selectedBidangKeahlian = DB::table('t_mahasiswa_bidang_keahlian as mbk')
+                ->join('m_bidang_keahlian as bk', 'mbk.bidang_keahlian_id', '=', 'bk.bidang_keahlian_id')
+                ->where('mbk.mahasiswa_id', $mahasiswaId)
+                ->whereNull('mbk.deleted_at')
+                ->whereNull('bk.deleted_at')
+                ->select('bk.bidang_keahlian_id', 'bk.nama_bidang_keahlian')
+                ->get();
+
+            $selectedBahasaPemrograman = DB::table('t_mahasiswa_bahasa_pemrograman as mbp')
+                ->join('m_bahasa_pemrograman as bp', 'mbp.bahasa_pemrograman_id', '=', 'bp.bahasa_pemrograman_id')
+                ->where('mbp.mahasiswa_id', $mahasiswaId)
+                ->whereNull('mbp.deleted_at')
+                ->whereNull('bp.deleted_at')
+                ->select('bp.bahasa_pemrograman_id', 'bp.nama_bahasa_pemrograman')
+                ->get();
+
+            $selectedToolsQuery = DB::table('t_mahasiswa_tools as mt')
+                ->where('mt.mahasiswa_id', $mahasiswaId)
+                ->whereNull('mt.deleted_at')
+                ->select(
+                    'mt.tool_id',
+                    'mt.custom_nama_tool',
+                    'mt.custom_deskripsi_tool',
+                    'm_tools.nama_tool'
+                )
+                ->leftJoin('m_tools', 'mt.tool_id', '=', 'm_tools.tool_id')
+                ->get();
+
+            $selectedTools = $selectedToolsQuery->map(function($tool) {
+                if ($tool->tool_id) {
+                    return [
+                        'tool_id' => $tool->tool_id,
+                        'nama_tool' => $tool->nama_tool,
+                        'is_custom' => false
+                    ];
+                } else {
+                    return [
+                        'tool_id' => null,
+                        'nama_tool' => $tool->custom_nama_tool,
+                        'custom_nama_tool' => $tool->custom_nama_tool,
+                        'custom_deskripsi_tool' => $tool->custom_deskripsi_tool,
+                        'is_custom' => true
+                    ];
+                }
+            });
+
+            return response()->json([
+                'status' => 'success',
+                'data' => [
+                    'master' => [
+                        'bidang_keahlian' => $allBidangKeahlian,
+                        'bahasa_pemrograman' => $allBahasaPemrograman,
+                        'tools' => $allTools
+                    ],
+                    'selected' => [
+                        'bidang_keahlian' => $selectedBidangKeahlian,
+                        'bahasa_pemrograman' => $selectedBahasaPemrograman,
+                        'tools' => $selectedTools
+                    ]
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error getting all keahlian bahasa tools', [
+                'mahasiswa_id' => $mahasiswaId ?? 'unknown',
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Gagal mengambil data keahlian, bahasa, dan tools.'
+            ], 500);
+        }
+    }
+
+    // ========== UPDATE GABUNGAN KEAHLIAN, BAHASA & TOOLS ==========
+
+    public function updateKeahlianBahasaDanTools(Request $request)
+    {
+        try {
+            $mahasiswaId = $this->getMahasiswaId();
+            
+            if (!$mahasiswaId) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Sesi telah berakhir. Silakan login kembali.'
+                ], 401);
+            }
+
+            // Validasi mahasiswa exists
+            $mahasiswa = DB::table('d_mahasiswa')
+                ->where('mahasiswa_id', $mahasiswaId)
+                ->whereNull('deleted_at')
+                ->first();
+                
+            if (!$mahasiswa) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Data mahasiswa tidak ditemukan.'
+                ], 404);
+            }
+
+            // Validasi input
+            $request->validate([
+                'bidang_keahlian' => 'nullable|array',
+                'bidang_keahlian.*' => 'exists:m_bidang_keahlian,bidang_keahlian_id',
+                'bahasa_pemrograman' => 'nullable|array',
+                'bahasa_pemrograman.*' => 'exists:m_bahasa_pemrograman,bahasa_pemrograman_id',
+                'tools' => 'nullable|array',
+                'tools.*' => 'exists:m_tools,tool_id',
+                'custom_tools' => 'nullable|array',
+                'custom_tools.*' => 'json'
+            ], [
+                'bidang_keahlian.array' => 'Format bidang keahlian tidak valid.',
+                'bidang_keahlian.*.exists' => 'Bidang keahlian yang dipilih tidak valid.',
+                'bahasa_pemrograman.array' => 'Format bahasa pemrograman tidak valid.',
+                'bahasa_pemrograman.*.exists' => 'Bahasa pemrograman yang dipilih tidak valid.',
+                'tools.array' => 'Format tools tidak valid.',
+                'tools.*.exists' => 'Tools yang dipilih tidak valid.',
+                'custom_tools.array' => 'Format custom tools tidak valid.',
+                'custom_tools.*.json' => 'Format custom tools tidak valid.'
+            ]);
+
+            DB::beginTransaction();
+            
+            try {
+                $summary = [
+                    'bidang_keahlian' => ['inserted' => 0, 'deleted' => 0, 'unchanged' => 0],
+                    'bahasa_pemrograman' => ['inserted' => 0, 'deleted' => 0, 'unchanged' => 0],
+                    'tools' => ['inserted' => 0, 'deleted' => 0, 'unchanged' => 0]
+                ];
+
+                // === PROSES BIDANG KEAHLIAN ===
+                $existingBidangKeahlian = DB::table('t_mahasiswa_bidang_keahlian')
+                    ->where('mahasiswa_id', $mahasiswaId)
+                    ->whereNull('deleted_at')
+                    ->pluck('bidang_keahlian_id')
+                    ->toArray();
+
+                $newBidangKeahlian = $request->input('bidang_keahlian', []);
+                $bidangToDelete = array_diff($existingBidangKeahlian, $newBidangKeahlian);
+                $bidangToInsert = array_diff($newBidangKeahlian, $existingBidangKeahlian);
+                $bidangUnchanged = array_intersect($existingBidangKeahlian, $newBidangKeahlian);
+
+                if (!empty($bidangToDelete)) {
+                    $summary['bidang_keahlian']['deleted'] = DB::table('t_mahasiswa_bidang_keahlian')
+                        ->where('mahasiswa_id', $mahasiswaId)
+                        ->whereIn('bidang_keahlian_id', $bidangToDelete)
+                        ->whereNull('deleted_at')
+                        ->update([
+                            'deleted_at' => now(),
+                            'deleted_by' => $mahasiswaId
+                        ]);
+                }
+
+                if (!empty($bidangToInsert)) {
+                    foreach ($bidangToInsert as $bidangKeahlianId) {
+                        $bidangKeahlianExists = DB::table('m_bidang_keahlian')
+                            ->where('bidang_keahlian_id', $bidangKeahlianId)
+                            ->whereNull('deleted_at')
+                            ->exists();
+                            
+                        if ($bidangKeahlianExists) {
+                            DB::table('t_mahasiswa_bidang_keahlian')->insert([
+                                'mahasiswa_bidang_keahlian_id' => Str::uuid(),
+                                'mahasiswa_id' => $mahasiswaId,
+                                'bidang_keahlian_id' => $bidangKeahlianId,
+                                'created_at' => now(),
+                                'created_by' => $mahasiswaId
+                            ]);
+                            $summary['bidang_keahlian']['inserted']++;
+                        }
+                    }
+                }
+                $summary['bidang_keahlian']['unchanged'] = count($bidangUnchanged);
+
+                // === PROSES BAHASA PEMROGRAMAN ===
+                $existingBahasaPemrograman = DB::table('t_mahasiswa_bahasa_pemrograman')
+                    ->where('mahasiswa_id', $mahasiswaId)
+                    ->whereNull('deleted_at')
+                    ->pluck('bahasa_pemrograman_id')
+                    ->toArray();
+
+                $newBahasaPemrograman = $request->input('bahasa_pemrograman', []);
+                $bahasaToDelete = array_diff($existingBahasaPemrograman, $newBahasaPemrograman);
+                $bahasaToInsert = array_diff($newBahasaPemrograman, $existingBahasaPemrograman);
+                $bahasaUnchanged = array_intersect($existingBahasaPemrograman, $newBahasaPemrograman);
+
+                if (!empty($bahasaToDelete)) {
+                    $summary['bahasa_pemrograman']['deleted'] = DB::table('t_mahasiswa_bahasa_pemrograman')
+                        ->where('mahasiswa_id', $mahasiswaId)
+                        ->whereIn('bahasa_pemrograman_id', $bahasaToDelete)
+                        ->whereNull('deleted_at')
+                        ->update([
+                            'deleted_at' => now(),
+                            'deleted_by' => $mahasiswaId
+                        ]);
+                }
+
+                if (!empty($bahasaToInsert)) {
+                    foreach ($bahasaToInsert as $bahasaPemrogramanId) {
+                        $bahasaPemrogramanExists = DB::table('m_bahasa_pemrograman')
+                            ->where('bahasa_pemrograman_id', $bahasaPemrogramanId)
+                            ->whereNull('deleted_at')
+                            ->exists();
+                            
+                        if ($bahasaPemrogramanExists) {
+                            DB::table('t_mahasiswa_bahasa_pemrograman')->insert([
+                                'mahasiswa_bahasa_pemrograman_id' => Str::uuid(),
+                                'mahasiswa_id' => $mahasiswaId,
+                                'bahasa_pemrograman_id' => $bahasaPemrogramanId,
+                                'created_at' => now(),
+                                'created_by' => $mahasiswaId
+                            ]);
+                            $summary['bahasa_pemrograman']['inserted']++;
+                        }
+                    }
+                }
+                $summary['bahasa_pemrograman']['unchanged'] = count($bahasaUnchanged);
+
+                // === PROSES TOOLS (Fixed Logic) ===
+                $existingTools = DB::table('t_mahasiswa_tools')
+                    ->where('mahasiswa_id', $mahasiswaId)
+                    ->whereNull('deleted_at')
+                    ->get();
+
+                $existingToolsArray = [];
+                foreach ($existingTools as $tool) {
+                    if ($tool->tool_id) {
+                        $existingToolsArray[] = [
+                            'type' => 'master',
+                            'id' => $tool->tool_id,
+                            'db_id' => $tool->mahasiswa_tool_id
+                        ];
+                    } else {
+                        $existingToolsArray[] = [
+                            'type' => 'custom',
+                            'nama' => $tool->custom_nama_tool,
+                            'deskripsi' => $tool->custom_deskripsi_tool ?? '',
+                            'db_id' => $tool->mahasiswa_tool_id
+                        ];
+                    }
+                }
+
+                $newMasterTools = $request->input('tools', []);
+                $newCustomTools = [];
+
+                $customToolsInput = $request->input('custom_tools', []);
+                foreach ($customToolsInput as $customToolJson) {
+                    $customToolData = json_decode($customToolJson, true);
+                    if ($customToolData && isset($customToolData['nama']) && !empty($customToolData['nama'])) {
+                        $newCustomTools[] = [
+                            'nama' => $customToolData['nama'],
+                            'deskripsi' => $customToolData['deskripsi'] ?? ''
+                        ];
+                    }
+                }
+
+                // Find tools to delete
+                $toolsToDelete = [];
+                foreach ($existingToolsArray as $existingTool) {
+                    $shouldKeep = false;
+                    
+                    if ($existingTool['type'] === 'master') {
+                        $shouldKeep = in_array($existingTool['id'], $newMasterTools);
+                    } else {
+                        foreach ($newCustomTools as $newCustom) {
+                            if ($newCustom['nama'] === $existingTool['nama'] && 
+                                $newCustom['deskripsi'] === $existingTool['deskripsi']) {
+                                $shouldKeep = true;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if (!$shouldKeep) {
+                        $toolsToDelete[] = $existingTool['db_id'];
+                    }
+                }
+
+                // Find tools to insert
+                $masterToolsToInsert = [];
+                foreach ($newMasterTools as $newMasterTool) {
+                    $alreadyExists = false;
+                    foreach ($existingToolsArray as $existingTool) {
+                        if ($existingTool['type'] === 'master' && $existingTool['id'] === $newMasterTool) {
+                            $alreadyExists = true;
+                            break;
+                        }
+                    }
+                    if (!$alreadyExists) {
+                        $masterToolsToInsert[] = $newMasterTool;
+                    }
+                }
+
+                $customToolsToInsert = [];
+                foreach ($newCustomTools as $newCustom) {
+                    $alreadyExists = false;
+                    foreach ($existingToolsArray as $existingTool) {
+                        if ($existingTool['type'] === 'custom' && 
+                            $existingTool['nama'] === $newCustom['nama'] &&
+                            $existingTool['deskripsi'] === $newCustom['deskripsi']) {
+                            $alreadyExists = true;
+                            break;
+                        }
+                    }
+                    if (!$alreadyExists) {
+                        $customToolsToInsert[] = $newCustom;
+                    }
+                }
+
+                // Execute tools operations
+                if (!empty($toolsToDelete)) {
+                    $summary['tools']['deleted'] = DB::table('t_mahasiswa_tools')
+                        ->whereIn('mahasiswa_tool_id', $toolsToDelete)
+                        ->whereNull('deleted_at')
+                        ->update([
+                            'deleted_at' => now(),
+                            'deleted_by' => $mahasiswaId
+                        ]);
+                }
+
+                foreach ($masterToolsToInsert as $toolId) {
+                    $toolExists = DB::table('m_tools')
+                        ->where('tool_id', $toolId)
+                        ->whereNull('deleted_at')
+                        ->exists();
+                        
+                    if ($toolExists) {
+                        DB::table('t_mahasiswa_tools')->insert([
+                            'mahasiswa_tool_id' => Str::uuid(),
+                            'mahasiswa_id' => $mahasiswaId,
+                            'tool_id' => $toolId,
+                            'custom_nama_tool' => null,
+                            'custom_deskripsi_tool' => null,
+                            'created_at' => now(),
+                            'created_by' => $mahasiswaId
+                        ]);
+                        $summary['tools']['inserted']++;
+                    }
+                }
+
+                foreach ($customToolsToInsert as $customTool) {
+                    DB::table('t_mahasiswa_tools')->insert([
+                        'mahasiswa_tool_id' => Str::uuid(),
+                        'mahasiswa_id' => $mahasiswaId,
+                        'tool_id' => null,
+                        'custom_nama_tool' => $customTool['nama'],
+                        'custom_deskripsi_tool' => $customTool['deskripsi'],
+                        'created_at' => now(),
+                        'created_by' => $mahasiswaId
+                    ]);
+                    $summary['tools']['inserted']++;
+                }
+
+                $summary['tools']['unchanged'] = count($existingToolsArray) - ($summary['tools']['deleted'] ?? 0);
+
+                DB::commit();
+
+                // Build informative message
+                $messages = [];
+                
+                if ($summary['bidang_keahlian']['inserted'] > 0 || $summary['bidang_keahlian']['deleted'] > 0) {
+                    $bidangDetails = [];
+                    if ($summary['bidang_keahlian']['inserted'] > 0) {
+                        $bidangDetails[] = "{$summary['bidang_keahlian']['inserted']} ditambahkan";
+                    }
+                    if ($summary['bidang_keahlian']['deleted'] > 0) {
+                        $bidangDetails[] = "{$summary['bidang_keahlian']['deleted']} dihapus";
+                    }
+                    $messages[] = "Bidang keahlian: " . implode(', ', $bidangDetails);
+                }
+
+                if ($summary['bahasa_pemrograman']['inserted'] > 0 || $summary['bahasa_pemrograman']['deleted'] > 0) {
+                    $bahasaDetails = [];
+                    if ($summary['bahasa_pemrograman']['inserted'] > 0) {
+                        $bahasaDetails[] = "{$summary['bahasa_pemrograman']['inserted']} ditambahkan";
+                    }
+                    if ($summary['bahasa_pemrograman']['deleted'] > 0) {
+                        $bahasaDetails[] = "{$summary['bahasa_pemrograman']['deleted']} dihapus";
+                    }
+                    $messages[] = "Bahasa pemrograman: " . implode(', ', $bahasaDetails);
+                }
+
+                if ($summary['tools']['inserted'] > 0 || $summary['tools']['deleted'] > 0) {
+                    $toolsDetails = [];
+                    if ($summary['tools']['inserted'] > 0) {
+                        $toolsDetails[] = "{$summary['tools']['inserted']} ditambahkan";
+                    }
+                    if ($summary['tools']['deleted'] > 0) {
+                        $toolsDetails[] = "{$summary['tools']['deleted']} dihapus";
+                    }
+                    $messages[] = "Tools: " . implode(', ', $toolsDetails);
+                }
+
+                $finalMessage = "Data keahlian, bahasa pemrograman, dan tools berhasil diperbarui";
+                if (!empty($messages)) {
+                    $finalMessage .= ". " . implode('. ', $messages) . ".";
+                } else {
+                    $finalMessage .= ".";
+                }
+
+                return response()->json([
+                    'status' => 'success',
+                    'message' => $finalMessage,
+                    'data' => [
+                        'mahasiswa_id' => $mahasiswaId,
+                        'total_bidang_keahlian' => count($newBidangKeahlian),
+                        'total_bahasa_pemrograman' => count($newBahasaPemrograman),
+                        'total_tools' => count($newMasterTools) + count($newCustomTools),
+                        'summary' => $summary
+                    ]
+                ]);
+
+            } catch (\Exception $e) {
+                DB::rollBack();
+                
+                \Log::error('Error updating keahlian, bahasa pemrograman, dan tools mahasiswa', [
+                    'mahasiswa_id' => $mahasiswaId,
+                    'error' => $e->getMessage(),
+                    'line' => $e->getLine(),
+                    'file' => $e->getFile(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Gagal memperbarui data: ' . $e->getMessage()
+                ], 500);
+            }
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Validasi gagal.',
+                'errors' => $e->errors()
+            ], 422);
+            
+        } catch (\Exception $e) {
+            \Log::error('Exception in updateKeahlianBahasaDanTools', [
+                'mahasiswa_id' => $mahasiswaId ?? 'unknown',
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Terjadi kesalahan sistem: ' . $e->getMessage()
             ], 500);
         }
     }

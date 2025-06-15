@@ -870,7 +870,9 @@ select,
 
 
 
-.dropdown-bidang-keahlian {
+.dropdown-bidang-keahlian,
+.dropdown-bahasa-pemrograman,
+.dropdown-tools {
     border: 2px solid #e3e6f0;
     border-radius: 0.35rem;
     padding: 0.75rem;
@@ -880,7 +882,9 @@ select,
 }
 
 
-.dropdown-menu-bidang {
+.dropdown-menu-bidang, 
+.dropdown-menu-bahasa, 
+.dropdown-menu-tools {
     width: 100%;
     max-height: 200px;
     overflow-y: auto;
@@ -890,7 +894,9 @@ select,
     background-color: #fff;
 }
 
-.dropdown-item-bidang {
+.dropdown-item-bidang,
+.dropdown-item-bahasa, 
+.dropdown-item-tools {
     padding: 0.75rem 1rem;
     border: none;
     background: none;
@@ -900,11 +906,23 @@ select,
     transition: background-color 0.15s ease-in-out;
 }
 
-.dropdown-item-bidang:hover {
+.dropdown-item-tools.add-custom-general:hover {
+    background: #d0cbff;
+    border-color: #b8b2ff;
+    transform: translateY(-1px);
+    box-shadow: #3C21F7;
+}
+
+
+.dropdown-item-bidang:hover 
+.dropdown-item-bahasa:hover
+.dropdown-item-tools:hover {
     background-color: #f8f9fc;
 }
 
-.dropdown-item-bidang.disabled {
+.dropdown-item-bidang.disabled
+.dropdown-item-bahasa.disabled
+.dropdown-tools.disabled {
     color: #6c757d;
     cursor: not-allowed;
     background-color: #f8f9fc;
@@ -921,7 +939,60 @@ select,
     margin: 0.25rem;
 }
 
+.bahasa-pemrograman-tag {
+    display: inline-flex;
+    align-items: center;
+    background-color: #2e7d32;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 1.5rem;
+    font-size: 12px;
+    margin: 0.25rem;
+}
+
+.tools-tag {
+    display: inline-flex;
+    align-items: center;
+    background-color: #df644e;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 1.5rem;
+    font-size: 12px;
+    margin: 0.25rem;
+}
+
+.tools-tag.custom-tool {
+    background: #df644e;
+}
+
 .bidang-keahlian-tag .remove-tag {
+    background: none;
+    border: none;
+    color: white;
+    margin-left: 0.5rem;
+    cursor: pointer;
+    padding: 0;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+}
+
+
+.bahasa-pemrograman-tag .remove-tag {
+    background: none;
+    border: none;
+    color: white;
+    margin-left: 0.5rem;
+    cursor: pointer;
+    padding: 0;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+}
+
+.tools-tag .remove-tag {
     background: none;
     border: none;
     color: white;
@@ -938,24 +1009,28 @@ select,
     background-color: rgba(255, 255, 255, 0.2);
 }
 
-.selected-bidang-container {
-    min-height: 60px;
-    border: 2px dashed #e3e6f0;
-    border-radius: 0.35rem;
-    padding: 1rem;
-    background-color: #f8f9fc;
-    transition: border-color 0.3s ease;
+.selected-bidang-container,
+.selected-bahasa-container, 
+.selected-tools-container {
+    min-height: 50px;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 10px;
+    background-color: #f8f9fa;
 }
 
-.selected-bidang-container.has-items {
+.selected-bidang-container.has-items,
+.selected-bahasa-container.has-items,
+.selected-tools-container.has-items {
     border-style: solid;
     background-color: #e3eaec;
 }
 
 .empty-state {
-    text-align: center;
     color: #6c757d;
     font-style: italic;
+    text-align: center;
+    padding: 10px;
 }
 
 @keyframes slideIn {
@@ -1630,10 +1705,6 @@ select,
 .custom-indicators button.active {
     background-color: #3C21F7;
     transform: scale(1.2);
-}
-
-.empty-state {
-    padding: 60px 20px;
 }
 
 .empty-state i {

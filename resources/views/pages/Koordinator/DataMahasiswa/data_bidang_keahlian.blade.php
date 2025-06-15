@@ -1,39 +1,39 @@
 <div class="content-table mt-4">
     <div class="card-data-dosen" style="font-size: 14px;">
         <div class="card-body">
-            <div id="alertContainer" class="mt-3"></div>
-            <form id="formBidangKeahlian" method="POST">
-                    @csrf
-                    @method('PUT')
-                    <div class="title-table d-flex justify-content-between align-items-center mb-3">
-                        <h5>Bidang Keahlian</h5>
-                        <div class="row mb-4">
-                            <div class="col-12 d-flex justify-content-end">
-                                <button type="submit" class="btn btn-add" id="btnSimpanBidangKeahlian">
-                                    <span class="spinner-border spinner-border-sm me-2 d-none" id="loadingSpinner"></span>
-                                    <span id="btnText">Simpan Perubahan</span>
-                                </button>
-                            </div>
+            <div id="alertContainer"></div>
+            <form id="formKeahlianDanBahasa" method="POST">
+                @csrf
+                @method('PUT')
+                
+                <div class="title-table d-flex justify-content-between align-items-center mb-3">
+                    <h5>Keahlian, Bahasa Pemrograman, dan Tools</h5>
+                    <div class="row mb-4">
+                        <div class="col-12 d-flex justify-content-end">
+                            <button type="submit" class="btn btn-add" id="btnSimpanKeahlian">
+                                <span class="spinner-border spinner-border-sm me-2 d-none" id="loadingSpinner"></span>
+                                <span id="btnText">Simpan Perubahan</span>
+                            </button>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Dropdown untuk memilih bidang keahlian -->
-                    <div class="mb-3">
-                        <label class="form-label">Pilih Bidang Keahlian:</label>
-                        <div class="dropdown position-relative">
-                            <div class="dropdown-bidang-keahlian" id="dropdownBidangKeahlian">
-                                <div class="d-flex align-items-center justify-content-between">
-                                    <input type="text" 
-                                        class="search-input" 
-                                        id="searchBidangKeahlian"
-                                        placeholder="Cari atau pilih bidang keahlian...">
-                                    <i class="fas fa-chevron-down" id="dropdownIcon"></i>
-                                </div>
+                <!-- Bidang Keahlian Section -->
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Bidang Keahlian:</label>
+                    <div class="dropdown position-relative mb-3">
+                        <div class="dropdown-bidang-keahlian" id="dropdownBidangKeahlian">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <input type="text" 
+                                    class="search-input" 
+                                    id="searchBidangKeahlian"
+                                    placeholder="Cari atau pilih bidang keahlian...">
+                                <i class="fas fa-chevron-down" id="dropdownIconBidang"></i>
                             </div>
-                            
-                            <div class="dropdown-menu-bidang position-absolute w-100 mt-1" id="dropdownMenuBidang" style="display: none; z-index: 1000;">
-                                <!-- Dynamic content akan diisi di sini -->
-                            </div>
+                        </div>
+                        
+                        <div class="dropdown-menu-bidang position-absolute w-100 mt-1" id="dropdownMenuBidang" style="display: none; z-index: 1000;">
+                            <!-- Dynamic content akan diisi di sini -->
                         </div>
                     </div>
 
@@ -41,62 +41,176 @@
                     <div class="mb-3">
                         <label class="form-label">Bidang Keahlian Terpilih:</label>
                         <div class="selected-bidang-container" id="selectedBidangContainer">
-                            <div class="empty-state" id="emptyState">
+                            <div class="empty-state" id="emptyStateBidang">
                                 <i class="fas fa-plus-circle me-2"></i>
                                 Belum ada bidang keahlian yang dipilih
                             </div>
                         </div>
                     </div>
                     
-                    <!-- Info counter -->
-                    <div class="text-end">
+                    <!-- Info counter bidang keahlian -->
+                    <div class="text-end mb-2">
                         <small class="text-muted">
                             <span id="bidangCounter">0</span> bidang keahlian dipilih
                         </small>
                     </div>
+                </div>
 
-                    <!-- Hidden inputs untuk menyimpan bidang keahlian yang dipilih -->
-                    <div id="hiddenBidangKeahlianInputs">
-                        <!-- Hidden inputs akan ditambahkan di sini via JavaScript -->
+                <!-- Divider -->
+                <hr class="my-4">
+
+                <!-- Bahasa Pemrograman Section -->
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Bahasa Pemrograman:</label>
+                    <div class="dropdown position-relative mb-3">
+                        <div class="dropdown-bahasa-pemrograman" id="dropdownBahasaPemrograman">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <input type="text" 
+                                    class="search-input" 
+                                    id="searchBahasaPemrograman"
+                                    placeholder="Cari atau pilih bahasa pemrograman...">
+                                <i class="fas fa-chevron-down" id="dropdownIconBahasa"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="dropdown-menu-bahasa position-absolute w-100 mt-1" id="dropdownMenuBahasa" style="display: none; z-index: 1000;">
+                            <!-- Dynamic content akan diisi di sini -->
+                        </div>
                     </div>
-                </form>
+
+                    <!-- Area untuk menampilkan bahasa pemrograman yang dipilih -->
+                    <div class="mb-3">
+                        <label class="form-label">Bahasa Pemrograman Terpilih:</label>
+                        <div class="selected-bahasa-container" id="selectedBahasaContainer">
+                            <div class="empty-state" id="emptyStateBahasa">
+                                <i class="fas fa-plus-circle me-2"></i>
+                                Belum ada bahasa pemrograman yang dipilih
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Info counter bahasa pemrograman -->
+                    <div class="text-end mb-2">
+                        <small class="text-muted">
+                            <span id="bahasaCounter">0</span> bahasa pemrograman dipilih
+                        </small>
+                    </div>
+                </div>
+
+                <!-- Tools Section -->
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Tools & Teknologi:</label>
+                    <div class="dropdown position-relative mb-3">
+                        <div class="dropdown-tools" id="dropdownTools">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <input type="text" 
+                                    class="search-input" 
+                                    id="searchTools"
+                                    placeholder="Cari atau tambah tools...">
+                                <i class="fas fa-chevron-down" id="dropdownIconTools"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="dropdown-menu-tools position-absolute w-100 mt-1" id="dropdownMenuTools" style="display: none; z-index: 1000;">
+                            <!-- Dynamic content akan diisi di sini -->
+                        </div>
+                    </div>
+
+                    <!-- Area untuk menampilkan tools yang dipilih -->
+                    <div class="mb-3">
+                        <label class="form-label">Tools & Teknologi Terpilih:</label>
+                        <div class="selected-tools-container" id="selectedToolsContainer">
+                            <div class="empty-state" id="emptyStateTools">
+                                <i class="fas fa-plus-circle me-2"></i>
+                                Belum ada tools yang dipilih
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Info counter tools -->
+                    <div class="text-end mb-2">
+                        <small class="text-muted">
+                            <span id="toolsCounter">0</span> tools dipilih
+                        </small>
+                    </div>
+                </div>
+
+                <!-- Hidden inputs untuk menyimpan data yang dipilih -->
+                <div id="hiddenBidangKeahlianInputs">
+                    <!-- Hidden inputs bidang keahlian akan ditambahkan di sini via JavaScript -->
+                </div>
+                <div id="hiddenBahasaPemrogramanInputs">
+                    <!-- Hidden inputs bahasa pemrograman akan ditambahkan di sini via JavaScript -->
+                </div>
+                <div id="hiddenToolsInputs">
+                    <!-- Hidden inputs tools akan ditambahkan di sini via JavaScript -->
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
 <script>
-    // Data bidang keahlian dari database
+    // Data dari database
     const bidangKeahlianData = @json($bidangKeahlian ?? []);
+    const bahasaPemrogramanData = @json($bahasaPemrograman ?? []);
+    const toolsData = @json($tools ?? []);
     
-    // Data bidang keahlian yang sudah dipilih (untuk mode edit)
+    // Data yang sudah dipilih (untuk mode edit)
     const initialSelectedBidangKeahlian = @json($selectedBidangKeahlian ?? []);
-    
+    const initialSelectedBahasaPemrograman = @json($selectedBahasaPemrograman ?? []);
+    const initialSelectedTools = @json($selectedTools ?? []);
+
     // Mahasiswa ID untuk form submission
     const mahasiswaId = '{{ $mahasiswa->mahasiswa_id ?? '' }}';
 
+    // State variables
     let selectedBidangKeahlian = [];
-    let filteredData = [...bidangKeahlianData];
+    let selectedBahasaPemrograman = [];
+    let filteredBidangData = [...bidangKeahlianData];
+    let filteredBahasaData = [...bahasaPemrogramanData];
+    let selectedTools = [];
+    let filteredToolsData = [...toolsData];
 
     // DOM Elements
-    const dropdownBidangKeahlian = document.getElementById('dropdownBidangKeahlian');
-    const dropdownMenuBidang = document.getElementById('dropdownMenuBidang');
-    const searchInput = document.getElementById('searchBidangKeahlian');
-    const selectedContainer = document.getElementById('selectedBidangContainer');
-    const emptyState = document.getElementById('emptyState');
-    const bidangCounter = document.getElementById('bidangCounter');
-    const dropdownIcon = document.getElementById('dropdownIcon');
-    const hiddenInputsContainer = document.getElementById('hiddenBidangKeahlianInputs');
-    const formBidangKeahlian = document.getElementById('formBidangKeahlian');
-    const btnSimpan = document.getElementById('btnSimpanBidangKeahlian');
+    const formKeahlianDanBahasa = document.getElementById('formKeahlianDanBahasa');
+    const btnSimpan = document.getElementById('btnSimpanKeahlian');
     const loadingSpinner = document.getElementById('loadingSpinner');
     const btnText = document.getElementById('btnText');
     const alertContainer = document.getElementById('alertContainer');
 
-    // Initialize
-    initializeBidangKeahlian();
+    // Bidang Keahlian Elements
+    const dropdownBidangKeahlian = document.getElementById('dropdownBidangKeahlian');
+    const dropdownMenuBidang = document.getElementById('dropdownMenuBidang');
+    const searchBidangInput = document.getElementById('searchBidangKeahlian');
+    const selectedBidangContainer = document.getElementById('selectedBidangContainer');
+    const bidangCounter = document.getElementById('bidangCounter');
+    const dropdownIconBidang = document.getElementById('dropdownIconBidang');
+    const hiddenBidangInputsContainer = document.getElementById('hiddenBidangKeahlianInputs');
 
-    function initializeBidangKeahlian() {
-        // Load bidang keahlian yang sudah dipilih (untuk mode edit)
+    // Bahasa Pemrograman Elements
+    const dropdownBahasaPemrograman = document.getElementById('dropdownBahasaPemrograman');
+    const dropdownMenuBahasa = document.getElementById('dropdownMenuBahasa');
+    const searchBahasaInput = document.getElementById('searchBahasaPemrograman');
+    const selectedBahasaContainer = document.getElementById('selectedBahasaContainer');
+    const bahasaCounter = document.getElementById('bahasaCounter');
+    const dropdownIconBahasa = document.getElementById('dropdownIconBahasa');
+    const hiddenBahasaInputsContainer = document.getElementById('hiddenBahasaPemrogramanInputs');
+
+    // Tools Elements
+    const dropdownTools = document.getElementById('dropdownTools');
+    const dropdownMenuTools = document.getElementById('dropdownMenuTools');
+    const searchToolsInput = document.getElementById('searchTools');
+    const selectedToolsContainer = document.getElementById('selectedToolsContainer');
+    const toolsCounter = document.getElementById('toolsCounter');
+    const dropdownIconTools = document.getElementById('dropdownIconTools');
+    const hiddenToolsInputsContainer = document.getElementById('hiddenToolsInputs');
+
+    // Initialize
+    initializeKeahlianDanBahasa();
+
+    function initializeKeahlianDanBahasa() {
+        // Load bidang keahlian yang sudah dipilih
         if (initialSelectedBidangKeahlian && initialSelectedBidangKeahlian.length > 0) {
             selectedBidangKeahlian = initialSelectedBidangKeahlian.map(item => ({
                 id: item.bidang_keahlian_id,
@@ -104,18 +218,36 @@
             }));
         }
         
+        // Load bahasa pemrograman yang sudah dipilih
+        if (initialSelectedBahasaPemrograman && initialSelectedBahasaPemrograman.length > 0) {
+            selectedBahasaPemrograman = initialSelectedBahasaPemrograman.map(item => ({
+                id: item.bahasa_pemrograman_id,
+                nama: item.nama_bahasa_pemrograman
+            }));
+        }
+
+        if (initialSelectedTools && initialSelectedTools.length > 0) {
+            selectedTools = initialSelectedTools.map(item => ({
+                id: item.tool_id || 'custom_' + Date.now(),
+                nama: item.nama_tool || item.custom_nama_tool,
+                isCustom: !item.tool_id,
+                deskripsi: item.custom_deskripsi_tool || ''
+            }));
+        }
+    
+        
         renderDropdownItems();
-        updateSelectedDisplay();
-        updateHiddenInputs();
+        updateAllDisplays();
+        updateAllHiddenInputs();
     }
 
     // Form submission handler
-    formBidangKeahlian.addEventListener('submit', function(e) {
+    formKeahlianDanBahasa.addEventListener('submit', function(e) {
         e.preventDefault();
-        submitBidangKeahlian();
+        submitKeahlianDanBahasa();
     });
 
-    function submitBidangKeahlian() {
+    function submitKeahlianDanBahasa() {
         if (!mahasiswaId) {
             showAlert('error', 'ID Mahasiswa tidak ditemukan');
             return;
@@ -147,8 +279,27 @@
             formData.append('bidang_keahlian[]', item.id);
         });
 
+        // Add bahasa pemrograman
+        selectedBahasaPemrograman.forEach(item => {
+            formData.append('bahasa_pemrograman[]', item.id);
+        });
+
+        // Add tools
+        selectedTools.forEach(item => {
+            if (item.isCustom) {
+                // Custom tool - gunakan custom fields
+                formData.append('custom_tools[]', JSON.stringify({
+                    nama: item.nama,
+                    deskripsi: item.deskripsi
+                }));
+            } else {
+                // Existing tool - gunakan tool_id
+                formData.append('tools[]', item.id);
+            }
+        });
+
         // Submit via AJAX
-        fetch(`/koordinator/mahasiswa/${mahasiswaId}/bidang-keahlian`, {
+        fetch(`/koordinator/mahasiswa/${mahasiswaId}/keahlian-bahasa-tools`, {
             method: 'POST',
             body: formData,
             headers: {
@@ -159,7 +310,7 @@
         .then(data => {
             if (data.status === 'success') {
                 showAlert('success', data.message);
-                console.log('Bidang keahlian berhasil disimpan:', data);
+                console.log('Data keahlian dan bahasa berhasil disimpan:', data);
             } else {
                 showAlert('error', data.message || 'Terjadi kesalahan saat menyimpan data');
                 if (data.errors) {
@@ -179,11 +330,568 @@
         });
     }
 
+    // Event Listeners untuk Bidang Keahlian
+    dropdownBidangKeahlian.addEventListener('click', function(e) {
+        if (e.target !== searchBidangInput) {
+            toggleDropdown('bidang');
+        }
+    });
+
+    searchBidangInput.addEventListener('input', function() {
+        filterBidangKeahlian(this.value);
+    });
+
+    searchBidangInput.addEventListener('focus', function() {
+        showDropdown('bidang');
+    });
+
+    // Event Listeners untuk Bahasa Pemrograman
+    dropdownBahasaPemrograman.addEventListener('click', function(e) {
+        if (e.target !== searchBahasaInput) {
+            toggleDropdown('bahasa');
+        }
+    });
+
+    searchBahasaInput.addEventListener('input', function() {
+        filterBahasaPemrograman(this.value);
+    });
+
+    searchBahasaInput.addEventListener('focus', function() {
+        showDropdown('bahasa');
+    });
+
+    dropdownTools.addEventListener('click', function(e) {
+        if (e.target !== searchToolsInput) {
+            toggleDropdown('tools');
+        }
+    });
+
+    searchToolsInput.addEventListener('input', function() {
+        filterTools(this.value);
+    });
+
+    searchToolsInput.addEventListener('focus', function() {
+        showDropdown('tools');
+    });
+
+    searchToolsInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const searchTerm = this.value.trim();
+            if (searchTerm && !toolExists(searchTerm)) {
+                showAddCustomToolModal(searchTerm);
+            }
+        }
+    });
+
+
+    // Click outside to close dropdowns
+    document.addEventListener('click', function(e) {
+        if (!dropdownBidangKeahlian.contains(e.target) && !dropdownMenuBidang.contains(e.target)) {
+            hideDropdown('bidang');
+        }
+        if (!dropdownBahasaPemrograman.contains(e.target) && !dropdownMenuBahasa.contains(e.target)) {
+            hideDropdown('bahasa');
+        }
+        if (!dropdownTools.contains(e.target) && !dropdownMenuTools.contains(e.target)) {
+            hideDropdown('tools');
+        }
+    });
+
+    function toggleDropdown(type) {
+        if (type === 'bidang') {
+            if (dropdownMenuBidang.style.display === 'none') {
+                showDropdown('bidang');
+            } else {
+                hideDropdown('bidang');
+            }
+        } else if (type === 'bahasa') {
+            if (dropdownMenuBahasa.style.display === 'none') {
+                showDropdown('bahasa');
+            } else {
+                hideDropdown('bahasa');
+            }
+        }else if( type === 'tools') {
+            if (dropdownMenuTools.style.display === 'none') {
+                showDropdown('tools');
+            } else {
+                hideDropdown('tools');
+            }
+        }
+    }
+
+    function showDropdown(type) {
+        if (type === 'bidang') {
+            dropdownMenuBidang.style.display = 'block';
+            dropdownBidangKeahlian.classList.add('active');
+            dropdownIconBidang.classList.replace('fa-chevron-down', 'fa-chevron-up');
+        } else if (type === 'bahasa') {
+            dropdownMenuBahasa.style.display = 'block';
+            dropdownBahasaPemrograman.classList.add('active');
+            dropdownIconBahasa.classList.replace('fa-chevron-down', 'fa-chevron-up');
+        } else if (type === 'tools') {
+            dropdownMenuTools.style.display = 'block';
+            dropdownTools.classList.add('active');
+            dropdownIconTools.classList.replace('fa-chevron-down', 'fa-chevron-up');
+        }
+    }
+
+    function hideDropdown(type) {
+        if (type === 'bidang') {
+            dropdownMenuBidang.style.display = 'none';
+            dropdownBidangKeahlian.classList.remove('active');
+            dropdownIconBidang.classList.replace('fa-chevron-up', 'fa-chevron-down');
+            searchBidangInput.value = '';
+            filteredBidangData = [...bidangKeahlianData];
+            renderBidangDropdownItems();
+        } else if (type === 'bahasa') {
+            dropdownMenuBahasa.style.display = 'none';
+            dropdownBahasaPemrograman.classList.remove('active');
+            dropdownIconBahasa.classList.replace('fa-chevron-up', 'fa-chevron-down');
+            searchBahasaInput.value = '';
+            filteredBahasaData = [...bahasaPemrogramanData];
+            renderBahasaDropdownItems();
+        } else if (type === 'tools') {
+            dropdownMenuTools.style.display = 'none';
+            dropdownTools.classList.remove('active');
+            dropdownIconTools.classList.replace('fa-chevron-up', 'fa-chevron-down');
+            searchToolsInput.value = '';
+            filteredToolsData = [...toolsData];
+            renderToolsDropdownItems();
+        }
+    }
+
+    function filterBidangKeahlian(searchTerm) {
+        filteredBidangData = bidangKeahlianData.filter(item => 
+            item.nama_bidang_keahlian.toLowerCase().includes(searchTerm.toLowerCase()) &&
+            !selectedBidangKeahlian.some(selected => selected.id === item.bidang_keahlian_id)
+        );
+        renderBidangDropdownItems();
+        showDropdown('bidang');
+    }
+
+    function filterBahasaPemrograman(searchTerm) {
+        filteredBahasaData = bahasaPemrogramanData.filter(item => 
+            item.nama_bahasa_pemrograman.toLowerCase().includes(searchTerm.toLowerCase()) &&
+            !selectedBahasaPemrograman.some(selected => selected.id === item.bahasa_pemrograman_id)
+        );
+        renderBahasaDropdownItems();
+        showDropdown('bahasa');
+    }
+
+    function toolExists(toolName) {
+        return toolsData.some(tool => tool.nama_tool.toLowerCase() === toolName.toLowerCase()) ||
+            selectedTools.some(tool => tool.nama.toLowerCase() === toolName.toLowerCase());
+    }
+
+    function filterTools(searchTerm) {
+        filteredToolsData = toolsData.filter(item => 
+            item.nama_tool.toLowerCase().includes(searchTerm.toLowerCase()) &&
+            !selectedTools.some(selected => selected.id === item.tool_id)
+        );
+        renderToolsDropdownItems();
+        showDropdown('tools');
+    }
+
+    function renderDropdownItems() {
+        renderBidangDropdownItems();
+        renderBahasaDropdownItems();
+        renderToolsDropdownItems();
+    }
+
+    function renderBidangDropdownItems() {
+        const availableItems = filteredBidangData.filter(item => 
+            !selectedBidangKeahlian.some(selected => selected.id === item.bidang_keahlian_id)
+        );
+
+        if (availableItems.length === 0) {
+            dropdownMenuBidang.innerHTML = `
+                <div class="dropdown-item-bidang disabled">
+                    <i class="fas fa-search me-2"></i>
+                    Tidak ada bidang keahlian yang tersedia
+                </div>
+            `;
+            return;
+        }
+
+        dropdownMenuBidang.innerHTML = availableItems.map(item => `
+            <button class="dropdown-item-bidang" onclick="addBidangKeahlian('${item.bidang_keahlian_id}', '${item.nama_bidang_keahlian.replace(/'/g, "\\'")}')">
+                <i class="fas fa-plus-circle me-2 text-success"></i>
+                ${item.nama_bidang_keahlian}
+            </button>
+        `).join('');
+    }
+
+    function renderBahasaDropdownItems() {
+        const availableItems = filteredBahasaData.filter(item => 
+            !selectedBahasaPemrograman.some(selected => selected.id === item.bahasa_pemrograman_id)
+        );
+
+        if (availableItems.length === 0) {
+            dropdownMenuBahasa.innerHTML = `
+                <div class="dropdown-item-bahasa disabled">
+                    <i class="fas fa-search me-2"></i>
+                    Tidak ada bahasa pemrograman yang tersedia
+                </div>
+            `;
+            return;
+        }
+
+        dropdownMenuBahasa.innerHTML = availableItems.map(item => `
+            <button class="dropdown-item-bahasa" onclick="addBahasaPemrograman('${item.bahasa_pemrograman_id}', '${item.nama_bahasa_pemrograman.replace(/'/g, "\\'")}')">
+                <i class="fas fa-plus-circle me-2 text-success"></i>
+                ${item.nama_bahasa_pemrograman}
+            </button>
+        `).join('');
+    }
+
+    function renderToolsDropdownItems() {
+        const availableItems = filteredToolsData.filter(item => 
+            !selectedTools.some(selected => selected.id === item.tool_id)
+        );
+
+        let dropdownContent = '';
+
+        // Selalu tampilkan opsi untuk menambah tool baru di bagian atas
+        dropdownContent += `
+            <button class="dropdown-item-tools add-custom-general" onclick="showAddCustomToolModal('')">
+                <i class="fas fa-plus-circle me-2 text-tefa"></i>
+                <strong>Masukkan Tools Lain</strong>
+            </button>
+            <div class="dropdown-divider"></div>
+        `;
+
+        // Tambahkan opsi untuk menambah custom tool berdasarkan search term jika ada
+        const searchTerm = searchToolsInput.value.trim();
+        if (searchTerm && !toolExists(searchTerm)) {
+            dropdownContent += `
+                <button class="dropdown-item-tools add-custom" onclick="showAddCustomToolModal('${searchTerm.replace(/'/g, "\\'")}')">
+                    <i class="fas fa-plus me-2 text-success"></i>
+                    Tambahkan "${searchTerm}" sebagai tool
+                </button>
+                <div class="dropdown-divider"></div>
+            `;
+        }
+
+        // Tampilkan available tools
+        if (availableItems.length === 0 && !searchTerm) {
+            dropdownContent += `
+                <div class="dropdown-item-tools disabled">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Tidak ada tools lain yang tersedia
+                </div>
+            `;
+        } else if (availableItems.length === 0 && searchTerm) {
+            dropdownContent += `
+                <div class="dropdown-item-tools disabled">
+                    <i class="fas fa-plus-circle me-2 text-success"></i>
+                    Tidak ditemukan tools yang cocok
+                </div>
+            `;
+        } else {
+            // Group tools jika perlu (opsional)
+            if (availableItems.length > 0) {
+                dropdownContent += `
+                    <div class="tools-section-header">
+                        <small class="text-muted fw-bold px-3">Tools Tersedia:</small>
+                    </div>
+                `;
+            }
+            
+            dropdownContent += availableItems.map(item => `
+                <button class="dropdown-item-tools" onclick="addTool('${item.tool_id}', '${item.nama_tool.replace(/'/g, "\\'")}', false)">
+                    <i class="fas fa-plus-circle me-2 text-success"></i>
+                    ${item.nama_tool}
+                </button>
+            `).join('');
+        }
+
+        dropdownMenuTools.innerHTML = dropdownContent;
+    }
+
+    function addBidangKeahlian(id, nama) {
+        if (!selectedBidangKeahlian.some(item => item.id === id)) {
+            selectedBidangKeahlian.push({ id, nama });
+            updateBidangDisplay();
+            updateBidangHiddenInputs();
+            renderBidangDropdownItems();
+            searchBidangInput.value = '';
+            searchBidangInput.focus();
+        }
+    }
+
+    function addBahasaPemrograman(id, nama) {
+        if (!selectedBahasaPemrograman.some(item => item.id === id)) {
+            selectedBahasaPemrograman.push({ id, nama });
+            updateBahasaDisplay();
+            updateBahasaHiddenInputs();
+            renderBahasaDropdownItems();
+            searchBahasaInput.value = '';
+            searchBahasaInput.focus();
+        }
+    }
+
+    function removeBidangKeahlian(id) {
+        selectedBidangKeahlian = selectedBidangKeahlian.filter(item => item.id !== id);
+        updateBidangDisplay();
+        updateBidangHiddenInputs();
+        renderBidangDropdownItems();
+    }
+
+    function removeBahasaPemrograman(id) {
+        selectedBahasaPemrograman = selectedBahasaPemrograman.filter(item => item.id !== id);
+        updateBahasaDisplay();
+        updateBahasaHiddenInputs();
+        renderBahasaDropdownItems();
+    }
+
+    function updateAllDisplays() {
+        updateBidangDisplay();
+        updateBahasaDisplay();
+    }
+
+    function updateBidangDisplay() {
+        if (selectedBidangKeahlian.length === 0) {
+            selectedBidangContainer.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-plus-circle me-2"></i>
+                    Belum ada bidang keahlian yang dipilih
+                </div>
+            `;
+            selectedBidangContainer.classList.remove('has-items');
+        } else {
+            selectedBidangContainer.innerHTML = selectedBidangKeahlian.map(item => `
+                <span class="bidang-keahlian-tag">
+                    <i class="fas fa-code me-2"></i>
+                    ${item.nama}
+                    <button class="remove-tag" onclick="removeBidangKeahlian('${item.id}')" title="Hapus">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </span>
+            `).join('');
+            selectedBidangContainer.classList.add('has-items');
+        }
+        
+        bidangCounter.textContent = selectedBidangKeahlian.length;
+    }
+
+    function updateBahasaDisplay() {
+        if (selectedBahasaPemrograman.length === 0) {
+            selectedBahasaContainer.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-plus-circle me-2"></i>
+                    Belum ada bahasa pemrograman yang dipilih
+                </div>
+            `;
+            selectedBahasaContainer.classList.remove('has-items');
+        } else {
+            selectedBahasaContainer.innerHTML = selectedBahasaPemrograman.map(item => `
+                <span class="bahasa-pemrograman-tag">
+                    <i class="fas fa-laptop-code me-2"></i>
+                    ${item.nama}
+                    <button class="remove-tag" onclick="removeBahasaPemrograman('${item.id}')" title="Hapus">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </span>
+            `).join('');
+            selectedBahasaContainer.classList.add('has-items');
+        }
+        
+        bahasaCounter.textContent = selectedBahasaPemrograman.length;
+    }
+
+    function updateAllHiddenInputs() {
+        updateBidangHiddenInputs();
+        updateBahasaHiddenInputs();
+        updateToolsHiddenInputs();
+    }
+
+    function updateBidangHiddenInputs() {
+        hiddenBidangInputsContainer.innerHTML = '';
+        selectedBidangKeahlian.forEach(item => {
+            const hiddenInput = document.createElement('input');
+            hiddenInput.type = 'hidden';
+            hiddenInput.name = 'bidang_keahlian[]';
+            hiddenInput.value = item.id;
+            hiddenBidangInputsContainer.appendChild(hiddenInput);
+        });
+    }
+
+    function updateBahasaHiddenInputs() {
+        hiddenBahasaInputsContainer.innerHTML = '';
+        selectedBahasaPemrograman.forEach(item => {
+            const hiddenInput = document.createElement('input');
+            hiddenInput.type = 'hidden';
+            hiddenInput.name = 'bahasa_pemrograman[]';
+            hiddenInput.value = item.id;
+            hiddenBahasaInputsContainer.appendChild(hiddenInput);
+        });
+    }
+
+    function updateToolsHiddenInputs() {
+        hiddenToolsInputsContainer.innerHTML = '';
+        selectedTools.forEach(item => {
+            if (item.isCustom) {
+                // Custom tool - gunakan custom fields
+                const hiddenInputName = document.createElement('input');
+                hiddenInputName.type = 'hidden';
+                hiddenInputName.name = 'custom_tools[]';
+                hiddenInputName.value = JSON.stringify({
+                    nama: item.nama,
+                    deskripsi: item.deskripsi
+                });
+                hiddenToolsInputsContainer.appendChild(hiddenInputName);
+            } else {
+                // Existing tool - gunakan tool_id
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = 'tools[]';
+                hiddenInput.value = item.id;
+                hiddenToolsInputsContainer.appendChild(hiddenInput);
+            }
+        });
+    }
+
+    function showAddCustomToolModal(toolName) {
+        const modalHtml = `
+            <div class="modal fade" id="addCustomToolModal" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Tambah Tool Baru</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="customToolForm">
+                                <div class="mb-3">
+                                    <label class="form-label">Nama Tools<span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="customToolName" value="${toolName}" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Deskripsi Tools</label>
+                                    <textarea class="form-control" id="customToolDescription" rows="3"></textarea>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-tutup" data-bs-dismiss="modal">Batal</button>
+                            <button type="button" class="btn btn-add" onclick="addCustomTool()">Tambahkan</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Remove existing modal if any
+        const existingModal = document.getElementById('addCustomToolModal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+
+        // Add modal to body
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+        // Show modal
+        const modal = new bootstrap.Modal(document.getElementById('addCustomToolModal'));
+        modal.show();
+
+        // Focus on name input
+        document.getElementById('customToolName').focus();
+    }
+
+    function addCustomTool() {
+        const nameInput = document.getElementById('customToolName');
+        const descriptionInput = document.getElementById('customToolDescription');
+        
+        const toolName = nameInput.value.trim();
+        const toolDescription = descriptionInput.value.trim();
+
+        if (!toolName) {
+            alert('Nama tool harus diisi!');
+            nameInput.focus();
+            return;
+        }
+
+        if (toolExists(toolName)) {
+            alert('Tool dengan nama ini sudah ada!');
+            nameInput.focus();
+            return;
+        }
+
+        // Generate unique ID for custom tool
+        const customId = 'custom_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+
+        // Add to selected tools
+        addTool(customId, toolName, true, toolDescription);
+
+        // Close modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById('addCustomToolModal'));
+        modal.hide();
+
+        // Clear search input and hide dropdown
+        searchToolsInput.value = '';
+        hideDropdown('tools');
+    }
+
+    function addTool(id, nama, isCustom = false, deskripsi = '') {
+        if (!selectedTools.some(item => item.id === id)) {
+            selectedTools.push({ 
+                id, 
+                nama, 
+                isCustom, 
+                deskripsi: deskripsi || '' 
+            });
+            updateToolsDisplay();
+            updateToolsHiddenInputs();
+            renderToolsDropdownItems();
+            searchToolsInput.value = '';
+            searchToolsInput.focus();
+        }
+    }
+
+    function removeTool(id) {
+        selectedTools = selectedTools.filter(item => item.id !== id);
+        updateToolsDisplay();
+        updateToolsHiddenInputs();
+        renderToolsDropdownItems();
+    }
+
+    // Modifikasi updateAllDisplays untuk include tools
+    function updateAllDisplays() {
+        updateBidangDisplay();
+        updateBahasaDisplay();
+        updateToolsDisplay();
+    }
+
+    function updateToolsDisplay() {
+        if (selectedTools.length === 0) {
+            selectedToolsContainer.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-plus-circle me-2"></i>
+                    Belum ada tools yang dipilih
+                </div>
+            `;
+            selectedToolsContainer.classList.remove('has-items');
+        } else {
+            selectedToolsContainer.innerHTML = selectedTools.map(item => `
+                <span class="tools-tag ${item.isCustom ? 'custom-tool' : ''}">
+                    <i class="fas fa-tools me-2"></i>
+                    ${item.nama}
+                    ${item.isCustom ? '<i title="Custom tool"></i>' : ''}
+                    <button class="remove-tag" onclick="removeTool('${item.id}')" title="Hapus">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </span>
+            `).join('');
+            selectedToolsContainer.classList.add('has-items');
+        }
+        
+        toolsCounter.textContent = selectedTools.length;
+    }
+
     function showAlert(type, message) {
         const alertClass = type === 'success' ? 'alert-success' : 
                           type === 'warning' ? 'alert-warning' : 'alert-danger';
-        const icon = type === 'success' ? 'fas fa-check-circle' : 
-                    type === 'warning' ? 'fas fa-exclamation-triangle' : 'fas fa-times-circle';
 
         const alertHtml = `
             <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
@@ -206,169 +914,14 @@
         }, 5000);
     }
 
-    // Event Listeners untuk dropdown
-    dropdownBidangKeahlian.addEventListener('click', function(e) {
-        if (e.target !== searchInput) {
-            toggleDropdown();
-        }
-    });
-
-    searchInput.addEventListener('input', function() {
-        filterBidangKeahlian(this.value);
-    });
-
-    searchInput.addEventListener('focus', function() {
-        showDropdown();
-    });
-
-    // Click outside to close dropdown
-    document.addEventListener('click', function(e) {
-        if (!dropdownBidangKeahlian.contains(e.target) && !dropdownMenuBidang.contains(e.target)) {
-            hideDropdown();
-        }
-    });
-
-    function toggleDropdown() {
-        if (dropdownMenuBidang.style.display === 'none') {
-            showDropdown();
-        } else {
-            hideDropdown();
-        }
-    }
-
-    function showDropdown() {
-        dropdownMenuBidang.style.display = 'block';
-        dropdownBidangKeahlian.classList.add('active');
-        dropdownIcon.classList.replace('fa-chevron-down', 'fa-chevron-up');
-    }
-
-    function hideDropdown() {
-        dropdownMenuBidang.style.display = 'none';
-        dropdownBidangKeahlian.classList.remove('active');
-        dropdownIcon.classList.replace('fa-chevron-up', 'fa-chevron-down');
-        searchInput.value = '';
-        filteredData = [...bidangKeahlianData];
-        renderDropdownItems();
-    }
-
-    function filterBidangKeahlian(searchTerm) {
-        filteredData = bidangKeahlianData.filter(item => 
-            item.nama_bidang_keahlian.toLowerCase().includes(searchTerm.toLowerCase()) &&
-            !selectedBidangKeahlian.some(selected => selected.id === item.bidang_keahlian_id)
-        );
-        renderDropdownItems();
-        showDropdown();
-    }
-
-    function renderDropdownItems() {
-        const availableItems = filteredData.filter(item => 
-            !selectedBidangKeahlian.some(selected => selected.id === item.bidang_keahlian_id)
-        );
-
-        if (availableItems.length === 0) {
-            dropdownMenuBidang.innerHTML = `
-                <div class="dropdown-item-bidang disabled">
-                    <i class="fas fa-search me-2"></i>
-                    Tidak ada bidang keahlian yang tersedia
-                </div>
-            `;
-            return;
-        }
-
-        dropdownMenuBidang.innerHTML = availableItems.map(item => `
-            <button class="dropdown-item-bidang" onclick="addBidangKeahlian('${item.bidang_keahlian_id}', '${item.nama_bidang_keahlian.replace(/'/g, "\\'")}')">
-                <i class="fas fa-plus-circle me-2 text-success"></i>
-                ${item.nama_bidang_keahlian}
-            </button>
-        `).join('');
-    }
-
-    function addBidangKeahlian(id, nama) {
-        if (!selectedBidangKeahlian.some(item => item.id === id)) {
-            selectedBidangKeahlian.push({ id, nama });
-            updateSelectedDisplay();
-            updateHiddenInputs();
-            renderDropdownItems();
-            searchInput.value = '';
-            searchInput.focus();
-        }
-    }
-
-    function removeBidangKeahlian(id) {
-        selectedBidangKeahlian = selectedBidangKeahlian.filter(item => item.id !== id);
-        updateSelectedDisplay();
-        updateHiddenInputs();
-        renderDropdownItems();
-    }
-
-    function updateSelectedDisplay() {
-        if (selectedBidangKeahlian.length === 0) {
-            selectedContainer.innerHTML = `
-                <div class="empty-state" id="emptyState">
-                    <i class="fas fa-plus-circle me-2"></i>
-                    Belum ada bidang keahlian yang dipilih
-                </div>
-            `;
-            selectedContainer.classList.remove('has-items');
-        } else {
-            selectedContainer.innerHTML = selectedBidangKeahlian.map(item => `
-                <span class="bidang-keahlian-tag">
-                    <i class="fas fa-code me-2"></i>
-                    ${item.nama}
-                    <button class="remove-tag" onclick="removeBidangKeahlian('${item.id}')" title="Hapus">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </span>
-            `).join('');
-            selectedContainer.classList.add('has-items');
-        }
-        
-        bidangCounter.textContent = selectedBidangKeahlian.length;
-    }
-
-    function updateHiddenInputs() {
-        // Hapus semua hidden input yang ada
-        hiddenInputsContainer.innerHTML = '';
-        
-        // Tambahkan hidden input untuk setiap bidang keahlian yang dipilih
-        selectedBidangKeahlian.forEach(item => {
-            const hiddenInput = document.createElement('input');
-            hiddenInput.type = 'hidden';
-            hiddenInput.name = 'bidang_keahlian[]';
-            hiddenInput.value = item.id;
-            hiddenInputsContainer.appendChild(hiddenInput);
-        });
-    }
-
-    // Keyboard navigation
-    searchInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            hideDropdown();
-        }
-    });
-
     // Public functions untuk keperluan lain
-    window.resetBidangKeahlian = function() {
+    window.resetKeahlianDanBahasa = function() {
         selectedBidangKeahlian = [];
-        updateSelectedDisplay();
-        updateHiddenInputs();
+        selectedBahasaPemrograman = [];
+        selectedTools = [];
+        updateAllDisplays();
+        updateAllHiddenInputs();
         renderDropdownItems();
         alertContainer.innerHTML = '';
-    };
-
-    window.setBidangKeahlian = function(bidangKeahlianIds) {
-        selectedBidangKeahlian = [];
-        bidangKeahlianIds.forEach(id => {
-            const item = bidangKeahlianData.find(bk => bk.bidang_keahlian_id === id);
-            if (item) {
-                selectedBidangKeahlian.push({
-                    id: item.bidang_keahlian_id,
-                    nama: item.nama_bidang_keahlian
-                });
-            }
-        });
-        updateSelectedDisplay();
-        updateHiddenInputs();
-        renderDropdownItems();
     };
 </script>

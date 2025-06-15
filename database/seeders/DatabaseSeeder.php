@@ -13,6 +13,8 @@ class DatabaseSeeder extends Seeder
             JenisProyekSeeder::class,
             MitraProyekSeeder::class,
             BidangKeahlianSeeder::class,
+            BahasaPemrogramanSeeder::class,
+            ToolSeeder::class,
             JenisDokumenPenunjangSeeder::class,
             KeuanganSeeder::class,
         ]);

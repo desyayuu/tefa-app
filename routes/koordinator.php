@@ -75,12 +75,16 @@ Route::middleware([KoordinatorMiddleware::class])->prefix('koordinator')->group(
     Route::put('/mahasiswa/{id}', [DataMahasiswaController::class, 'updateDataMahasiswa'])->name('koordinator.updateDataMahasiswa');
     Route::delete('/mahasiswa/{id}', [DataMahasiswaController::class, 'deleteDataMahasiswa'])->name('koordinator.deleteDataMahasiswa');
     Route::get('/data-mahasiswa/{id}', [DataMahasiswaController::class, 'getDataMahasiswaById'])->name('koordinator.detailDataMahasiswa');
-    Route::put('/mahasiswa/{id}/bidang-keahlian', [DataMahasiswaController::class, 'updateBidangKeahlianMahasiswa'])->name('koordinator.updateBidangKeahlianMahasiswa');
     Route::get('/mahasiswa/{id}/bidang-keahlian', [DataMahasiswaController::class, 'getBidangKeahlianMahasiswa'])->name('koordinator.getBidangKeahlianMahasiswa');
+    Route::get('/mahasiswa/{id}/bahasa-pemrograman', [DataMahasiswaController::class, 'getBahasaPemrogramanMahasiswa'])->name('koordinator.getBahasaPemrogramanMahasiswa');
+    Route::get('/mahasiswa/{id}/tools', [DataMahasiswaController::class, 'getToolsMahasiswa'])->name('koordinator.getToolsMahasiswa');
+    Route::put('/mahasiswa/{id}/keahlian-bahasa-tools', [DataMahasiswaController::class, 'updateKeahlianBahasaDanTools']);
+    
     Route::get('/data-mahasiswa/portofolio/detail/{id}', [DataMahasiswaController::class, 'getPortofolioMahasiswaById'])->name('koordinator.portofolio.detail');
     Route::post('/data-mahasiswa/portofolio/tambah', [DataMahasiswaController::class, 'tambahPortofolioMahasiswa'])->name('koordinator.portofolio.tambah');
     Route::put('/data-mahasiswa/portofolio/update/{id}', [DataMahasiswaController::class, 'updatePortofolioMahasiswa'])->name('koordinator.portofolio.update');
     Route::delete('/data-mahasiswa/portofolio/delete/{id}', [DataMahasiswaController::class, 'deletePortofolioMahasiswa'])->name('koordinator.portofolio.delete');
+
     
     // Project Leader and Members
     Route::put('/proyek/{id}/project-leader', [DataAnggotaProyekController::class, 'updateProjectLeader'])->name('koordinator.updateProjectLeader');
