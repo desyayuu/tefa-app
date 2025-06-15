@@ -26,6 +26,9 @@ return new class extends Migration
             $table->string('doc_cv')->nullable();
             $table->string('doc_ktm')->nullable();
             $table->string('doc_ktp')->nullable();
+            $table->text('deskripsi_diri')->nullable();
+            $table->text('kelebihan_diri')->nullable();
+            $table->text('kekurangan_diri')->nullable();
             $table->dateTime('created_at')->nullable();
             $table->string('created_by', 36)->nullable();
             $table->dateTime('updated_at')->nullable();

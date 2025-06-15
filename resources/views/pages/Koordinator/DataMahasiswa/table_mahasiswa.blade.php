@@ -40,7 +40,7 @@
                                             <div class="mb-2 col-md-6">
                                                 <label for="nama_mahasiswa" class="form-label">Nama Mahasiswa</label>
                                                 <input type="text" class="form-control" id="nama_mahasiswa" name="nama_mahasiswa" >
-                                                <div class="invalid-feedback" id="nama_error"></div>
+                                                <div class="invalid-feedback" id="nama_mahasiswa_error"></div>
                                             </div>
                                             <!-- NIM -->
                                             <div class="mb-2 col-md-6">

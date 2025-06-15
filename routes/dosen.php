@@ -11,6 +11,7 @@ use App\Http\Controllers\Dosen\DataTimelineDosenController;
 use App\Http\Controllers\Dosen\DataProgresProyekDosenController;
 use App\Http\Controllers\Dosen\DataKeluarKeuanganProyekDosenController;
 use App\Http\Controllers\Dosen\DataDosenController;
+use App\Http\Controllers\Dosen\DataLuaranDosenController;
 
 Route::middleware([DosenMiddleware::class])->prefix('dosen')->group(function () {
     
@@ -59,8 +60,15 @@ Route::middleware([DosenMiddleware::class])->prefix('dosen')->group(function () 
         Route::get('{id}/my-progres/get', [DataProgresProyekDosenController::class, 'getMyProgresByProyek'])->name('dosen.getMyProgresByProyek');
         Route::post('/my-progres/store', [DataProgresProyekDosenController::class, 'storeMyProgres'])->name('dosen.storeMyProgres');
     });
+
+    // Data Luaran Proyek 
+    Route::get('/proyek/{id}/luaran', [DataLuaranDosenController::class, 'getDataLuaranDokumentasi'])->name('dosen.getDataLuaranDokumentasi');
+    Route::post('/proyek/luaran', [DataLuaranDosenController::class, 'saveLuaranProyek'])->name('dosen.updateDataLuaran');
+    Route::post('/proyek/dokumentasi', [DataLuaranDosenController::class, 'uploadDokumentasi'])->name('dosen.addDokumentasi');
+    Route::delete('/proyek/dokumentasi/{id}', [DataLuaranDosenController::class, 'deleteDokumentasi'])->name('dosen.deleteDokumentasi');
     
 
+    //Data Keluar Keuangan Proyek
     Route::prefix('data-keluar-keuangan-proyek')->group(function () {
         Route::get('/', [DataKeluarKeuanganProyekDosenController::class, 'getDataProyek'])->name('dosen.dataKeluarKeuanganProyek');
         Route::get('/get-kategori-pengeluaran', [DataKeluarKeuanganProyekDosenController::class, 'getKategoriPengeluaranForFilter'])->name('dosen.getKategoriPengeluaran');

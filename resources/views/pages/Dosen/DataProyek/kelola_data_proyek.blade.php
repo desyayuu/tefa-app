@@ -47,6 +47,9 @@
         <div>
             @include('pages.Dosen.DataProyek.data_progres_proyek')
         </div>
+        <div class="section-luaran-proyek">
+            @include('pages.Dosen.DataProyek.data_luaran_proyek')
+        </div>
     </div>
 </div>
 @endsection
