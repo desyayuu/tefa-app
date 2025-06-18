@@ -14,12 +14,12 @@ return new class extends Migration
         Schema::create('d_dosen', function (Blueprint $table) {
             $table->string('dosen_id', 36)->primary();
             $table->string('user_id', 36)->unique();
-            $table->string('nama');
-            $table->enum('jenis_kelamin', ['Laki-Laki', 'Perempuan'])->nullable();
-            $table->date('tanggal_lahir')->nullable();
-            $table->string('telepon')->nullable();
-            $table->string('profile_img')->nullable();
-            $table->string('nidn')->unique();
+            $table->string('nama_dosen');
+            $table->enum('jenis_kelamin_dosen', ['Laki-Laki', 'Perempuan'])->nullable();
+            $table->date('tanggal_lahir_dosen')->nullable();
+            $table->string('telepon_dosen')->nullable();
+            $table->string('profile_img_dosen')->nullable();
+            $table->string('nidn_dosen')->unique();
             $table->dateTime('created_at')->nullable();
             $table->string('created_by', 36)->nullable();
             $table->dateTime('updated_at')->nullable();

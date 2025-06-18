@@ -144,10 +144,15 @@ body {
 }
 
 
+.main-color{
+    color: #3C21F7;
+}
+
 .main-content {
     flex-grow: 1;
     margin-left: 260px;
     min-height: 100vh;
+    font-size: 14px;
 }
 
 .content {
@@ -156,7 +161,7 @@ body {
 
 .content-table{
     padding: 20px 20px 20px 20px;
-    margin: 70px 10px 10px 10px;
+    margin: 20px 10px 10px 10px;
     border-radius: 10px;
     background-color: white;
 }
@@ -254,9 +259,17 @@ body {
 
 .form-control{
     border-radius: 10px;
-    background-color: #E9ECEF;
-    border-color: #333;
     border: none;
+    font-size: 14px;
+    border-radius: 6px;
+    border: 1px solid #dee2e6;
+}
+
+.form-disabled{
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    border: none;
+    font-size: 14px;
 }
 
 .btn-add{
@@ -269,6 +282,13 @@ body {
     text-align: center;
     font-weight: bold;
 }
+
+/* .btn-add:disabled {
+    background-color: #dcdcdc;
+    color: #a1a1a1;
+    cursor: not-allowed; 
+    opacity: 0.6; 
+} */
 
 .btn-hapus{
     background-color: #E56F8C;
@@ -303,5 +323,376 @@ body {
 
 .label-form{
     font-weight: lighter;
-    font-size: 16px;
+    font-size: 14px;
+}
+
+.daftar-mitra-container{
+    font-size: 14px;
+    font-weight: normal;
+    margin-top: 30px;
+}
+
+.is-loading {
+    position: relative;
+}
+
+.is-loading:after {
+    content: "";
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #3498db;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: translateY(-50%) rotate(0deg); }
+    100% { transform: translateY(-50%) rotate(360deg); }
+}
+.form-label {
+    font-weight: 500;
+}
+
+.anggota-proyek-container{
+    margin-top: 20px;
+    margin-right:20px;
+    font-size: 14px;
+}
+
+.detail-proyek-container{
+    margin-top: 20px;
+    margin-left: 20px;
+    font-size: 14px;
+}
+
+.detail-dokumen-penunjang,
+.detail-luaran{
+    margin-top: 20px; 
+    margin-left: 20px;
+    font-size: 14px;
+    margin-right: 20px;
+}
+
+.data-timeline-container, .data-progres-container, .data-luaran-container{
+    margin-left:20px;
+    margin-right: 20px;
+    font-size: 14px;
+}
+
+.card-project-leader, .card-anggota-proyek, .card-anggota-proyek{
+    margin-bottom: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    padding: 10px 10px 10px 10px;
+}
+
+.card-subtitle{
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.text-anggota{
+    font-size: 12px;
+    font-weight: normal;
+}
+
+/* Styles for action buttons */
+.btn-action-download, 
+.btn-action-delete,
+.btn-preview-delete {
+    background: transparent;
+    border: none;
+    padding: 0.25rem;
+    cursor: pointer;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.btn-preview-delete:hover svg path {
+    fill: #dc3545;
+}
+
+.text-truncate-file {
+    max-width: 250px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: inline-block;
+}
+
+#previewDokumenTable td {
+    vertical-align: middle;
+}
+
+
+.dokumentasi-placeholder i {
+    font-size: 2rem;
+    opacity: 0.5;
+}
+
+
+
+.form-control:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Button styles */
+.btn-light {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+}
+
+.btn-light:hover {
+    background-color: #e9ecef;
+}
+
+.btn-primary.rounded-pill {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+}
+
+/* File input display */
+#posterFilename {
+    background-color: #f8f9fa;
+    border-right: none;
+}
+
+/* Poster preview modal */
+#posterPreviewModal .modal-body img {
+    height: 50%;
+    width: 50%;
+    max-height: 80vh;
+}
+
+#dokumentasiPreviewModal .modal-body img {
+    max-height: 80vh;
+}
+  
+.dokumentasi-item:hover .poster-item:hover .btn-hapus,
+.dokumentasi-item:hover .poster-item:hover.btn-remove-preview {
+    opacity: 1;
+}
+    
+.btn-upload {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    color: #212529;
+    border-radius: 4px;
+    font-size: 12px;
+}
+    
+.btn-upload:hover {
+    background-color: #e9ecef;
+}
+    
+
+/* Data Luaran */
+.dokumentasi-gallery {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.dokumentasi-item {
+    width: 100px;
+    height: 100px;
+    position: relative;
+    border-radius: 8px;
+    overflow: visible; 
+}
+
+.dokumentasi-item-porto img {
+    aspect-ratio: 16 / 9; 
+    width: 320px; 
+    object-fit: cover;
+    display: block;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+
+.dokumentasi-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.btn-hapus-detail {
+    position: absolute;
+    top: -10px;
+    right: -10px; /* Position it halfway off the right edge */
+    background-color: rgba(220, 53, 69, 0.9);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    z-index: 5;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2); /* Add shadow for better visibility */
+}
+
+.btn-hapus-detail:hover {
+    background-color: rgba(220, 53, 69, 1);
+    transform: scale(1.1); /* Slightly enlarge on hover */
+}
+
+/* Poster styles */
+.poster-item {
+    position: relative;
+    margin-bottom: 15px;
+    max-width: 200px;
+    cursor: pointer;
+}
+
+.poster-item img {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.poster-item:hover img {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+#posterPreviewModal .modal-title {
+    font-weight: 600;
+}
+
+.dokumentasi-item {
+    width: 100px;
+    height: 100px;
+    position: relative;
+    border-radius: 8px;
+    overflow: visible; 
+    margin-bottom: 5px;
+}
+
+.dokumentasi-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.dokumentasi-preview-container{
+    gap: 15px;
+    border-radius: 10px;
+    border: 1px solid #ced4da;
+    padding: 10px;
+}
+
+.dokumentasi-section-title {
+    margin-bottom: 10px;
+}
+
+.dokumentasi-item:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    transform: scale(1.02);
+    transition: transform 0.3s, box-shadow 0.3s;
+
+}
+
+.dokumentasi-item-porto:hover {
+    box-shadow: rgba(0,0,0,0.2);
+    transform: scale(1.02);
+    transition: transform 0.3s, box-shadow 0.3s;
+
+}
+.dokumentasi-item img.img-fluid {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.poster-item:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    transform: scale(1.02);
+    transition: transform 0.3s, box-shadow 0.3s;
+
+}
+
+.poster-item img.img-fluid {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.poster-item {
+    position: relative;
+    max-width: 200px;
+    margin-bottom: 15px;
+    cursor: pointer;
+    border-radius: 8px;
+    overflow: visible; 
+}
+
+.poster-item img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    border-radius: 8px;
+    display: block;
+}
+
+.filter-data-keuangan-tefa-container, 
+.current-data-container {
+    padding: 0px 5px 0px 5px;
+    margin: 0px 10px 0px 10px;
+}
+
+.data-keuangan-tefa-container{
+    padding: 20px 5px 20px 5px;
+    margin: 0px 10px 0px 10px;
+}
+
+.data-masuk-keuangan-proyek-container{
+    padding: 20px 5px 20px 5px;
+    margin: 0px 10px 0px 10px;
+}
+
+.data-total-keuangan-tefa-container{
+    padding: 0px 5px 20px 5px;
+    margin: 0px 10px 0px 10px;
+}
+
+
+#filterContainer {
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+    
+.filter-collapsed {
+    max-height: 0;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    opacity: 0;
+}
+    
+
+#filter_nominal_min, #filter_nominal_max {
+text-align: right;
+}
+
+.text-tefa{
+    color: #3C21F7
 }

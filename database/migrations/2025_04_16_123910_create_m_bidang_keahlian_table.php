@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('m_bidang_keahlian', function (Blueprint $table) {
             $table->string('bidang_keahlian_id', 36)->primary();
-            $table->string('nama_bidang');
-            $table->text('deskripsi')->nullable();
+            $table->string('nama_bidang_keahlian');
+            $table->text('deskripsi_bidang_keahlian')->nullable();
             $table->dateTime('created_at')->nullable();
             $table->string('created_by', 36)->nullable();
             $table->dateTime('updated_at')->nullable();

@@ -14,9 +14,9 @@ return new class extends Migration
         Schema::create('d_mitra_proyek', function (Blueprint $table) {
             $table->string('mitra_proyek_id', 36)->primary();
             $table->string('nama_mitra');
-            $table->string('telepon_mitra');
             $table->string('email_mitra');
-            $table->string('alamat_mitra');
+            $table->string('telepon_mitra')->nullable();
+            $table->string('alamat_mitra')->nullable();
             $table->dateTime('created_at')->nullable();
             $table->string('created_by', 36)->nullable();
             $table->dateTime('updated_at')->nullable();

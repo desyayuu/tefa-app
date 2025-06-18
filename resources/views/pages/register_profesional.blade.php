@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'TEFA | Registrasi Dosen')
+@section('title', 'TEFA | Registrasi Profesional')
 
 @section('content')
     {{-- Navbar --}}
@@ -8,9 +8,24 @@
 
     <!-- Section Register -->
     <section class="py-5 card-auth">
+        <div class="breadcrumb-container-rg">
+                <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item">
+                            <a href="{{ route('beranda') }}">
+                                Beranda
+                            </a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">
+                            Registrasi Profesional
+                        </li>
+                    </ol>
+                </nav>
+        </div>
         <div class="container d-flex justify-content-center align-items-center">
+            
             <div class="card shadow-lg p-4" style="width: 100%; max-width: 500px; border-radius: 20px;">
-                <h3 class="text-center mb-4">Register</h3>
+                <h3 class="text-center mb-4">Registrasi Profesional</h3>
                 
                 @if(session('success'))
                     <div class="alert alert-success mb-3">
@@ -24,28 +39,20 @@
                     </div>
                 @endif
                 
-                <form action="{{ route('register.submit') }}" method="POST" enctype="multipart/form-data">
+                <form action="{{ route('register-profesional.submit') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <div class="mb-3">
-                        <label for="nama" class="form-label">Nama</label>
-                        <input type="text" name="nama" id="nama" class="form-control @error('nama') is-invalid @enderror" value="{{ old('nama') }}" required>
-                        @error('nama')
+                        <label for="nama_profesional" class="form-label">Nama</label>
+                        <input type="text" name="nama_profesional" id="nama_profesional" class="form-control @error('nama_profesional') is-invalid @enderror" value="{{ old('nama_profesional') }}" required>
+                        @error('nama_profesional')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
 
                     <div class="mb-3">
-                        <label for="nidn" class="form-label">NIP/NIDN</label>
-                        <input type="text" name="nidn" id="nidn" class="form-control @error('nidn') is-invalid @enderror" value="{{ old('nidn') }}" required>
-                        @error('nidn')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="telepon" class="form-label">Telepon</label>
-                        <input type="text" name="telepon" id="telepon" class="form-control @error('telepon') is-invalid @enderror" value="{{ old('telepon') }}" required>
-                        @error('telepon')
+                        <label for="telepon_profesional" class="form-label">Telepon</label>
+                        <input type="text" name="telepon_profesional" id="telepon_profesional" class="form-control @error('telepon_profesional') is-invalid @enderror" value="{{ old('telepon_profesional') }}">
+                        @error('telepon_profesional')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
@@ -65,12 +72,6 @@
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
-                    
-                    <!-- Field yang diperlukan tapi disembunyikan -->
-                    <input type="hidden" name="jenis_kelamin" value="Laki-Laki">
-                    <input type="hidden" name="tanggal_lahir" value="{{ date('Y-m-d') }}">
-                    <input type="hidden" name="password_confirmation" value="">
-
                     <div class="d-grid">
                         <button type="submit" class="btn btn-auth btn-block">Register</button>
                     </div>

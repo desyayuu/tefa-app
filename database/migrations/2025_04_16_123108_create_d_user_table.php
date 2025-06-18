@@ -15,7 +15,8 @@ return new class extends Migration
             $table->string('user_id', 36)->primary();
             $table->string('email')->unique();
             $table->string('password');
-            $table->enum('role', ['Mahasiswa', 'Dosen', 'Koordinator']);
+            $table->enum('role', ['Mahasiswa', 'Dosen', 'Koordinator', 'Profesional']);
+            $table->enum('status', ['Pending', 'Active', 'Rejected', 'Disabled'])->default('Pending');
             $table->dateTime('created_at')->nullable();
             $table->string('created_by', 36)->nullable();
             $table->dateTime('updated_at')->nullable();

@@ -14,12 +14,12 @@ return new class extends Migration
         Schema::create('d_koordinator', function (Blueprint $table) {
             $table->string('koordinator_id', 36)->primary();
             $table->string('user_id', 36)->unique();
-            $table->string('nama');
-            $table->enum('jenis_kelamin', ['Laki-Laki', 'Perempuan']);
-            $table->date('tanggal_lahir');
-            $table->string('telepon');
-            $table->string('profile_img')->nullable();
-            $table->string('nidn');
+            $table->string('nama_koordinator');
+            $table->enum('jenis_kelamin_koordinator', ['Laki-Laki', 'Perempuan'])->nullable();
+            $table->date('tanggal_lahir_koordinator')->nullable();
+            $table->string('telepon_koordinator')->nullable();
+            $table->string('profile_img_koordinator')->nullable();
+            $table->string('nidn_koordinator')->nullable();
             $table->dateTime('created_at')->nullable();
             $table->string('created_by', 36)->nullable();
             $table->dateTime('updated_at')->nullable();
