@@ -4,16 +4,17 @@ import laravel from 'laravel-vite-plugin';
 export default defineConfig({
     plugins: [
         laravel({
-            input: ['resources/css/app.css', 'resources/css/koordinator.css', 
-                'resources/js/bootstrap.js', 'resources/js/components.js', 'resources/js/app.js', 
-                'resources/js/Koordinator/data_mitra.js', 'resources/js/Koordinator/data_dosen.js', 'resources/js/Koordinator/data_pesan_pengunjung.js' ,'resources/js/Koordinator/data_profesional.js', 
-                'resources/js/Koordinator/data_mahasiswa.js', 'resources/js/Koordinator/data_proyek.js', 'resources/js/Koordinator/detail_data_proyek.js',
-                'resources/js/Koordinator/data_dokumen_penunjang.js', 'resources/js/Koordinator/data_timeline.js',
-                'resources/js/Koordinator/detail_data_proyek.js', 'resources/js/Koordinator/data_progres_proyek.js',
-                'resources/js/Koordinator/data_luaran.js', 'resources/js/Koordinator/data_keuangan_tefa.js', 'resources/js/Koordinator/data_masuk_keuangan_proyek.js', 
-                'resources/js/Koordinator/data_keluar_keuangan_proyek.js', 'resources/js/Koordinator/data_sub_jenis_kategori_transaksi.js',
-                'resources/js/Dosen/data_proyek.js', 'resources/js/Dosen/detail_data_proyek.js', ],
+            input: ['resources/css/app.css', 'resources/js/app.js'],
             refresh: true,
         }),
     ],
+    build: {
+        manifest: true,
+        outDir: 'public/build',
+        rollupOptions: {
+            input: {
+                app: 'resources/js/app.js'
+            }
+        }
+    }
 });
