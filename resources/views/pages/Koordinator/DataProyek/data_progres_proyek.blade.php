@@ -28,6 +28,9 @@
                             <th>Nama Progres</th>
                             <th>Status</th>
                             <th>Ditugaskan Ke</th>
+                            <th>Tanggal Mulai</th>
+                            <th>Tanggal Selesai</th>
+                            <th>Update</th>
                             <th>Aksi</th>
                         </tr>
                     </thead>
@@ -57,7 +60,7 @@
  </div>
 
 
- <!-- Modal Tambah Progres -->
+<!-- Modal Tambah Progres -->
 <div class="modal fade" id="modalTambahProgresFromKoor" aria-hidden="true" aria-labelledby="modalTambahProgresLabel" tabindex="-1">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
@@ -87,13 +90,31 @@
                             <label for="status_progres" class="form-label">Status <span class="text-danger">*</span></label>
                             <select class="form-select" id="status_progres" name="status_progres" required>
                                 <option value="" selected disabled>Pilih Status</option>
-                                <option value="Inisiasi">Inisiasi</option>
+                                <option value="To Do">To Do</option>
                                 <option value="In Progress">In Progress</option>
                                 <option value="Done">Done</option>
                             </select>
                             <div class="invalid-feedback" id="status_progres_error"></div>
                         </div>
                         
+                    <div class="mb-3 col-md-6 d-none" id="tanggal_mulai_progres_section">
+                        <label for="tanggal_mulai_progres" class="form-label">
+                            Tanggal Mulai <span class="text-danger">*</span>
+                        </label>
+                        <input type="date" class="form-control" id="tanggal_mulai_progres" name="tanggal_mulai_progres">
+                        <div class="invalid-feedback" id="tanggal_mulai_progres_error"></div>
+                        <small class="text-muted" id="tanggal_mulai_progres_hint"></small>
+                    </div>
+
+                    <!-- Tanggal Selesai - Hidden by default -->
+                    <div class="mb-3 col-md-6 d-none" id="tanggal_selesai_progres_section">
+                        <label for="tanggal_selesai_progres" class="form-label">
+                            Tanggal Selesai <span class="text-danger">*</span>
+                        </label>
+                        <input type="date" class="form-control" id="tanggal_selesai_progres" name="tanggal_selesai_progres">
+                        <div class="invalid-feedback" id="tanggal_selesai_progres_error"></div>
+                        <small class="text-muted" id="tanggal_selesai_progres_hint"></small>
+                    </div>
                         <!-- Persentase Progres -->
                         <div class="mb-3 col-md-6">
                             <label for="persentase_progres" class="form-label">Persentase Pengerjaan</label>
@@ -119,11 +140,11 @@
                         
                         <!-- Leader Section -->
                         <div class="mb-3 col-md-6 d-none" id="leader_section">
-                            <label for="leder_assign_id" class="form-label">Pilih Project Leader <span class="text-danger">*</span></label>
-                            <select class="form-select select2-assign-leader" id="leder_assign_id">
+                            <label for="leader_assign_id" class="form-label">Pilih Project Leader <span class="text-danger">*</span></label>
+                            <select class="form-select select2-assign-leader" id="leader_assign_id">
                                 <option value="">Cari nama...</option>
                             </select>
-                            <div class="invalid-feedback" id="leder_assign_id_error"></div>
+                            <div class="invalid-feedback" id="leader_assign_id_error"></div>
                         </div>
                         
                         <!-- Dosen Section -->
@@ -180,13 +201,15 @@
                                         <th>Nama Progres</th>
                                         <th>Status</th>
                                         <th>Persentase</th>
+                                        <th>Tanggal Mulai</th>
+                                        <th>Tanggal Selesai</th>
                                         <th>Ditugaskan Kepada</th>
                                         <th>Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody id="daftarProgres">
                                     <tr id="emptyRowProgres">
-                                        <td colspan="5" class="text-center">Belum ada progres yang ditambahkan ke daftar</td>
+                                        <td colspan="7" class="text-center">Belum ada progres yang ditambahkan ke daftar</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -236,13 +259,30 @@
                             <label for="edit_status_progres" class="form-label">Status <span class="text-danger">*</span></label>
                             <select class="form-select" id="edit_status_progres" name="status_progres" required>
                                 <option value="" selected disabled>Pilih Status</option>
-                                <option value="Inisiasi">Inisiasi</option>
+                                <option value="To Do">To Do</option>
                                 <option value="In Progress">In Progress</option>
                                 <option value="Done">Done</option>
                             </select>
                             <div class="invalid-feedback" id="edit_status_progres_error"></div>
                         </div>
                         
+                        <div class="mb-3 col-md-6 d-none" id="edit_tanggal_mulai_progres_section">
+                            <label for="edit_tanggal_mulai_progres" class="form-label">
+                                Tanggal Mulai <span class="text-danger">*</span>
+                            </label>
+                            <input type="date" class="form-control" id="edit_tanggal_mulai_progres" name="tanggal_mulai_progres">
+                            <div class="invalid-feedback" id="edit_tanggal_mulai_progres_error"></div>
+                            <small class="text-muted" id="edit_tanggal_mulai_progres_hint"></small>
+                        </div>
+
+                        <div class="mb-3 col-md-6 d-none" id="edit_tanggal_selesai_progres_section">
+                            <label for="edit_tanggal_selesai_progres" class="form-label">
+                                Tanggal Selesai <span class="text-danger">*</span>
+                            </label>
+                            <input type="date" class="form-control" id="edit_tanggal_selesai_progres" name="tanggal_selesai_progres">
+                            <div class="invalid-feedback" id="edit_tanggal_selesai_progres_error"></div>
+                            <small class="text-muted" id="edit_tanggal_selesai_progres_hint"></small>
+                        </div>
                         <!-- Persentase Progres -->
                         <div class="mb-3 col-md-6">
                             <label for="edit_persentase_progres" class="form-label">Persentase Pengerjaan <span class="text-danger">*</span></label>
@@ -268,11 +308,11 @@
                         
                         <!-- Leader Section -->
                         <div class="mb-3 col-md-6 d-none" id="edit_leader_section">
-                            <label for="edit_leder_assign_id" class="form-label">Pilih Project Leader <span class="text-danger">*</span></label>
-                            <select class="form-select select2-edit-leader" id="edit_leder_assign_id">
+                            <label for="edit_leader_assign_id" class="form-label">Pilih Project Leader <span class="text-danger">*</span></label>
+                            <select class="form-select select2-edit-leader" id="edit_leader_assign_id">
                                 <option value="">Cari nama...</option>
                             </select>
-                            <div class="invalid-feedback" id="edit_leder_assign_id_error"></div>
+                            <div class="invalid-feedback" id="edit_leader_assign_id_error"></div>
                         </div>
                         
                         <!-- Dosen Section -->
@@ -308,8 +348,8 @@
                         
                         <!-- Deskripsi -->
                         <div class="mb-3 col-12">
-                            <label for="edit_deskripsi" class="form-label">Deskripsi</label>
-                            <textarea class="form-control" id="edit_deskripsi" name="deskripsi_progres" rows="3"></textarea>
+                            <label for="edit_deskripsi_progres" class="form-label">Deskripsi</label>
+                            <textarea class="form-control" id="edit_deskripsi_progres" name="deskripsi_progres" rows="3"></textarea>
                             <div class="invalid-feedback" id="edit_deskripsi_progres_error"></div>
                         </div>
                     </div>

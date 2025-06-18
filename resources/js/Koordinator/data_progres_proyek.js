@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', function () {
     let progressList = [];
     let currentPageProgresProyek = 1;
     let perPageProgresProyek = 3;
+    let proyekData = null; 
     
     loadDataProgresProyek(1);
 
@@ -50,6 +51,178 @@ document.addEventListener('DOMContentLoaded', function () {
         scrollToDataProgresProyekSection();
     });
 
+    // Handle status change to show/hide date fields
+    $('#status_progres').on('change', function() {
+        const selectedStatus = $(this).val();
+        
+        // Handle show/hide date fields
+        handleStatusChange(selectedStatus, '');
+        
+        // Auto set persentase 100% untuk status Done
+        if (selectedStatus === 'Done') {
+            $('#persentase_progres').val('100');
+            console.log('Status Done selected - Persentase set to 100%');
+        }else if(selectedStatus === 'To Do'){
+            $('#persentase_progres').val('0');
+            console.log('Status To Do selected - Persentase set to 0%');
+        }
+    });
+
+    $('#edit_status_progres').on('change', function() {
+        const selectedStatus = $(this).val();
+        
+        // Handle show/hide date fields
+        handleStatusChange(selectedStatus, 'edit_');
+        
+        // Auto set persentase 100% untuk status Done
+        if (selectedStatus === 'Done') {
+            $('#edit_persentase_progres').val('100');
+        }else if(selectedStatus === 'To Do'){
+            $('#edit_persentase_progres').val('0');
+        }
+    });
+
+    // Perbaikan fungsi handleStatusChange
+    function handleStatusChange(status, prefix) {
+        const tanggalMulaiSection = $(`#${prefix}tanggal_mulai_progres_section`);
+        const tanggalSelesaiSection = $(`#${prefix}tanggal_selesai_progres_section`);
+        const tanggalMulaiInput = $(`#${prefix}tanggal_mulai_progres`);
+        const tanggalSelesaiInput = $(`#${prefix}tanggal_selesai_progres`);
+        
+        if (status === 'In Progress') {
+            tanggalMulaiSection.removeClass('d-none');
+            tanggalSelesaiSection.removeClass('d-none');
+            tanggalMulaiInput.prop('required', true);
+            tanggalSelesaiInput.prop('required', true);
+            
+            // Set date hints if project data is available
+            if (proyekData) {
+                console.log('Setting date hints with proyekData:', proyekData);
+                
+                // PERBAIKAN: Gunakan field yang benar dari proyekData
+                const proyekMulaiField = proyekData.tanggal_mulai || proyekData.tanggal_mulai_progres;
+                const proyekSelesaiField = proyekData.tanggal_selesai || proyekData.tanggal_selesai_progres;
+                
+                if (proyekMulaiField && proyekSelesaiField) {
+                    $(`#${prefix}tanggal_mulai_progres_hint`).text(`Rentang: ${formatDate(proyekMulaiField)} - ${formatDate(proyekSelesaiField)}`);
+                    $(`#${prefix}tanggal_selesai_progres_hint`).text(`Rentang: ${formatDate(proyekMulaiField)} - ${formatDate(proyekSelesaiField)}`);
+                    
+                    // Set min and max attributes untuk browser validation
+                    tanggalMulaiInput.attr('min', proyekMulaiField);
+                    tanggalMulaiInput.attr('max', proyekSelesaiField);
+                    tanggalSelesaiInput.attr('min', proyekMulaiField);
+                    tanggalSelesaiInput.attr('max', proyekSelesaiField);
+                } else {
+                    console.warn('Project date fields not found:', proyekData);
+                }
+            } else {
+                console.warn('proyekData not available yet');
+            }
+        } else {
+            tanggalMulaiSection.addClass('d-none');
+            tanggalSelesaiSection.addClass('d-none');
+            tanggalMulaiInput.prop('required', false);
+            tanggalSelesaiInput.prop('required', false);
+            tanggalMulaiInput.val('');
+            tanggalSelesaiInput.val('');
+            
+            // Clear error messages when hiding fields
+            $(`#${prefix}tanggal_mulai_progres_error`).text('');
+            $(`#${prefix}tanggal_selesai_progres_error`).text('');
+            $(`#${prefix}tanggal_mulai_progres`).removeClass('is-invalid');
+            $(`#${prefix}tanggal_selesai_progres`).removeClass('is-invalid');
+        }
+    }
+
+    // Perbaikan fungsi validateDates
+    function validateDates(tanggalMulai, tanggalSelesai, prefix = '') {
+        const errors = {};
+        
+        console.log('validateDates called with:', { tanggalMulai, tanggalSelesai, prefix, proyekData });
+        
+        // Jika proyekData belum ada, berikan pesan error yang jelas
+        if (!proyekData) {
+            if (tanggalMulai) {
+                errors[`${prefix}tanggal_mulai_progres`] = 'Data proyek belum dimuat. Silakan tutup dan buka kembali modal ini.';
+            }
+            if (tanggalSelesai) {
+                errors[`${prefix}tanggal_selesai_progres`] = 'Data proyek belum dimuat. Silakan tutup dan buka kembali modal ini.';
+            }
+            return errors;
+        }
+        
+        // PERBAIKAN: Gunakan field yang benar dari proyekData
+        // Cek dulu field mana yang ada di proyekData
+        const proyekMulaiField = proyekData.tanggal_mulai || proyekData.tanggal_mulai_progres;
+        const proyekSelesaiField = proyekData.tanggal_selesai || proyekData.tanggal_selesai_progres;
+        
+        console.log('Project date fields:', { 
+            tanggal_mulai: proyekData.tanggal_mulai, 
+            tanggal_selesai: proyekData.tanggal_selesai,
+            tanggal_mulai_progres: proyekData.tanggal_mulai_progres, 
+            tanggal_selesai_progres: proyekData.tanggal_selesai_progres 
+        });
+        
+        if (!proyekMulaiField || !proyekSelesaiField) {
+            console.error('Project date fields not found in proyekData');
+            if (tanggalMulai) {
+                errors[`${prefix}tanggal_mulai_progres`] = 'Data tanggal proyek tidak lengkap.';
+            }
+            if (tanggalSelesai) {
+                errors[`${prefix}tanggal_selesai_progres`] = 'Data tanggal proyek tidak lengkap.';
+            }
+            return errors;
+        }
+        
+        const proyekMulai = new Date(proyekMulaiField);
+        const proyekSelesai = new Date(proyekSelesaiField);
+        
+        console.log('Project date range:', { proyekMulai, proyekSelesai });
+        
+        if (tanggalMulai) {
+            const mulai = new Date(tanggalMulai);
+            console.log('Validating tanggal mulai:', mulai);
+            
+            if (mulai < proyekMulai) {
+                errors[`${prefix}tanggal_mulai_progres`] = `Tanggal mulai tidak boleh sebelum ${formatDate(proyekMulaiField)}`;
+            }
+            if (mulai > proyekSelesai) {
+                errors[`${prefix}tanggal_mulai_progres`] = `Tanggal mulai tidak boleh setelah ${formatDate(proyekSelesaiField)}`;
+            }
+        }
+        
+        if (tanggalSelesai) {
+            const selesai = new Date(tanggalSelesai);
+            console.log('Validating tanggal selesai:', selesai);
+            
+            if (selesai < proyekMulai) {
+                errors[`${prefix}tanggal_selesai_progres`] = `Tanggal selesai tidak boleh sebelum ${formatDate(proyekMulaiField)}`;
+            }
+            if (selesai > proyekSelesai) {
+                errors[`${prefix}tanggal_selesai_progres`] = `Tanggal selesai tidak boleh setelah ${formatDate(proyekSelesaiField)}`;
+            }
+        }
+        
+        // Validasi tanggal mulai vs tanggal selesai
+        if (tanggalMulai && tanggalSelesai) {
+            const mulai = new Date(tanggalMulai);
+            const selesai = new Date(tanggalSelesai);
+            console.log('Comparing dates:', { mulai, selesai });
+            
+            if (mulai > selesai) {
+                errors[`${prefix}tanggal_selesai_progres`] = 'Tanggal selesai tidak boleh sebelum tanggal mulai';
+            }
+        }
+        
+        console.log('Validation errors:', errors);
+        return errors;
+    }
+
+    function formatDate(dateString) {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        return date.toLocaleDateString('id-ID');
+    }
 
     function loadDataProgresProyek(page = 1) {
         const proyekId = $('input[name="proyek_id"]').val();
@@ -59,7 +232,7 @@ document.addEventListener('DOMContentLoaded', function () {
         
         $("#tableDataProgresProyek tbody").html(`
             <tr>
-                <td colspan="4" class="text-center py-4">
+                <td colspan="6" class="text-center py-4">
                     <div class="d-flex justify-content-center">
                         <div class="spinner-border spinner-border-sm text-primary" role="status">
                             <span class="visually-hidden">Loading...</span>
@@ -94,6 +267,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
                 
                 if (response.success && response.data) {
+                    // Store project data for date validation
+                    if (response.proyek) {
+                        proyekData = response.proyek;
+                    }
+                    
                     if (Array.isArray(response.data) && response.data.length > 0) {
                         if (response.pagination) {
                             updatePaginationProgresProyekInfo(
@@ -121,7 +299,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 
                 $("#tableDataProgresProyek tbody").html(`
                     <tr>
-                        <td colspan="4" class="text-center text-danger py-4">
+                        <td colspan="6" class="text-center text-danger py-4">
                             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="mb-3">
                                 <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="#FF5757" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                                 <path d="M15 9L9 15" stroke="#FF5757" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -138,7 +316,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-
     // Function to load progress detail when edit button is clicked
     function loadProgresProyekDetail(id) {
         // Show loading state in the modal
@@ -148,7 +325,6 @@ document.addEventListener('DOMContentLoaded', function () {
         
         // Disable form fields while loading
         $('#formEditProgres input, #formEditProgres select, #formEditProgres textarea').prop('disabled', true);
-        
         
         // Fetch progress detail from the server
         $.ajax({
@@ -167,19 +343,24 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (response.success) {
                     const progres = response.data;
                     
+
                     // Set form values
                     $('#edit_progres_id').val(progres.progres_proyek_id);
                     $('#edit_nama_progres').val(progres.nama_progres);
                     $('#edit_status_progres').val(progres.status_progres);
                     $('#edit_persentase_progres').val(progres.persentase_progres);
-                    $('#edit_deskripsi').val(progres.deskripsi_progres);
+                    $('#edit_deskripsi_progres').val(progres.deskripsi_progres);
+
+                    $('#edit_tanggal_mulai_progres').val(progres.tanggal_mulai_progres);
+                    $('#edit_tanggal_selesai_progres').val(progres.tanggal_selesai_progres);
                     
                     // Set hidden fields for assignee
                     $('#edit_assigned_to').val(progres.assigned_to || '');
                     $('#edit_assigned_type_hidden').val(progres.assigned_type || '');
                     
-                    // Set the selected type in dropdown
+                    // Set the selected type in dropdown and trigger status change
                     $('#edit_assigned_type').val(progres.assigned_type || '').trigger('change');
+                    $('#edit_status_progres').trigger('change'); // This will show/hide date fields
                     
                     // Load team members for edit form
                     loadTeamMembersForEdit(function() {
@@ -187,7 +368,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         if (progres.assigned_type && progres.assigned_to) {
                             switch(progres.assigned_type) {
                                 case 'leader':
-                                    $('#edit_leder_assign_id').val(progres.assigned_to).trigger('change');
+                                    $('#edit_leader_assign_id').val(progres.assigned_to).trigger('change');
                                     break;
                                 case 'dosen':
                                     $('#edit_dosen_assign_id').val(progres.assigned_to).trigger('change');
@@ -230,7 +411,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         
         // Show loading indicator
-        $('#edit_leder_assign_id, #edit_dosen_assign_id, #edit_profesional_assign_id, #edit_mahasiswa_assign_id').html('<option value="">Loading...</option>');
+        $('#edit_leader_assign_id, #edit_dosen_assign_id, #edit_profesional_assign_id, #edit_mahasiswa_assign_id').html('<option value="">Loading...</option>');
         
         $.ajax({
             url: `/koordinator/proyek/${proyekId}/team-members`,
@@ -240,15 +421,20 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (response.success) {
                     const data = response.data;
                     
+                    // Store project data if not already available
+                    if (!proyekData && response.proyek) {
+                        proyekData = response.proyek;
+                    }
+                    
                     // Reset all selects with default option
-                    $('#edit_leder_assign_id').empty().append('<option value="">Pilih Project Leader</option>');
+                    $('#edit_leader_assign_id').empty().append('<option value="">Pilih Project Leader</option>');
                     $('#edit_dosen_assign_id').empty().append('<option value="">Pilih Dosen</option>');
                     $('#edit_profesional_assign_id').empty().append('<option value="">Pilih Profesional</option>');
                     $('#edit_mahasiswa_assign_id').empty().append('<option value="">Pilih Mahasiswa</option>');
                     
                     // Add leader if exists
                     if (data.leader) {
-                        $('#edit_leder_assign_id').append(`<option value="${data.leader.project_leader_id}">${data.leader.nama}</option>`);
+                        $('#edit_leader_assign_id').append(`<option value="${data.leader.project_leader_id}">${data.leader.nama}</option>`);
                     }
                     
                     // Add dosen members
@@ -290,12 +476,12 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 } else {
                     console.error('Failed to get team data for edit form:', response.message);
-                    $('#edit_leder_assign_id, #edit_dosen_assign_id, #edit_profesional_assign_id, #edit_mahasiswa_assign_id').html('<option value="">Error loading data</option>');
+                    $('#edit_leader_assign_id, #edit_dosen_assign_id, #edit_profesional_assign_id, #edit_mahasiswa_assign_id').html('<option value="">Error loading data</option>');
                 }
             },
             error: function(xhr, status, error) {
                 console.error('Error fetching team members for edit form:', error);
-                $('#edit_leder_assign_id, #edit_dosen_assign_id, #edit_profesional_assign_id, #edit_mahasiswa_assign_id').html('<option value="">Error loading data</option>');
+                $('#edit_leader_assign_id, #edit_dosen_assign_id, #edit_profesional_assign_id, #edit_mahasiswa_assign_id').html('<option value="">Error loading data</option>');
             }
         });
     }
@@ -339,7 +525,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-
     $('#edit_assigned_type').on('change', function() {
         $('#edit_leader_section, #edit_dosen_section, #edit_profesional_section, #edit_mahasiswa_section').addClass('d-none');
         
@@ -360,7 +545,7 @@ document.addEventListener('DOMContentLoaded', function () {
         $('#edit_assigned_type_hidden').val(selectedType);
     });
 
-    $('#edit_leder_assign_id').on('change', function() {
+    $('#edit_leader_assign_id').on('change', function() {
         $('#edit_assigned_to').val($(this).val());
     });
 
@@ -376,7 +561,6 @@ document.addEventListener('DOMContentLoaded', function () {
         $('#edit_assigned_to').val($(this).val());
     });
 
-
     $('#formEditProgres').on('submit', function(e) {
         e.preventDefault();
         const form = this;
@@ -390,6 +574,23 @@ document.addEventListener('DOMContentLoaded', function () {
         $('.invalid-feedback').text('');
         $('#edit_form_error').addClass('d-none').text('');
         $('.is-invalid').removeClass('is-invalid');
+        
+        // Client-side date validation
+        const status = $('#edit_status_progres').val();
+        const tanggalMulai = $('#edit_tanggal_mulai_progres').val();
+        const tanggalSelesai = $('#edit_tanggal_selesai_progres').val();
+        
+        if (status === 'In Progress') {
+            const dateErrors = validateDates(tanggalMulai, tanggalSelesai, 'edit_');
+            if (Object.keys(dateErrors).length > 0) {
+                for (const field in dateErrors) {
+                    $(`#${field}_error`).text(dateErrors[field]);
+                    $(`#${field.replace('_error', '')}`).addClass('is-invalid');
+                }
+                $(form).data('submitting', false);
+                return;
+            }
+        }
         
         // Get progres ID
         const progresId = $('#edit_progres_id').val();
@@ -468,20 +669,20 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-
     $('#modalEditProgres').on('hidden.bs.modal', function() {
         $('#formEditProgres')[0].reset();
         $('.invalid-feedback').text('');
         $('#edit_form_error').addClass('d-none').text('');
         $('.is-invalid').removeClass('is-invalid');
         
-        // Hide all assignment sections
+        // Hide all assignment sections and date sections
         $('#edit_leader_section, #edit_dosen_section, #edit_profesional_section, #edit_mahasiswa_section').addClass('d-none');
+        $('#edit_tanggal_mulai_progres_section, #edit_tanggal_selesai_progres_section').addClass('d-none');
         
         // Clear select2 selections
         if (typeof $.fn.select2 !== 'undefined') {
             try {
-                $('#edit_leder_assign_id, #edit_dosen_assign_id, #edit_profesional_assign_id, #edit_mahasiswa_assign_id').val(null).trigger('change');
+                $('#edit_leader_assign_id, #edit_dosen_assign_id, #edit_profesional_assign_id, #edit_mahasiswa_assign_id').val(null).trigger('change');
             } catch (e) {
                 console.log('Note: Could not reset Select2 instances in edit form:', e);
             }
@@ -561,22 +762,39 @@ document.addEventListener('DOMContentLoaded', function () {
             // Use the assigned_name from our controller rather than just the ID
             const assignedTo = progresProyek.assigned_name || 'Not Assigned';
             
-            // Determine badge class based on status - FIXED: let instead of const
+            // Format dates
+            const tanggalMulai = progresProyek.tanggal_mulai_progres ? formatDate(progresProyek.tanggal_mulai_progres) : '-';
+            const tanggalSelesai = progresProyek.tanggal_selesai_progres ? formatDate(progresProyek.tanggal_selesai_progres) : '-';
+            const updatedAt = progresProyek.updated_at ? formatDate(progresProyek.updated_at) : formatDate(progresProyek.created_at);
+            
+            // Determine badge class based on status
             let badgeClass = '';
+            let statusHtml = '';
             if (statusProgresProyek === 'Done') {
                 badgeClass = 'badge bg-success';
+                statusHtml = `<span class="${badgeClass}">${statusProgresProyek}</span>`;
             } else if (statusProgresProyek === 'In Progress') {
                 badgeClass = 'badge bg-primary';
-            } else if (statusProgresProyek === 'Inisiasi') {
+                statusHtml = `<span class="${badgeClass}">${statusProgresProyek}</span>`;
+                
+                // Check if overdue
+                if (progresProyek.is_overdue) {
+                    statusHtml += ` <span class="badge bg-danger ms-1">Overdue</span>`;
+                }
+            } else if (statusProgresProyek === 'To Do') {
                 badgeClass = 'badge bg-secondary';
+                statusHtml = `<span class="${badgeClass}">${statusProgresProyek}</span>`;
             }
             
-            // Add row HTML - FIXED: Use ${badgeClass} instead of {badgeClass}
+            // Add row HTML
             tableHtml += `
                 <tr data-id="${progresProyekId}">
                     <td>${namaProgresProyek}</td>
-                    <td><span class="${badgeClass}">${statusProgresProyek}</span></td>
+                    <td>${statusHtml}</td>
                     <td>${assignedTo}</td>
+                    <td>${tanggalMulai}</td>
+                    <td>${tanggalSelesai}</td>
+                    <td>${updatedAt}</td>
                     <td>
                         <div class="d-flex gap-2">
                             <button type="button" class="btn btn-action-detail-progres" data-id="${progresProyekId}" data-bs-toggle="modal" data-bs-target="#modalEditProgres">
@@ -594,7 +812,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     </td>
                 </tr>
             `;
-        });            // Ensure we have valid progresProyek ID and other required fields
+        });
+        
         tableBody.html(tableHtml);
         attachEventHandlers();
     }
@@ -609,7 +828,6 @@ document.addEventListener('DOMContentLoaded', function () {
             const id = $(this).data('id');
             loadProgresProyekDetail(id);
         });
-        
     }
 
     function confirmDeleteProgresProyek(progresProyekId) {
@@ -703,7 +921,7 @@ document.addEventListener('DOMContentLoaded', function () {
         $('#assigned_type_hidden').val(selectedType);
     });
 
-    $('#leder_assign_id').on('change', function() {
+    $('#leader_assign_id').on('change', function() {
         $('#assigned_to').val($(this).val());
     });
 
@@ -719,8 +937,10 @@ document.addEventListener('DOMContentLoaded', function () {
         $('#assigned_to').val($(this).val());
     });
 
-
     $('#btnTambahkanKeDaftarProgres').on('click', function() {
+        console.log('=== DEBUG VALIDASI TANGGAL ===');
+        console.log('proyekData:', proyekData);
+        
         $('.invalid-feedback').text('');
         $('.is-invalid').removeClass('is-invalid');
         $('#form_progres_error').addClass('d-none').text('');
@@ -731,9 +951,16 @@ document.addEventListener('DOMContentLoaded', function () {
         const deskripsiProgres = $('#deskripsi_progres').val();
         const assignedType = $('#assigned_type').val();
         const assignedTo = $('#assigned_to').val();
+        const tanggalMulai = $('#tanggal_mulai_progres').val();
+        const tanggalSelesai = $('#tanggal_selesai_progres').val();
+        
+        console.log('Status:', statusProgres);
+        console.log('Tanggal Mulai:', tanggalMulai);
+        console.log('Tanggal Selesai:', tanggalSelesai);
         
         let isValid = true;
         
+        // Validasi field wajib
         if (!namaProgres) {
             $('#nama_progres').addClass('is-invalid');
             $('#nama_progres_error').text('Nama progres harus diisi');
@@ -751,7 +978,8 @@ document.addEventListener('DOMContentLoaded', function () {
             $('#assigned_type_error').text('Pilih tipe dan nama penanggung jawab');
             isValid = false;
         }
-        
+
+        // Validasi persentase
         if (persentaseProgres !== '') {
             if (isNaN(persentaseProgres)) {
                 $('#persentase_progres').addClass('is-invalid');
@@ -767,14 +995,78 @@ document.addEventListener('DOMContentLoaded', function () {
             $('#persentase_progres').val('0');
         }
         
+        // ========= VALIDASI TANGGAL YANG DIPERBAIKI =========
+        if (statusProgres === 'In Progress') {
+            console.log('Validating dates for In Progress status...');
+            
+            // Reset error messages untuk tanggal
+            $('#tanggal_mulai_progres_error').text('');
+            $('#tanggal_selesai_progres_error').text('');
+            $('#tanggal_mulai_progres').removeClass('is-invalid');
+            $('#tanggal_selesai_progres').removeClass('is-invalid');
+            
+            // Check apakah tanggal diisi
+            if (!tanggalMulai) {
+                $('#tanggal_mulai_progres').addClass('is-invalid');
+                $('#tanggal_mulai_progres_error').text('Tanggal mulai harus diisi untuk status In Progress');
+                isValid = false;
+                console.log('ERROR: Tanggal mulai tidak diisi');
+            }
+            
+            if (!tanggalSelesai) {
+                $('#tanggal_selesai_progres').addClass('is-invalid');
+                $('#tanggal_selesai_progres_error').text('Tanggal selesai harus diisi untuk status In Progress');
+                isValid = false;
+                console.log('ERROR: Tanggal selesai tidak diisi');
+            }
+            
+            // Cek apakah proyekData sudah ada
+            if (!proyekData) {
+                console.log('ERROR: proyekData belum dimuat!');
+                $('#form_progres_error').removeClass('d-none').text('Data proyek belum dimuat. Tutup dan buka kembali modal ini.');
+                isValid = false;
+            } else {
+                console.log('proyekData tersedia:', proyekData);
+                
+                // Validasi tanggal dengan fungsi validateDates (tanpa prefix untuk form tambah)
+                if (tanggalMulai || tanggalSelesai) {
+                    console.log('Memanggil validateDates...');
+                    const dateErrors = validateDates(tanggalMulai, tanggalSelesai, '');
+                    console.log('Date errors:', dateErrors);
+                    
+                    // Check apakah ada error dari validateDates dan tampilkan pesan detail
+                    if (Object.keys(dateErrors).length > 0) {
+                        for (const field in dateErrors) {
+                            console.log(`Setting error untuk ${field}: ${dateErrors[field]}`);
+                            $(`#${field}_error`).text(dateErrors[field]);
+                            $(`#${field}`).addClass('is-invalid');
+                        }
+                        isValid = false;
+                    }
+                }
+            }
+        } else {
+            // Jika bukan In Progress, clear error messages untuk tanggal
+            $('#tanggal_mulai_progres_error').text('');
+            $('#tanggal_selesai_progres_error').text('');
+            $('#tanggal_mulai_progres').removeClass('is-invalid');
+            $('#tanggal_selesai_progres').removeClass('is-invalid');
+        }
+        
+        console.log('isValid setelah semua validasi:', isValid);
+        
+        // Jika ada error, stop dan jangan tambahkan ke daftar
         if (!isValid) {
+            console.log('VALIDASI GAGAL - Data tidak akan ditambahkan ke daftar');
             return;
         }
+        
+        console.log('VALIDASI BERHASIL - Data akan ditambahkan ke daftar');
         
         // Get assigned name for display
         let assignedName = 'Tidak ditugaskan';
         if (assignedType === 'leader') {
-            assignedName = $('#leder_assign_id option:selected').text().trim();
+            assignedName = $('#leader_assign_id option:selected').text().trim();
         } else if (assignedType === 'dosen') {
             assignedName = $('#dosen_assign_id option:selected').text().trim();
         } else if (assignedType === 'profesional') {
@@ -791,7 +1083,9 @@ document.addEventListener('DOMContentLoaded', function () {
             deskripsi_progres: deskripsiProgres,
             assigned_type: assignedType,
             assigned_to: assignedTo,
-            assigned_name: assignedName
+            assigned_name: assignedName,
+            tanggal_mulai_progres: tanggalMulai,
+            tanggal_selesai_progres: tanggalSelesai
         };
         
         // Add to progress list
@@ -802,15 +1096,121 @@ document.addEventListener('DOMContentLoaded', function () {
         // Update the display table
         updateProgressTable();
         
+        // ========= PERBAIKAN: RESET FORM DENGAN LENGKAP =========
         // Reset form fields
         $('#nama_progres').val('');
-        $('#status_progres').val('');
+        $('#status_progres').val('').trigger('change'); // This will hide date fields
+        $('#persentase_progres').val('');
+        $('#deskripsi_progres').val('');
+        $('#assigned_type').val('').trigger('change'); // This will hide assignment sections
+        $('#assigned_to').val('');
+        $('#assigned_type_hidden').val('');
+        
+        // Reset tanggal fields
+        $('#tanggal_mulai_progres').val('');
+        $('#tanggal_selesai_progres').val('');
+        
+        // Hide all assignment sections explicitly
+        $('#leader_section, #dosen_section, #profesional_section, #mahasiswa_section').addClass('d-none');
+        
+        // Reset all Select2 dropdowns explicitly
+        try {
+            if (typeof $.fn.select2 !== 'undefined') {
+                // Reset Select2 values to empty
+                $('#leader_assign_id').val(null).trigger('change');
+                $('#dosen_assign_id').val(null).trigger('change');
+                $('#profesional_assign_id').val(null).trigger('change');
+                $('#mahasiswa_assign_id').val(null).trigger('change');
+                
+                // Alternative method - set to first option (empty option)
+                $('#leader_assign_id').prop('selectedIndex', 0);
+                $('#dosen_assign_id').prop('selectedIndex', 0);
+                $('#profesional_assign_id').prop('selectedIndex', 0);
+                $('#mahasiswa_assign_id').prop('selectedIndex', 0);
+                
+                // Force refresh Select2 display
+                $('#leader_assign_id').select2('destroy').select2({
+                    theme: 'bootstrap-5',
+                    dropdownParent: $('#modalTambahProgresFromKoor'),
+                    placeholder: 'Pilih Project Leader',
+                    width: '100%'
+                });
+                
+                $('#dosen_assign_id').select2('destroy').select2({
+                    theme: 'bootstrap-5',
+                    dropdownParent: $('#modalTambahProgresFromKoor'),
+                    placeholder: 'Pilih Dosen',
+                    width: '100%'
+                });
+                
+                $('#profesional_assign_id').select2('destroy').select2({
+                    theme: 'bootstrap-5',
+                    dropdownParent: $('#modalTambahProgresFromKoor'),
+                    placeholder: 'Pilih Profesional',
+                    width: '100%'
+                });
+                
+                $('#mahasiswa_assign_id').select2('destroy').select2({
+                    theme: 'bootstrap-5',
+                    dropdownParent: $('#modalTambahProgresFromKoor'),
+                    placeholder: 'Pilih Mahasiswa',
+                    width: '100%'
+                });
+            }
+        } catch (e) {
+            console.log('Note: Could not reset Select2 instances:', e);
+            
+            // Fallback: reset using standard jQuery methods
+            $('#leader_assign_id').val('');
+            $('#dosen_assign_id').val('');
+            $('#profesional_assign_id').val('');
+            $('#mahasiswa_assign_id').val('');
+        }
+        
+        // Clear any remaining error messages
+        $('.invalid-feedback').text('');
+        $('.is-invalid').removeClass('is-invalid');
+        $('#form_progres_error').addClass('d-none');
+        
+        console.log('=== FORM BERHASIL DIRESET ===');
+        console.log('=== SELESAI DEBUG ===');
+    });
+
+    function resetFormProgresCompletely() {
+        // Reset semua field input
+        $('#nama_progres').val('');
+        $('#status_progres').val('').trigger('change');
         $('#persentase_progres').val('');
         $('#deskripsi_progres').val('');
         $('#assigned_type').val('').trigger('change');
         $('#assigned_to').val('');
+        $('#assigned_type_hidden').val('');
+        $('#tanggal_mulai_progres').val('');
+        $('#tanggal_selesai_progres').val('');
+        
+        // Hide all sections
+        $('#leader_section, #dosen_section, #profesional_section, #mahasiswa_section').addClass('d-none');
+        $('#tanggal_mulai_progres_section, #tanggal_selesai_progres_section').addClass('d-none');
+        
+        // Reset Select2 dropdowns
+        try {
+            if (typeof $.fn.select2 !== 'undefined') {
+                $('#leader_assign_id, #dosen_assign_id, #profesional_assign_id, #mahasiswa_assign_id').each(function() {
+                    $(this).val(null).trigger('change');
+                    $(this).prop('selectedIndex', 0);
+                });
+            }
+        } catch (e) {
+            console.log('Could not reset Select2:', e);
+            $('#leader_assign_id, #dosen_assign_id, #profesional_assign_id, #mahasiswa_assign_id').val('');
+        }
+        
+        // Clear errors
+        $('.invalid-feedback').text('');
+        $('.is-invalid').removeClass('is-invalid');
         $('#form_progres_error').addClass('d-none');
-    });
+    }
+
 
     $('#formTambahDataProgres').on('submit', function(e) {
         e.preventDefault();
@@ -904,7 +1304,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-
     function updateProgressTable() {
         const tableBody = $('#daftarProgres');
         
@@ -913,16 +1312,21 @@ document.addEventListener('DOMContentLoaded', function () {
         if (progressList.length === 0) {
             tableBody.append(`
                 <tr id="emptyRowProgres">
-                    <td colspan="5" class="text-center">Belum ada progres yang ditambahkan ke daftar</td>
+                    <td colspan="7" class="text-center">Belum ada progres yang ditambahkan ke daftar</td>
                 </tr>
             `);
         } else {
             progressList.forEach((item, index) => {
+                const tanggalMulai = item.tanggal_mulai_progres ? formatDate(item.tanggal_mulai_progres) : '-';
+                const tanggalSelesai = item.tanggal_selesai_progres ? formatDate(item.tanggal_selesai_progres) : '-';
+                
                 tableBody.append(`
                     <tr>
                         <td>${item.nama_progres}</td>
                         <td>${item.status_progres}</td>
                         <td>${item.persentase_progres}%</td>
+                        <td>${tanggalMulai}</td>
+                        <td>${tanggalSelesai}</td>
                         <td>${item.assigned_name}</td>
                         <td>
                             <button type="button" class="btn btn-sm btn-danger remove-progres" data-index="${index}">
@@ -956,7 +1360,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        $('#leder_assign_id, #dosen_assign_id, #profesional_assign_id, #mahasiswa_assign_id').html('<option value="">Loading...</option>');
+        $('#leader_assign_id, #dosen_assign_id, #profesional_assign_id, #mahasiswa_assign_id').html('<option value="">Loading...</option>');
         
         $.ajax({
             url: `/koordinator/proyek/${proyekId}/team-members`,
@@ -966,15 +1370,20 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (response.success) {
                     const data = response.data;
                     
+                    // Store project data if available
+                    if (response.proyek) {
+                        proyekData = response.proyek;
+                    }
+                    
                     // Reset all selects with default option - corrected ID selectors to match HTML
-                    $('#leder_assign_id').empty().append('<option value="">Pilih Project Leader</option>');
+                    $('#leader_assign_id').empty().append('<option value="">Pilih Project Leader</option>');
                     $('#dosen_assign_id').empty().append('<option value="">Pilih Dosen</option>');
                     $('#profesional_assign_id').empty().append('<option value="">Pilih Profesional</option>');
                     $('#mahasiswa_assign_id').empty().append('<option value="">Pilih Mahasiswa</option>');
                     
                     // Add leader if exists
                     if (data.leader) {
-                        $('#leder_assign_id').append(`<option value="${data.leader.project_leader_id}">${data.leader.nama}</option>`)
+                        $('#leader_assign_id').append(`<option value="${data.leader.project_leader_id}">${data.leader.nama}</option>`)
                     }
                     
                     // Add dosen members
@@ -1068,21 +1477,20 @@ document.addEventListener('DOMContentLoaded', function () {
                     }, 100); 
                 } else {
                     console.error('Failed to get team data:', response.message);
-                    $('#leder_assign_id, #dosen_assign_id, #profesional_assign_id, #mahasiswa_assign_id').html('<option value="">Error loading data</option>');
+                    $('#leader_assign_id, #dosen_assign_id, #profesional_assign_id, #mahasiswa_assign_id').html('<option value="">Error loading data</option>');
                 }
             },
             error: function(error) {
                 console.error('Error fetching team members:', error);
-                $('#leder_assign_id, #dosen_assign_id, #profesional_assign_id, #mahasiswa_assign_id').html('<option value="">Error loading data</option>');
+                $('#leader_assign_id, #dosen_assign_id, #profesional_assign_id, #mahasiswa_assign_id').html('<option value="">Error loading data</option>');
                 alert('Gagal mengambil data tim proyek. Silakan coba lagi.');
             }
         });
     }
 
-
     function resetProgresProyekForm() {
         $("#nama_progres").val('');
-        $("#status_progres").val('');
+        $("#status_progres").val('').trigger('change'); // This will hide date sections
         $("#persentase_progres").val('');
         $("#assigned_type").val('').trigger('change');
         $("#deskripsi_progres").val('');
@@ -1095,20 +1503,12 @@ document.addEventListener('DOMContentLoaded', function () {
         $("#form_progres_error").addClass('d-none').empty(); 
     }
 
-
     $('#modalTambahProgresFromKoor').on('hidden.bs.modal', function () {
         $('#formTambahDataProgres')[0].reset();
-        $('.invalid-feedback').text('');
-        $('#form_progres_error').addClass('d-none').text('');
+        resetFormProgresCompletely();
         progressList = [];
         $('#progresJsonData').val('[]');
         $('#isSingleProgres').val('1');
         updateProgressTable();
-        
-        // Reset select elements
-        $('#assigned_type').val('').trigger('change');
-        $('#leader_section, #dosen_section, #profesional_section, #mahasiswa_section').addClass('d-none');
     });
-    
-    
 });

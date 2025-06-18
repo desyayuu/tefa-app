@@ -54,7 +54,7 @@ Route::middleware([ProfesionalMiddleware::class])->prefix('profesional')->group(
         Route::get('/{id}/detail', [DataProgresProyekProfesionalController::class, 'getProgresDetail'])->name('profesional.getProgresDetail');
         Route::post('/store', [DataProgresProyekProfesionalController::class, 'storeProgresproyek'])->name('profesional.storeProgres');
         Route::put('/{id}/update', [DataProgresProyekProfesionalController::class, 'updateProgresProyek'])->name('profesional.updateProgres');
-        Route::delete('/{id/delete', [DataProgresProyekProfesionalController::class, 'deleteProgresProyek'])->name('profesional.deleteDataProgres');
+        Route::delete('/{id}/delete', [DataProgresProyekProfesionalController::class, 'deleteProgresProyek'])->name('profesional.deleteDataProgres');
         //My Progres
         Route::get('/{id}/current-user-info', [DataProgresProyekProfesionalController::class, 'getCurrentUserInfo'])->name('profesional.proyek.current-user-info');
         Route::get('/{id}/my-progres/get', [DataProgresProyekProfesionalController::class, 'getMyProgresByProyek'])->name('profesional.getMyProgresByProyek');

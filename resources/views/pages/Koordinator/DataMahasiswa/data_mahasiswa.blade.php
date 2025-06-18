@@ -243,12 +243,11 @@
                                     <div class="invalid-feedback" id="deskripsi_diri_error">
                                         @error('deskripsi_diri'){{ $message }}@enderror
                                     </div>
-                                    <small class="text-muted">Jelaskan tentang kepribadian, motivasi, dan tujuan Anda dengan formatting yang menarik</small>
                                 </div>
 
                                 <!-- Kelebihan -->
                                 <div class="mb-3">
-                                    <label for="kelebihan_diri" class="form-label">Kelebihan & Keahlian</label>
+                                    <label for="kelebihan_diri" class="form-label">Kelebihan Diri</label>
                                     <textarea class="form-control ckeditor @error('kelebihan_diri') is-invalid @enderror" 
                                               id="kelebihan_diri" 
                                               name="kelebihan_diri" 
@@ -256,12 +255,11 @@
                                     <div class="invalid-feedback" id="kelebihan_error">
                                         @error('kelebihan_diri'){{ $message }}@enderror
                                     </div>
-                                    <small class="text-muted">Sebutkan 3 kelebihan</small>
                                 </div>
 
                                 <!-- Kekurangan -->
                                 <div class="mb-3">
-                                    <label for="kekurangan_diri" class="form-label">Area yang Ingin Dikembangkan</label>
+                                    <label for="kekurangan_diri" class="form-label">Kekurangan Diri</label>
                                     <textarea class="form-control ckeditor @error('kekurangan_diri') is-invalid @enderror" 
                                               id="kekurangan_diri" 
                                               name="kekurangan_diri" 

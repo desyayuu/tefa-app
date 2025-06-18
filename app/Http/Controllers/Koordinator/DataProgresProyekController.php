@@ -42,7 +42,8 @@ class DataProgresProyekController extends Controller
         if ($search) {
             $query->where(function($q) use ($search) {
                 $q->where('nama_progres', 'like', "%{$search}%")
-                ->orWhere('deskripsi_progres', 'like', "%{$search}%");
+                ->orWhere('deskripsi_progres', 'like', "%{$search}%")
+                ->orWhere('status_progres', 'like', "%{$search}%");
             });
         }
         
@@ -50,7 +51,7 @@ class DataProgresProyekController extends Controller
         $progres = $query->orderBy('created_at', 'asc')
             ->paginate($perPageProgresProyek, ['*'], 'page', $page);
         
-        // Process each item to add assignee name
+        // Process each item to add assignee name and check overdue status
         $progres->getCollection()->transform(function ($item) {
             if (!empty($item->project_leader_id)) {
                 $leader = DB::table('t_project_leader')
@@ -110,6 +111,14 @@ class DataProgresProyekController extends Controller
                 $item->assigned_name = 'Not Assigned';
             }
             
+            // Check if task is overdue
+            $item->is_overdue = false;
+            if ($item->status_progres === 'In Progress' && $item->tanggal_selesai_progres) {
+                $currentDate = Carbon::now();
+                $endDate = Carbon::parse($item->tanggal_selesai_progres);
+                $item->is_overdue = $currentDate->gt($endDate);
+            }
+            
             return $item;
         });
         
@@ -131,17 +140,18 @@ class DataProgresProyekController extends Controller
                     'total' => $progres->total(),
                     'last_page' => $progres->lastPage(),
                     'html' => $paginationHtml
-                ]
+                ],
+                'proyek' => $proyek
             ]);
         }
         
-        // For non-AJAX requests, return a view
         return view('koordinator.progres-proyek.index', [
             'proyek' => $proyek,
             'progres' => $progres,
             'search' => $search
         ]);
     }
+
     public function getTeamMembers($proyekId)
     {
         try {
@@ -233,7 +243,8 @@ class DataProgresProyekController extends Controller
                     'dosen' => $dosenMembers,
                     'profesional' => $profesionalMembers,
                     'mahasiswa' => $mahasiswaMembers
-                ]
+                ],
+                'proyek' => $proyek // Include project info for date validation
             ]);
             
         } catch (\Exception $e) {
@@ -245,9 +256,83 @@ class DataProgresProyekController extends Controller
         }
     }
 
+    private function validateProgressDates(Request $request, $proyekId)
+    {
+        // Get project dates
+        $proyek = DB::table('m_proyek')
+            ->where('proyek_id', $proyekId)
+            ->first();
+            
+        if (!$proyek) {
+            return ['success' => false, 'message' => 'Proyek tidak ditemukan'];
+        }
+        
+        $errors = [];
+        
+        // Valdisasi tanggal berdasarkan status progres
+        if ($request->status_progres === 'In Progress') {
+            // tanggal mulai dan selesai jika in progres harus diisi
+            if (empty($request->tanggal_mulai_progres)) {
+                $errors['tanggal_mulai_progres'] = ['Actual start date is required for In Progress status'];
+            }
+            if (empty($request->tanggal_selesai_progres)) {
+                $errors['tanggal_selesai_progres'] = ['Expected end date is required for In Progress status'];
+            }
+        }
+        
+        // Validasi dengan range tanggal proyek
+        if ($request->tanggal_mulai_progres || $request->tanggal_selesai_progres) {
+            $proyekMulai = Carbon::parse($proyek->tanggal_mulai);
+            $proyekSelesai = Carbon::parse($proyek->tanggal_selesai);
+            
+            // Validasi tanggal mulai jika diisi
+            if ($request->tanggal_mulai_progres) {
+                $tanggalMulai = Carbon::parse($request->tanggal_mulai_progres);
+                
+                if ($tanggalMulai->lt($proyekMulai)) {
+                    $errors['tanggal_mulai_progres'] = ['Start date cannot be before project start date (' . $proyekMulai->format('d-m-Y') . ')'];
+                }
+                
+                if ($tanggalMulai->gt($proyekSelesai)) {
+                    $errors['tanggal_mulai_progres'] = ['Start date cannot be after project end date (' . $proyekSelesai->format('d-m-Y') . ')'];
+                }
+            }
+            
+            // Validasi tanggal selesai jika diisi
+            if ($request->tanggal_selesai_progres) {
+                $tanggalSelesai = Carbon::parse($request->tanggal_selesai_progres);
+                
+                if ($tanggalSelesai->lt($proyekMulai)) {
+                    $errors['tanggal_selesai_progres'] = ['End date cannot be before project start date (' . $proyekMulai->format('d-m-Y') . ')'];
+                }
+                
+                if ($tanggalSelesai->gt($proyekSelesai)) {
+                    $errors['tanggal_selesai_progres'] = ['End date cannot be after project end date (' . $proyekSelesai->format('d-m-Y') . ')'];
+                }
+            }
+            
+            // Validasi start vs end date jika keduanya diisi
+            if ($request->tanggal_mulai_progres && $request->tanggal_selesai_progres) {
+                $tanggalMulai = Carbon::parse($request->tanggal_mulai_progres);
+                $tanggalSelesai = Carbon::parse($request->tanggal_selesai_progres);
+                
+                if ($tanggalMulai->gt($tanggalSelesai)) {
+                    $errors['tanggal_selesai_progres'] = ['End date cannot be before start date'];
+                }
+            }
+        }
+        
+        return ['success' => empty($errors), 'errors' => $errors];
+    }
+
     public function store(Request $request)
     {
         try {
+            // convert tanggal into null jika tidak diisi
+            $convertEmptyToNull = function($value) {
+                return empty($value) ? null : $value;
+            };
+            
             // Check if single or multiple progres entries
             $isSingle = $request->input('is_single', 1);
             
@@ -257,7 +342,9 @@ class DataProgresProyekController extends Controller
                     'proyek_id' => 'required|string|exists:m_proyek,proyek_id',
                     'nama_progres' => 'required|string|max:255',
                     'deskripsi_progres' => 'nullable|string',
-                    'status_progres' => 'required|in:Inisiasi,In Progress,Done',
+                    'status_progres' => 'required|in:To Do,In Progress,Done',
+                    'tanggal_mulai_progres' => 'nullable|date',
+                    'tanggal_selesai_progres' => 'nullable|date',
                     'persentase_progres' => 'required|integer|min:0|max:100',
                     'assigned_type' => 'nullable|in:leader,dosen,profesional,mahasiswa',
                     'assigned_to' => 'nullable|string',
@@ -268,6 +355,16 @@ class DataProgresProyekController extends Controller
                         'success' => false,
                         'message' => 'Validasi gagal',
                         'errors' => $validator->errors()
+                    ], 422);
+                }
+                
+                // Validate progress dates
+                $dateValidation = $this->validateProgressDates($request, $request->proyek_id);
+                if (!$dateValidation['success']) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Validasi tanggal gagal',
+                        'errors' => $dateValidation['errors']
                     ], 422);
                 }
                 
@@ -309,6 +406,8 @@ class DataProgresProyekController extends Controller
                     'nama_progres' => $request->nama_progres,
                     'deskripsi_progres' => $request->deskripsi_progres,
                     'status_progres' => $request->status_progres,
+                    'tanggal_mulai_progres' => $convertEmptyToNull($request->tanggal_mulai_progres),  
+                    'tanggal_selesai_progres' => $convertEmptyToNull($request->tanggal_selesai_progres),
                     'persentase_progres' => $request->persentase_progres,
                     'created_at' => Carbon::now(),
                     'created_by' => session('user_id', auth()->id()),
@@ -323,7 +422,6 @@ class DataProgresProyekController extends Controller
                 ]);
                 
             } else {
-                // Handle multiple progres entries
                 $progresData = json_decode($request->input('progres_data'), true);
                 
                 if (empty($progresData) || !is_array($progresData)) {
@@ -339,6 +437,13 @@ class DataProgresProyekController extends Controller
                 DB::beginTransaction();
                 
                 foreach ($progresData as $index => $progres) {
+                    $mockRequest = new Request($progres);
+                    $dateValidation = $this->validateProgressDates($mockRequest, $request->proyek_id);
+                    if (!$dateValidation['success']) {
+                        $errors[] = "Error pada data ke-" . ($index + 1) . ": " . json_encode($dateValidation['errors']);
+                        continue;
+                    }
+                    
                     // Generate UUID for each progres
                     $progresId = (string) Str::uuid();
                     
@@ -377,6 +482,8 @@ class DataProgresProyekController extends Controller
                             'assigned_to' => $progres['assigned_to'] ?? null,
                             'nama_progres' => $progres['nama_progres'],
                             'deskripsi_progres' => $progres['deskripsi_progres'] ?? null,
+                            'tanggal_mulai_progres' => $convertEmptyToNull($progres['tanggal_mulai_progres'] ?? null),   
+                            'tanggal_selesai_progres' => $convertEmptyToNull($progres['tanggal_selesai_progres'] ?? null), 
                             'status_progres' => $progres['status_progres'],
                             'persentase_progres' => $progres['persentase_progres'],
                             'created_at' => Carbon::now(),
@@ -411,7 +518,6 @@ class DataProgresProyekController extends Controller
             }
             
         } catch (\Exception $e) {
-            // If transaction was started, roll it back
             if (DB::transactionLevel() > 0) {
                 DB::rollBack();
             }
@@ -427,7 +533,6 @@ class DataProgresProyekController extends Controller
     public function deleteDataProgresProyek($id)
     {
         try {
-            // Check if progres exists
             $progres = DB::table('t_progres_proyek')
                 ->where('progres_proyek_id', $id)
                 ->whereNull('deleted_at')
@@ -440,7 +545,6 @@ class DataProgresProyekController extends Controller
                 ], 404);
             }
             
-            // Soft delete the progres
             DB::table('t_progres_proyek')
                 ->where('progres_proyek_id', $id)
                 ->update([
@@ -554,14 +658,20 @@ class DataProgresProyekController extends Controller
     public function update($id, Request $request)
     {
         try {
+            $convertEmptyToNull = function($value) {
+                return empty($value) ? null : $value;
+            };
+            
             // Validate the request
             $validator = Validator::make($request->all(), [
                 'nama_progres' => 'required|string|max:255',
-                'status_progres' => 'required|in:Inisiasi,In Progress,Done',
+                'status_progres' => 'required|in:To Do,In Progress,Done',
                 'persentase_progres' => 'required|integer|min:0|max:100',
                 'deskripsi_progres' => 'nullable|string',
                 'assigned_to' => 'nullable|string',
                 'assigned_type' => 'nullable|in:leader,dosen,profesional,mahasiswa',
+                'tanggal_mulai_progres' => 'nullable|date',
+                'tanggal_selesai_progres' => 'nullable|date',
             ]);
             
             if ($validator->fails()) {
@@ -583,6 +693,41 @@ class DataProgresProyekController extends Controller
                     'success' => false,
                     'message' => 'Data progres tidak ditemukan'
                 ], 404);
+            }
+            
+            $tanggalMulaiToSave = null;
+            $tanggalSelesaiToSave = null;
+            
+            // Validasi tanggal berdasarkan status
+            $dateValidation = $this->validateProgressDates($request, $progres->proyek_id);
+            if (!$dateValidation['success']) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validasi tanggal gagal',
+                    'errors' => $dateValidation['errors']
+                ], 422);
+            }
+            
+            if ($request->status_progres === 'In Progress') {
+                // get data tanggal dari request jika ada, atau convert ke null jika kosong
+                $tanggalMulaiToSave = $convertEmptyToNull($request->tanggal_mulai_progres);
+                $tanggalSelesaiToSave = $convertEmptyToNull($request->tanggal_selesai_progres);
+                
+            } else {
+                // untuk to do, get tanggal dari request jika ada, atau preserve tanggal lama
+                if (!empty($request->tanggal_mulai_progres)) {
+                    $tanggalMulaiToSave = $request->tanggal_mulai_progres;
+                } else {
+                    // tanggal yang sudah ada atau bisa null
+                    $tanggalMulaiToSave = $progres->tanggal_mulai_progres;
+                }
+                
+                if (!empty($request->tanggal_selesai_progres)) {
+                    $tanggalSelesaiToSave = $request->tanggal_selesai_progres;
+                } else {
+                    // tanggal yang sudah ada atau bisa null
+                    $tanggalSelesaiToSave = $progres->tanggal_selesai_progres;
+                }
             }
             
             // Prepare assignment data
@@ -609,7 +754,7 @@ class DataProgresProyekController extends Controller
                 }
             }
             
-            // Update the record
+            // Update the record dengan tanggal yang sudah diproses
             DB::table('t_progres_proyek')
                 ->where('progres_proyek_id', $id)
                 ->update([
@@ -622,6 +767,8 @@ class DataProgresProyekController extends Controller
                     'project_member_profesional_id' => $projectMemberProfesionalId,
                     'project_member_mahasiswa_id' => $projectMemberMahasiswaId,
                     'assigned_to' => $assignedTo,
+                    'tanggal_mulai_progres' => $tanggalMulaiToSave,    
+                    'tanggal_selesai_progres' => $tanggalSelesaiToSave,
                     'updated_at' => Carbon::now(),
                     'updated_by' => auth()->id()
                 ]);
@@ -640,5 +787,5 @@ class DataProgresProyekController extends Controller
                 'message' => 'Terjadi kesalahan saat memperbarui data: ' . $e->getMessage()
             ], 500);
         }
-}
+    }
 }

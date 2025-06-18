@@ -28,7 +28,6 @@ class DataProgresProyekDosenController extends Controller
         return ['isLeader' => $isLeader, 'isMember' => $isMember];
     }
 
-    // Untuk Get Team Members
     public function getTeamMembers($proyekId)
     {
         try {
@@ -41,7 +40,7 @@ class DataProgresProyekDosenController extends Controller
                 ], 401);
             }
 
-            // TAMBAHAN: Check role dosen dalam proyek
+            // Check role dosen dalam proyek
             $roleCheck = $this->checkDosenRole($proyekId, $dosenId);
             
             if (!$roleCheck['isLeader'] && !$roleCheck['isMember']) {
@@ -74,7 +73,6 @@ class DataProgresProyekDosenController extends Controller
                 
             if ($leader) {
                 if ($leader->leader_type === 'Dosen') {
-                    // Get leader detail if leader is dosen
                     $leaderDetail = DB::table('d_dosen')
                         ->where('dosen_id', $leader->leader_id)
                         ->select(
@@ -84,7 +82,6 @@ class DataProgresProyekDosenController extends Controller
                         )
                         ->first();
                 } else if ($leader->leader_type === 'Profesional') {
-                    // Get leader detail if leader is profesional
                     $leaderDetail = DB::table('d_profesional')
                         ->where('profesional_id', $leader->leader_id)
                         ->select(
@@ -96,64 +93,45 @@ class DataProgresProyekDosenController extends Controller
                 }
             }
             
-            // Get team members - untuk member, mungkin perlu dibatasi
-            $dosenMembers = collect();
-            $profesionalMembers = collect();
-            $mahasiswaMembers = collect();
+            $dosenMembers = DB::table('t_project_member_dosen')
+                ->join('d_dosen', 't_project_member_dosen.dosen_id', '=', 'd_dosen.dosen_id')
+                ->where('t_project_member_dosen.proyek_id', $proyekId)
+                ->whereNull('t_project_member_dosen.deleted_at')
+                ->select(
+                    't_project_member_dosen.project_member_dosen_id',
+                    'd_dosen.dosen_id',
+                    'd_dosen.nama_dosen'
+                )
+                ->get();
+                
+            $profesionalMembers = DB::table('t_project_member_profesional')
+                ->join('d_profesional', 't_project_member_profesional.profesional_id', '=', 'd_profesional.profesional_id')
+                ->where('t_project_member_profesional.proyek_id', $proyekId)
+                ->whereNull('t_project_member_profesional.deleted_at')
+                ->select(
+                    't_project_member_profesional.project_member_profesional_id',
+                    'd_profesional.profesional_id',
+                    'd_profesional.nama_profesional'
+                )
+                ->get();
+                
+            $mahasiswaMembers = DB::table('t_project_member_mahasiswa')
+                ->join('d_mahasiswa', 't_project_member_mahasiswa.mahasiswa_id', '=', 'd_mahasiswa.mahasiswa_id')
+                ->where('t_project_member_mahasiswa.proyek_id', $proyekId)
+                ->whereNull('t_project_member_mahasiswa.deleted_at')
+                ->select(
+                    't_project_member_mahasiswa.project_member_mahasiswa_id',
+                    'd_mahasiswa.mahasiswa_id',
+                    'd_mahasiswa.nama_mahasiswa'
+                )
+                ->get();
             
-            if ($roleCheck['isLeader']) {
-                // Leader bisa lihat semua anggota
-                $dosenMembers = DB::table('t_project_member_dosen')
-                    ->join('d_dosen', 't_project_member_dosen.dosen_id', '=', 'd_dosen.dosen_id')
-                    ->where('t_project_member_dosen.proyek_id', $proyekId)
-                    ->whereNull('t_project_member_dosen.deleted_at')
-                    ->select(
-                        't_project_member_dosen.project_member_dosen_id',
-                        'd_dosen.dosen_id',
-                        'd_dosen.nama_dosen'
-                    )
-                    ->get();
-                    
-                $profesionalMembers = DB::table('t_project_member_profesional')
-                    ->join('d_profesional', 't_project_member_profesional.profesional_id', '=', 'd_profesional.profesional_id')
-                    ->where('t_project_member_profesional.proyek_id', $proyekId)
-                    ->whereNull('t_project_member_profesional.deleted_at')
-                    ->select(
-                        't_project_member_profesional.project_member_profesional_id',
-                        'd_profesional.profesional_id',
-                        'd_profesional.nama_profesional'
-                    )
-                    ->get();
-                    
-                $mahasiswaMembers = DB::table('t_project_member_mahasiswa')
-                    ->join('d_mahasiswa', 't_project_member_mahasiswa.mahasiswa_id', '=', 'd_mahasiswa.mahasiswa_id')
-                    ->where('t_project_member_mahasiswa.proyek_id', $proyekId)
-                    ->whereNull('t_project_member_mahasiswa.deleted_at')
-                    ->select(
-                        't_project_member_mahasiswa.project_member_mahasiswa_id',
-                        'd_mahasiswa.mahasiswa_id',
-                        'd_mahasiswa.nama_mahasiswa'
-                    )
-                    ->get();
-            } else {
-                // Member hanya bisa lihat diri sendiri
-                $dosenMembers = DB::table('t_project_member_dosen')
-                    ->join('d_dosen', 't_project_member_dosen.dosen_id', '=', 'd_dosen.dosen_id')
-                    ->where('t_project_member_dosen.proyek_id', $proyekId)
-                    ->where('t_project_member_dosen.dosen_id', $dosenId)
-                    ->whereNull('t_project_member_dosen.deleted_at')
-                    ->select(
-                        't_project_member_dosen.project_member_dosen_id',
-                        'd_dosen.dosen_id',
-                        'd_dosen.nama_dosen'
-                    )
-                    ->get();
-            }
                 
             return response()->json([
                 'success' => true,
-                'isLeader' => $roleCheck['isLeader'], // TAMBAHAN: Return role info
-                'isMember' => $roleCheck['isMember'],   // TAMBAHAN: Return role info
+                'isLeader' => $roleCheck['isLeader'],
+                'isMember' => $roleCheck['isMember'],
+                'proyek' => $proyek, 
                 'data' => [
                     'leader' => $leaderDetail,
                     'dosen' => $dosenMembers,
@@ -170,7 +148,6 @@ class DataProgresProyekDosenController extends Controller
         }
     }
 
-    // Untuk get progres proyek based on selected ID proyek 
     public function getProgresByProyek($id, Request $request){
         $dosenId = session('dosen_id');
         
@@ -210,7 +187,7 @@ class DataProgresProyekDosenController extends Controller
         $perPageProgresProyek = $request->input('per_page_progres_proyek', 3);
         $page = $request->input('page', 1);
         
-        // PERBAIKAN: Enhanced query dengan JOIN untuk search assignee names
+        // Enhanced query dengan JOIN untuk search assignee names
         $query = DB::table('t_progres_proyek')
             ->where('t_progres_proyek.proyek_id', $id)
             ->whereNull('t_progres_proyek.deleted_at')
@@ -219,18 +196,20 @@ class DataProgresProyekDosenController extends Controller
                 $join->on('t_project_leader.leader_id', '=', 'leader_dosen.dosen_id')
                     ->where('t_project_leader.leader_type', '=', 'Dosen');
             })
-            // LEFT JOIN untuk mendapatkan nama dosen member
+            ->leftJoin('d_profesional as leader_profesional', function($join) {
+                $join->on('t_project_leader.leader_id', '=', 'leader_profesional.profesional_id')
+                    ->where('t_project_leader.leader_type', '=', 'Profesional');
+            })
             ->leftJoin('t_project_member_dosen', 't_progres_proyek.project_member_dosen_id', '=', 't_project_member_dosen.project_member_dosen_id')
             ->leftJoin('d_dosen as member_dosen', 't_project_member_dosen.dosen_id', '=', 'member_dosen.dosen_id')
-            // LEFT JOIN untuk mendapatkan nama profesional member
             ->leftJoin('t_project_member_profesional', 't_progres_proyek.project_member_profesional_id', '=', 't_project_member_profesional.project_member_profesional_id')
             ->leftJoin('d_profesional as member_profesional', 't_project_member_profesional.profesional_id', '=', 'member_profesional.profesional_id')
-            // LEFT JOIN untuk mendapatkan nama mahasiswa member
             ->leftJoin('t_project_member_mahasiswa', 't_progres_proyek.project_member_mahasiswa_id', '=', 't_project_member_mahasiswa.project_member_mahasiswa_id')
             ->leftJoin('d_mahasiswa as member_mahasiswa', 't_project_member_mahasiswa.mahasiswa_id', '=', 'member_mahasiswa.mahasiswa_id')
             ->select(
                 't_progres_proyek.*',
                 'leader_dosen.nama_dosen as leader_dosen_nama',
+                'leader_profesional.nama_profesional as leader_profesional_nama',
                 'member_dosen.nama_dosen as member_dosen_nama',
                 'member_profesional.nama_profesional as member_profesional_nama',
                 'member_mahasiswa.nama_mahasiswa as member_mahasiswa_nama'
@@ -241,6 +220,7 @@ class DataProgresProyekDosenController extends Controller
                 $q->where('t_progres_proyek.nama_progres', 'like', "%{$search}%")
                 ->orWhere('t_progres_proyek.deskripsi_progres', 'like', "%{$search}%")
                 ->orWhere('leader_dosen.nama_dosen', 'like', "%{$search}%")
+                ->orWhere('leader_profesional.nama_profesional', 'like', "%{$search}%")
                 ->orWhere('member_dosen.nama_dosen', 'like', "%{$search}%")
                 ->orWhere('member_profesional.nama_profesional', 'like', "%{$search}%")
                 ->orWhere('member_mahasiswa.nama_mahasiswa', 'like', "%{$search}%");
@@ -261,13 +241,12 @@ class DataProgresProyekDosenController extends Controller
                 ->value('project_member_dosen_id');
         }
         
-        // PERBAIKAN: Process each item dengan optimized assignee name processing
+        // Process each item
         $progres->getCollection()->transform(function ($item) use ($roleCheck, $currentDosenMemberId, $dosenId) {
-            // OPTIMIZED: Gunakan data yang sudah di-JOIN untuk assigned name
+            // Get assigned name from JOIN data
             $assignedName = 'Not Assigned';
             
             if (!empty($item->project_leader_id)) {
-                // Untuk leader, prioritaskan dosen terlebih dahulu
                 if (!empty($item->leader_dosen_nama)) {
                     $assignedName = $item->leader_dosen_nama;
                 } elseif (!empty($item->leader_profesional_nama)) {
@@ -288,7 +267,7 @@ class DataProgresProyekDosenController extends Controller
             
             $item->assigned_name = $assignedName;
             
-            // Permission flags dengan logic yang sudah diperbaiki sebelumnya
+            // Permission flags
             $item->can_edit = $roleCheck['isLeader'] || 
                             ($item->project_member_dosen_id === $currentDosenMemberId);
             
@@ -307,9 +286,16 @@ class DataProgresProyekDosenController extends Controller
             unset($item->member_profesional_nama);
             unset($item->member_mahasiswa_nama);
             
+            // Check if task is overdue
+            $item->is_overdue = false;
+            if ($item->status_progres === 'In Progress' && $item->tanggal_selesai_progres) {
+                $currentDate = Carbon::now();
+                $endDate = Carbon::parse($item->tanggal_selesai_progres);
+                $item->is_overdue = $currentDate->gt($endDate);
+            }
             return $item;
         });
-        
+
         $paginationHtml = ''; 
         if($progres->hasPages()) {
             $paginationHtml = view('vendor.pagination.custom', [
@@ -325,6 +311,7 @@ class DataProgresProyekDosenController extends Controller
                 'isMember' => $roleCheck['isMember'],
                 'currentDosenMemberId' => $currentDosenMemberId,
                 'data' => $progres->items(),
+                'proyek' => $proyek,
                 'pagination' => [
                     'current_page' => $progres->currentPage(),
                     'per_page_progres_proyek' => $perPageProgresProyek,
@@ -343,8 +330,70 @@ class DataProgresProyekDosenController extends Controller
             'isLeader' => $roleCheck['isLeader'],
             'isMember' => $roleCheck['isMember'],
             'currentDosenMemberId' => $currentDosenMemberId, 
-
         ]);
+    }
+
+    private function validateProgressDates(Request $request, $proyekId)
+    {
+        $proyek = DB::table('m_proyek')
+            ->where('proyek_id', $proyekId)
+            ->first();
+            
+        if (!$proyek) {
+            return ['success' => false, 'message' => 'Proyek tidak ditemukan'];
+        }
+        
+        $errors = [];
+        
+        if ($request->status_progres === 'In Progress') {
+            if (empty($request->tanggal_mulai_progres)) {
+                $errors['tanggal_mulai_progres'] = ['Tanggal mulai harus diisi untuk status In Progress'];
+            }
+            if (empty($request->tanggal_selesai_progres)) {
+                $errors['tanggal_selesai_progres'] = ['Tanggal selesai harus diisi untuk status In Progress'];
+            }
+        }
+        
+        // Validate with project date range
+        if ($request->tanggal_mulai_progres || $request->tanggal_selesai_progres) {
+            $proyekMulai = Carbon::parse($proyek->tanggal_mulai);
+            $proyekSelesai = Carbon::parse($proyek->tanggal_selesai);
+            
+            if ($request->tanggal_mulai_progres) {
+                $tanggalMulai = Carbon::parse($request->tanggal_mulai_progres);
+                
+                if ($tanggalMulai->lt($proyekMulai)) {
+                    $errors['tanggal_mulai_progres'] = ['Tanggal mulai tidak boleh sebelum tanggal mulai proyek (' . $proyekMulai->format('d-m-Y') . ')'];
+                }
+                
+                if ($tanggalMulai->gt($proyekSelesai)) {
+                    $errors['tanggal_mulai_progres'] = ['Tanggal mulai tidak boleh setelah tanggal selesai proyek (' . $proyekSelesai->format('d-m-Y') . ')'];
+                }
+            }
+            
+            if ($request->tanggal_selesai_progres) {
+                $tanggalSelesai = Carbon::parse($request->tanggal_selesai_progres);
+                
+                if ($tanggalSelesai->lt($proyekMulai)) {
+                    $errors['tanggal_selesai_progres'] = ['Tanggal selesai tidak boleh sebelum tanggal mulai proyek (' . $proyekMulai->format('d-m-Y') . ')'];
+                }
+                
+                if ($tanggalSelesai->gt($proyekSelesai)) {
+                    $errors['tanggal_selesai_progres'] = ['Tanggal selesai tidak boleh setelah tanggal selesai proyek (' . $proyekSelesai->format('d-m-Y') . ')'];
+                }
+            }
+            
+            if ($request->tanggal_mulai_progres && $request->tanggal_selesai_progres) {
+                $tanggalMulai = Carbon::parse($request->tanggal_mulai_progres);
+                $tanggalSelesai = Carbon::parse($request->tanggal_selesai_progres);
+                
+                if ($tanggalMulai->gt($tanggalSelesai)) {
+                    $errors['tanggal_selesai_progres'] = ['Tanggal selesai tidak boleh sebelum tanggal mulai'];
+                }
+            }
+        }
+        
+        return ['success' => empty($errors), 'errors' => $errors];
     }
 
     public function getMyProgresByProyek($id, Request $request)
@@ -363,6 +412,7 @@ class DataProgresProyekDosenController extends Controller
                 ->where('dosen_id', $dosenId)
                 ->select('dosen_id', 'nama_dosen')
                 ->first();
+                
             // Check role dosen dalam proyek
             $roleCheck = $this->checkDosenRole($id, $dosenId);
             
@@ -373,7 +423,6 @@ class DataProgresProyekDosenController extends Controller
                 ], 403);
             }
 
-            // Check if project exists
             $proyek = DB::table('m_proyek')
                 ->where('proyek_id', $id)
                 ->whereNull('deleted_at')
@@ -386,12 +435,11 @@ class DataProgresProyekDosenController extends Controller
                 ], 404);
             }
 
-            // Get search parameter
             $search = $request->input('search_my_progres_proyek', '');
             $perPageMyProgres = $request->input('per_page_my_progres', 3);
             $page = $request->input('page', 1);
 
-            // Get current dosen member ID
+
             $currentDosenMemberId = null;
             $currentLeaderId = null;
             
@@ -412,20 +460,17 @@ class DataProgresProyekDosenController extends Controller
                     ->value('project_member_dosen_id');
             }
 
-            // Build query untuk My Progres - progres yang dibuat atau ditugaskan ke dosen ini
+
             $query = DB::table('t_progres_proyek')
                 ->where('t_progres_proyek.proyek_id', $id)
                 ->whereNull('t_progres_proyek.deleted_at')
                 ->where(function($q) use ($dosenId, $currentDosenMemberId, $currentLeaderId) {
-                    // Progres yang dibuat oleh dosen ini
                     $q->where('t_progres_proyek.created_by', $dosenId);
                     
-                    // ATAU progres yang ditugaskan ke dosen ini sebagai member
                     if ($currentDosenMemberId) {
                         $q->orWhere('t_progres_proyek.project_member_dosen_id', $currentDosenMemberId);
                     }
                     
-                    // ATAU progres yang ditugaskan ke dosen ini sebagai leader
                     if ($currentLeaderId) {
                         $q->orWhere('t_progres_proyek.project_leader_id', $currentLeaderId);
                     }
@@ -463,15 +508,14 @@ class DataProgresProyekDosenController extends Controller
                     ->orWhere('leader_profesional.nama_profesional', 'like', "%{$search}%")
                     ->orWhere('member_dosen.nama_dosen', 'like', "%{$search}%")
                     ->orWhere('member_profesional.nama_profesional', 'like', "%{$search}%")
-                    ->orWhere('member_mahasiswa.nama_mahasiswa', 'like', "%{$search}%");
+                    ->orWhere('member_mahasiswa.nama_mahasiswa', 'like', "%{$search}%")
+                    ->orWhere('t_progres_proyek.status_progres', 'like', "%{$search}%");
                 });
             }
 
-            // Pagination
             $myProgres = $query->orderBy('t_progres_proyek.created_at', 'desc')
                 ->paginate($perPageMyProgres, ['*'], 'page', $page);
 
-            // Process each item
             $myProgres->getCollection()->transform(function ($item) use ($dosenId, $currentDosenMemberId, $currentLeaderId, $roleCheck) {
                 // Determine assigned name
                 $assignedName = 'Not Assigned';
@@ -497,35 +541,46 @@ class DataProgresProyekDosenController extends Controller
                 
                 $item->assigned_name = $assignedName;
 
-                // Determine progress type untuk badge
-                $isCreated = ($item->created_by == $dosenId);
+                // Determine progress type dan creation status
+                $isCreatedByCurrentUser = ($item->created_by == $dosenId);
                 $isAssignedAsLeader = ($item->project_leader_id === $currentLeaderId);
                 $isAssignedAsMember = ($item->project_member_dosen_id === $currentDosenMemberId);
                 $isAssigned = $isAssignedAsLeader || $isAssignedAsMember;
 
-                if ($isCreated && $isAssigned) {
-                    $item->progress_type = 'created_and_assigned';
-                } elseif ($isCreated && !$isAssigned) {
+                if ($isCreatedByCurrentUser && $isAssigned) {
                     $item->progress_type = 'created';
-                } elseif (!$isCreated && $isAssigned) {
+                } elseif (!$isCreatedByCurrentUser && $isAssigned) {
                     $item->progress_type = 'assigned';
                 } else {
-                    $item->progress_type = 'unknown'; // Seharusnya tidak terjadi
+                    $item->progress_type = 'unknown';
                 }
 
-                // Permission flags
+                // SPECIAL LOGIC untuk My Progres: Permission flags
                 $item->can_edit = $roleCheck['isLeader'] || 
                                 ($item->project_member_dosen_id === $currentDosenMemberId) ||
                                 ($item->project_leader_id === $currentLeaderId);
                 
-                // Delete permission - sama seperti sebelumnya
+                // MODIFIKASI LOGIC DELETE untuk My Progres
                 if ($roleCheck['isLeader']) {
-                    $item->can_delete = true;
+                    if ($isCreatedByCurrentUser) {
+                        $item->can_delete = true;
+                        $item->delete_reason = 'created_by_leader';
+                    } else {
+                        // Jika progres di-assign kepada dia dari koordinator → TIDAK BISA DELETE
+                        $item->can_delete = false;
+                        $item->delete_reason = 'assigned_from_coordinator';
+                    }
                 } else {
+                    // LOGIC EXISTING untuk Member
                     $item->can_delete = (($item->project_member_dosen_id === $currentDosenMemberId) || 
-                                      ($item->project_leader_id === $currentLeaderId)) && 
-                                      ($item->created_by == $dosenId);
+                                    ($item->project_leader_id === $currentLeaderId)) && 
+                                    ($item->created_by == $dosenId);
+                    $item->delete_reason = $item->can_delete ? 'created_by_member' : 'not_creator';
                 }
+
+                // TAMBAHAN: Flag untuk frontend 
+                $item->is_created_by_current_user = $isCreatedByCurrentUser;
+                $item->is_assigned_from_coordinator = !$isCreatedByCurrentUser && $isAssigned;
 
                 // Unset kolom tambahan
                 unset($item->leader_dosen_nama);
@@ -534,6 +589,12 @@ class DataProgresProyekDosenController extends Controller
                 unset($item->member_profesional_nama);
                 unset($item->member_mahasiswa_nama);
 
+                $item->is_overdue = false;
+                if ($item->status_progres === 'In Progress' && $item->tanggal_selesai_progres) {
+                    $currentDate = Carbon::now();
+                    $endDate = Carbon::parse($item->tanggal_selesai_progres);
+                    $item->is_overdue = $currentDate->gt($endDate);
+                }
                 return $item;
             });
 
@@ -568,7 +629,6 @@ class DataProgresProyekDosenController extends Controller
         }
     }
 
-    
     public function storeProgresProyek(Request $request)
     {
         try {
@@ -581,7 +641,7 @@ class DataProgresProyekDosenController extends Controller
                 ], 401);
             }
 
-            // TAMBAHAN: Check role dosen dalam proyek
+            // Check role dosen dalam proyek
             $roleCheck = $this->checkDosenRole($request->proyek_id, $dosenId);
             
             if (!$roleCheck['isLeader'] && !$roleCheck['isMember']) {
@@ -590,6 +650,10 @@ class DataProgresProyekDosenController extends Controller
                     'message' => 'Anda tidak memiliki akses untuk menambah progres di proyek ini'
                 ], 403);
             }
+
+            $convertEmptyToNull = function($value) {
+                return empty($value) ? null : $value;
+            };
 
             // Check if single or multiple progres entries
             $isSingle = $request->input('is_single', 1);
@@ -600,7 +664,9 @@ class DataProgresProyekDosenController extends Controller
                     'proyek_id' => 'required|string|exists:m_proyek,proyek_id',
                     'nama_progres' => 'required|string|max:255',
                     'deskripsi_progres' => 'nullable|string',
-                    'status_progres' => 'required|in:Inisiasi,In Progress,Done',
+                    'tanggal_mulai_progres' => 'nullable|date',
+                    'tanggal_selesai_progres' => 'nullable|date|after_or_equal:tanggal_mulai_progres',
+                    'status_progres' => 'required|in:To Do,In Progress,Done',
                     'persentase_progres' => 'required|integer|min:0|max:100',
                     'assigned_type' => 'nullable|in:leader,dosen,profesional,mahasiswa',
                     'assigned_to' => 'nullable|string',
@@ -614,9 +680,18 @@ class DataProgresProyekDosenController extends Controller
                     ], 422);
                 }
 
-                // TAMBAHAN: Validasi assignment berdasarkan role
+                // TAMBAHAN: Validasi tanggal dengan range proyek
+                $dateValidation = $this->validateProgressDates($request, $request->proyek_id);
+                if (!$dateValidation['success']) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Validasi tanggal gagal',
+                        'errors' => $dateValidation['errors']
+                    ], 422);
+                }
+
+                // Validasi assignment berdasarkan role
                 if (!$roleCheck['isLeader'] && $request->has('assigned_to')) {
-                    // Jika bukan leader, hanya bisa assign ke diri sendiri
                     if ($request->assigned_type === 'dosen') {
                         $dosenMemberId = DB::table('t_project_member_dosen')
                             ->where('proyek_id', $request->proyek_id)
@@ -675,10 +750,12 @@ class DataProgresProyekDosenController extends Controller
                     'assigned_to' => $request->assigned_to,
                     'nama_progres' => $request->nama_progres,
                     'deskripsi_progres' => $request->deskripsi_progres,
+                    'tanggal_mulai_progres' => $convertEmptyToNull($request->tanggal_mulai_progres),
+                    'tanggal_selesai_progres' => $convertEmptyToNull($request->tanggal_selesai_progres),
                     'status_progres' => $request->status_progres,
                     'persentase_progres' => $request->persentase_progres,
                     'created_at' => Carbon::now(),
-                    'created_by' => $dosenId, // PERBAIKAN: Gunakan dosen_id
+                    'created_by' => $dosenId, 
                 ]);
                 
                 return response()->json([
@@ -706,6 +783,18 @@ class DataProgresProyekDosenController extends Controller
                 DB::beginTransaction();
                 
                 foreach ($progresData as $index => $progres) {
+                    // Validate each progres item dates
+                    $tempRequest = new Request($progres);
+                    $tempRequest->merge(['proyek_id' => $request->proyek_id]);
+                    
+                    if (isset($progres['status_progres']) && $progres['status_progres'] === 'In Progress') {
+                        $dateValidation = $this->validateProgressDates($tempRequest, $request->proyek_id);
+                        if (!$dateValidation['success']) {
+                            $errors[] = "Error pada data ke-" . ($index + 1) . ": " . implode(', ', array_values($dateValidation['errors'])[0]);
+                            continue;
+                        }
+                    }
+                    
                     // Generate UUID for each progres
                     $progresId = (string) Str::uuid();
                     
@@ -744,10 +833,12 @@ class DataProgresProyekDosenController extends Controller
                             'assigned_to' => $progres['assigned_to'] ?? null,
                             'nama_progres' => $progres['nama_progres'],
                             'deskripsi_progres' => $progres['deskripsi_progres'] ?? null,
+                            'tanggal_mulai_progres' => $convertEmptyToNull($progres['tanggal_mulai_progres'] ?? null),
+                            'tanggal_selesai_progres' => $convertEmptyToNull($progres['tanggal_selesai_progres'] ?? null),
                             'status_progres' => $progres['status_progres'],
                             'persentase_progres' => $progres['persentase_progres'],
                             'created_at' => Carbon::now(),
-                            'created_by' => session('user_id', auth()->id()),
+                            'created_by' => $dosenId,
                         ]);
                         
                         $insertedIds[] = $progresId;
@@ -816,7 +907,9 @@ class DataProgresProyekDosenController extends Controller
                     'proyek_id' => 'required|string|exists:m_proyek,proyek_id',
                     'nama_progres' => 'required|string|max:255',
                     'deskripsi_progres' => 'nullable|string',
-                    'status_progres' => 'required|in:Inisiasi,In Progress,Done',
+                    'tanggal_mulai_progres' => 'nullable|date',
+                    'tanggal_selesai_progres' => 'nullable|date|after_or_equal:tanggal_mulai_progres',
+                    'status_progres' => 'required|in:To Do,In Progress,Done',
                     'persentase_progres' => 'required|integer|min:0|max:100',
                 ]);
                 
@@ -825,6 +918,16 @@ class DataProgresProyekDosenController extends Controller
                         'success' => false,
                         'message' => 'Validasi gagal',
                         'errors' => $validator->errors()
+                    ], 422);
+                }
+
+                // TAMBAHAN: Validasi tanggal dengan range proyek
+                $dateValidation = $this->validateProgressDates($request, $request->proyek_id);
+                if (!$dateValidation['success']) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Validasi tanggal gagal',
+                        'errors' => $dateValidation['errors']
                     ], 422);
                 }
 
@@ -837,7 +940,6 @@ class DataProgresProyekDosenController extends Controller
                 $assignedTo = null;
                 
                 if ($roleCheck['isLeader']) {
-                    // Jika dosen adalah leader, assign sebagai leader
                     $projectLeaderId = DB::table('t_project_leader')
                         ->where('proyek_id', $request->proyek_id)
                         ->where('leader_type', 'Dosen')
@@ -846,7 +948,6 @@ class DataProgresProyekDosenController extends Controller
                         ->value('project_leader_id');
                     $assignedTo = $projectLeaderId;
                 } else {
-                    // Jika dosen adalah member, assign sebagai member
                     $projectMemberDosenId = DB::table('t_project_member_dosen')
                         ->where('proyek_id', $request->proyek_id)
                         ->where('dosen_id', $dosenId)
@@ -854,6 +955,10 @@ class DataProgresProyekDosenController extends Controller
                         ->value('project_member_dosen_id');
                     $assignedTo = $projectMemberDosenId;
                 }
+                
+                $convertEmptyToNull = function($value) {
+                    return empty($value) ? null : $value;
+                };
                 
                 // Insert data into t_progres_proyek table
                 DB::table('t_progres_proyek')->insert([
@@ -866,6 +971,8 @@ class DataProgresProyekDosenController extends Controller
                     'assigned_to' => $assignedTo,
                     'nama_progres' => $request->nama_progres,
                     'deskripsi_progres' => $request->deskripsi_progres,
+                    'tanggal_mulai_progres' => $convertEmptyToNull($request->tanggal_mulai_progres),
+                    'tanggal_selesai_progres' => $convertEmptyToNull($request->tanggal_selesai_progres),
                     'status_progres' => $request->status_progres,
                     'persentase_progres' => $request->persentase_progres,
                     'created_at' => Carbon::now(),
@@ -918,7 +1025,23 @@ class DataProgresProyekDosenController extends Controller
                     $assignedTo = $projectMemberDosenId;
                 }
                 
+                $convertEmptyToNull = function($value) {
+                    return empty($value) ? null : $value;
+                };
+                
                 foreach ($progresData as $index => $progres) {
+                    // Validate each progres item dates
+                    $tempRequest = new Request($progres);
+                    $tempRequest->merge(['proyek_id' => $request->proyek_id]);
+                    
+                    if (isset($progres['status_progres']) && $progres['status_progres'] === 'In Progress') {
+                        $dateValidation = $this->validateProgressDates($tempRequest, $request->proyek_id);
+                        if (!$dateValidation['success']) {
+                            $errors[] = "Error pada data ke-" . ($index + 1) . ": " . implode(', ', array_values($dateValidation['errors'])[0]);
+                            continue;
+                        }
+                    }
+                    
                     // Generate UUID for each progres
                     $progresId = (string) Str::uuid();
                     
@@ -934,6 +1057,8 @@ class DataProgresProyekDosenController extends Controller
                             'assigned_to' => $assignedTo,
                             'nama_progres' => $progres['nama_progres'],
                             'deskripsi_progres' => $progres['deskripsi_progres'] ?? null,
+                            'tanggal_mulai_progres' => $convertEmptyToNull($progres['tanggal_mulai_progres'] ?? null),
+                            'tanggal_selesai_progres' => $convertEmptyToNull($progres['tanggal_selesai_progres'] ?? null),
                             'status_progres' => $progres['status_progres'],
                             'persentase_progres' => $progres['persentase_progres'],
                             'created_at' => Carbon::now(),
@@ -1010,19 +1135,14 @@ class DataProgresProyekDosenController extends Controller
                 ], 403);
             }
 
-            // PERBAIKAN: Validasi hak delete dengan logic baru
+            // Validasi hak delete
             if (!$roleCheck['isLeader']) {
-                // Jika bukan leader, cek dua kondisi:
-                // 1. Progres harus di-assign ke dosen ini
-                // 2. Progres harus dibuat oleh dosen ini sendiri (bukan oleh leader/koordinator)
-                
                 $dosenMemberId = DB::table('t_project_member_dosen')
                     ->where('proyek_id', $progres->proyek_id)
                     ->where('dosen_id', $dosenId)
                     ->whereNull('deleted_at')
                     ->value('project_member_dosen_id');
                 
-                // Cek apakah progres di-assign ke dosen ini
                 if ($progres->project_member_dosen_id !== $dosenMemberId) {
                     return response()->json([
                         'success' => false,
@@ -1030,7 +1150,6 @@ class DataProgresProyekDosenController extends Controller
                     ], 403);
                 }
                 
-                // TAMBAHAN: Cek apakah progres dibuat oleh dosen ini sendiri
                 if ($progres->created_by != $dosenId) {
                     return response()->json([
                         'success' => false,
@@ -1116,7 +1235,7 @@ class DataProgresProyekDosenController extends Controller
                     ->value('project_leader_id');
             }
 
-            // Validasi hak edit berdasarkan role
+            // Validasi hak edit
             $canEditThisProgress = $roleCheck['isLeader'] || 
                                 ($progres->project_member_dosen_id === $currentDosenMemberId) ||
                                 ($progres->project_leader_id === $currentLeaderId);
@@ -1128,29 +1247,68 @@ class DataProgresProyekDosenController extends Controller
                 ], 403);
             }
 
-            // TAMBAHAN: Check if user created this progress (untuk nama progres)
             $isCreatedByCurrentUser = ($progres->created_by == $dosenId);
 
-            // UPDATED: Different validation rules based on role and creation status
+            $convertEmptyToNull = function($value) {
+                return empty($value) ? null : $value;
+            };
+
+            $tanggalMulaiToSave = null;
+            $tanggalSelesaiToSave = null;
+            
+            // Validasi tanggal berdasarkan status
+            $dateValidation = $this->validateProgressDates($request, $progres->proyek_id);
+            if (!$dateValidation['success']) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validasi tanggal gagal',
+                    'errors' => $dateValidation['errors']
+                ], 422);
+            }
+            
+            if ($request->status_progres === 'In Progress') {
+                // get data tanggal dari request jika ada, atau convert ke null jika kosong
+                $tanggalMulaiToSave = $convertEmptyToNull($request->tanggal_mulai_progres);
+                $tanggalSelesaiToSave = $convertEmptyToNull($request->tanggal_selesai_progres);
+                
+            } else {
+                // untuk to do, get tanggal dari request jika ada, atau preserve tanggal lama
+                if (!empty($request->tanggal_mulai_progres)) {
+                    $tanggalMulaiToSave = $request->tanggal_mulai_progres;
+                } else {
+                    // tanggal yang sudah ada atau bisa null
+                    $tanggalMulaiToSave = $progres->tanggal_mulai_progres;
+                }
+                
+                if (!empty($request->tanggal_selesai_progres)) {
+                    $tanggalSelesaiToSave = $request->tanggal_selesai_progres;
+                } else {
+                    // tanggal yang sudah ada atau bisa null
+                    $tanggalSelesaiToSave = $progres->tanggal_selesai_progres;
+                }
+            }
+
+            // Different validation rules based on role and creation status
             if ($roleCheck['isLeader']) {
-                // Leader bisa update semua field
                 $validator = Validator::make($request->all(), [
                     'nama_progres' => 'required|string|max:255',
-                    'status_progres' => 'required|in:Inisiasi,In Progress,Done',
+                    'status_progres' => 'required|in:To Do,In Progress,Done',
                     'persentase_progres' => 'required|integer|min:0|max:100',
                     'deskripsi_progres' => 'nullable|string',
+                    'tanggal_mulai_progres' => 'nullable|date',
+                    'tanggal_selesai_progres' => 'nullable|date|after_or_equal:tanggal_mulai_progres',
                     'assigned_to' => 'nullable|string',
                     'assigned_type' => 'nullable|in:leader,dosen,profesional,mahasiswa',
                 ]);
             } else {
-                // Member validation rules tergantung apakah dia yang buat progres
                 $rules = [
-                    'status_progres' => 'required|in:Inisiasi,In Progress,Done',
+                    'status_progres' => 'required|in:To Do,In Progress,Done',
                     'persentase_progres' => 'required|integer|min:0|max:100',
                     'deskripsi_progres' => 'nullable|string',
+                    'tanggal_mulai_progres' => 'nullable|date',
+                    'tanggal_selesai_progres' => 'nullable|date|after_or_equal:tanggal_mulai_progres',
                 ];
                 
-                // TAMBAHAN: Hanya bisa edit nama jika dia yang buat progres
                 if ($isCreatedByCurrentUser) {
                     $rules['nama_progres'] = 'nullable|string|max:255';
                 }
@@ -1166,11 +1324,25 @@ class DataProgresProyekDosenController extends Controller
                 ], 422);
             }
 
+            // TAMBAHAN: Validasi tanggal dengan range proyek
+            $dateValidation = $this->validateProgressDates($request, $progres->proyek_id);
+            if (!$dateValidation['success']) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validasi tanggal gagal',
+                    'errors' => $dateValidation['errors']
+                ], 422);
+            }
+
             // Prepare update data based on role and creation status
             $updateData = [
                 'updated_at' => Carbon::now(),
                 'updated_by' => $dosenId
             ];
+            
+            $convertEmptyToNull = function($value) {
+                return empty($value) ? null : $value;
+            };
             
             if ($roleCheck['isLeader']) {
                 // Leader bisa update semua field
@@ -1178,6 +1350,8 @@ class DataProgresProyekDosenController extends Controller
                 $updateData['status_progres'] = $request->status_progres;
                 $updateData['persentase_progres'] = $request->persentase_progres;
                 $updateData['deskripsi_progres'] = $request->deskripsi_progres;
+                $updateData['tanggal_mulai_progres'] = $tanggalMulaiToSave;
+                $updateData['tanggal_selesai_progres'] = $tanggalSelesaiToSave;
                 
                 // Handle assignment
                 $assignedTo = $request->input('assigned_to');
@@ -1205,17 +1379,16 @@ class DataProgresProyekDosenController extends Controller
                 $updateData['assigned_to'] = $assignedTo;
                 
             } else {
-                // Member bisa update field yang diizinkan berdasarkan creation status
-                
-                // MODIFIKASI: Hanya update nama jika dia yang buat progres
+                // Member bisa update field yang diizinkan
                 if ($isCreatedByCurrentUser && $request->has('nama_progres')) {
                     $updateData['nama_progres'] = $request->nama_progres;
                 }
-                // Jika bukan dia yang buat, nama progres tidak diubah (tetap seperti semula)
                 
                 $updateData['status_progres'] = $request->status_progres;
                 $updateData['persentase_progres'] = $request->persentase_progres;
                 $updateData['deskripsi_progres'] = $request->deskripsi_progres;
+                $updateData['tanggal_mulai_progres'] = $tanggalMulaiToSave;
+                $updateData['tanggal_selesai_progres'] = $tanggalSelesaiToSave;
             }
             
             // Update the record
@@ -1239,8 +1412,8 @@ class DataProgresProyekDosenController extends Controller
         }
     }
 
-    // Untuk show data di modal edit data progres 
-    public function getProgresDetail($id)
+
+    public function getProgresDetail($id, Request $request = null)
     {
         try {
             $dosenId = session('dosen_id');
@@ -1352,17 +1525,46 @@ class DataProgresProyekDosenController extends Controller
                 $assignedType = 'mahasiswa';
             }
             
-            // Add assigned name and type to response
-            $progres->assigned_name = $assignedName;
-            $progres->assigned_type = $assignedType;
-            
-            // TAMBAHAN: Determine progress creation status
+            // Determine progress creation status
             $isCreatedByCurrentUser = ($progres->created_by == $dosenId);
             $isAssignedAsLeader = ($progres->project_leader_id === $currentLeaderId);
             $isAssignedAsMember = ($progres->project_member_dosen_id === $currentDosenMemberId);
             $isAssigned = $isAssignedAsLeader || $isAssignedAsMember;
             
-            // Determine progress type
+            // DETEKSI MY PROGRES - Multiple criteria untuk menentukan apakah ini My Progres
+            $isMyProgres = false;
+            
+            // Cara 1: Deteksi berdasarkan parameter request (dari frontend)
+            if ($request && $request->has('is_my_progres')) {
+                $isMyProgres = (bool)$request->input('is_my_progres');
+            }
+            
+            // Cara 2: Deteksi berdasarkan logika My Progres (created BY user OR assigned TO user)
+            if (!$isMyProgres) {
+                $isMyProgres = $isCreatedByCurrentUser || $isAssigned;
+            }
+            
+            // Cara 3: Deteksi berdasarkan URL atau referer (backup detection)
+            if (!$isMyProgres && $request) {
+                $referer = $request->header('referer', '');
+                $isMyProgres = (strpos($referer, 'my-progres') !== false) || 
+                            (strpos($referer, '#my-progres-proyek-section') !== false);
+            }
+            
+            // Cara 4: Deteksi berdasarkan context khusus My Progres
+            if (!$isMyProgres) {
+                // Jika progres dibuat oleh user DAN ditugaskan kepada user yang sama
+                if ($isCreatedByCurrentUser && $isAssigned) {
+                    $isMyProgres = true;
+                }
+                
+                // Atau jika progres hanya ditugaskan kepada user (assigned progress)
+                if (!$isCreatedByCurrentUser && $isAssigned) {
+                    $isMyProgres = true;
+                }
+            }
+            
+            // Determine progress type (untuk logging dan debugging)
             $progressType = 'unknown';
             if ($isCreatedByCurrentUser && $isAssigned) {
                 $progressType = 'created_and_assigned';
@@ -1374,35 +1576,80 @@ class DataProgresProyekDosenController extends Controller
             
             // Tentukan field yang bisa diedit berdasarkan assignment dan creation status
             $canEditThisProgress = $roleCheck['isLeader'] || 
-                                ($progres->project_member_dosen_id === $currentDosenMemberId);
+                                ($progres->project_member_dosen_id === $currentDosenMemberId) ||
+                                ($progres->project_leader_id === $currentLeaderId);
+            
+            // MODIFIKASI DELETE PERMISSION - Konsisten dengan My Progres logic
+            $canDeleteThisProgress = false;
+            $deleteReason = '';
+            
+            if ($roleCheck['isLeader']) {
+                if ($isMyProgres) {
+                    // SPECIAL CASE: My Progres untuk Leader
+                    if ($isCreatedByCurrentUser) {
+                        $canDeleteThisProgress = true;
+                        $deleteReason = 'created_by_leader_in_my_progres';
+                    } else {
+                        $canDeleteThisProgress = false;
+                        $deleteReason = 'assigned_from_coordinator_in_my_progres';
+                    }
+                } else {
+                    // Regular Progres untuk Leader - bisa delete semua
+                    $canDeleteThisProgress = true;
+                    $deleteReason = 'leader_full_access';
+                }
+            } else {
+                // Member logic - hanya bisa delete yang dia buat sendiri
+                $canDeleteThisProgress = (($progres->project_member_dosen_id === $currentDosenMemberId) || 
+                                    ($progres->project_leader_id === $currentLeaderId)) && 
+                                    ($progres->created_by == $dosenId);
+                $deleteReason = $canDeleteThisProgress ? 'created_by_member' : 'not_creator_member';
+            }
             
             $editableFields = [];
             if ($roleCheck['isLeader']) {
-                // Leader bisa edit semua field
-                $editableFields = ['nama_progres', 'status_progres', 'persentase_progres', 'deskripsi_progres', 'assigned_type', 'assigned_to'];
+                // ✅ SPECIAL CASE: Jika ini My Progres dan user adalah Leader
+                if ($isMyProgres) {
+                    // Leader di My Progres TIDAK bisa edit assignment fields
+                    $editableFields = ['nama_progres', 'status_progres', 'persentase_progres', 'deskripsi_progres', 'tanggal_mulai_progres', 'tanggal_selesai_progres'];
+                    // TIDAK termasuk: 'assigned_type', 'assigned_to'
+                } else {
+                    // Leader di regular progres bisa edit semua field termasuk assignment
+                    $editableFields = ['nama_progres', 'status_progres', 'persentase_progres', 'deskripsi_progres', 'tanggal_mulai_progres', 'tanggal_selesai_progres', 'assigned_type', 'assigned_to'];
+                }
             } else if ($canEditThisProgress) {
-                // MODIFIKASI: Member bisa edit nama hanya jika dia yang buat progres tersebut
                 if ($isCreatedByCurrentUser) {
-                    // Jika dia yang buat progres, bisa edit nama
-                    $editableFields = ['nama_progres', 'status_progres', 'persentase_progres', 'deskripsi_progres'];
+                    // Jika dia yang buat progres, bisa edit nama dan tanggal
+                    $editableFields = ['nama_progres', 'status_progres', 'persentase_progres', 'deskripsi_progres', 'tanggal_mulai_progres', 'tanggal_selesai_progres'];
                 } else {
                     // Jika hanya ditugaskan (bukan dia yang buat), tidak bisa edit nama
-                    $editableFields = ['status_progres', 'persentase_progres', 'deskripsi_progres'];
+                    $editableFields = ['status_progres', 'persentase_progres', 'deskripsi_progres', 'tanggal_mulai_progres', 'tanggal_selesai_progres'];
                 }
+                // Member NEVER bisa edit assignment fields (baik regular maupun my progres)
             } else {
-                // Member tidak bisa edit progres yang tidak ditugaskan ke mereka
                 $editableFields = [];
             }
+            
+            // ✅ TAMBAHKAN project data untuk validasi tanggal di frontend
+            $proyekData = DB::table('m_proyek')
+                ->where('proyek_id', $progres->proyek_id)
+                ->select('proyek_id', 'nama_proyek', 'tanggal_mulai', 'tanggal_selesai')
+                ->first();
+
             
             return response()->json([
                 'success' => true,
                 'isLeader' => $roleCheck['isLeader'],
                 'isMember' => $roleCheck['isMember'],
                 'canEdit' => $canEditThisProgress,
+                'canDelete' => $canDeleteThisProgress,
+                'deleteReason' => $deleteReason,
                 'editableFields' => $editableFields,
                 'isCreatedByCurrentUser' => $isCreatedByCurrentUser, 
+                'isMyProgres' => $isMyProgres,
                 'progressType' => $progressType,
-                'data' => $progres
+                'isAssignedFromCoordinator' => !$isCreatedByCurrentUser && $isAssigned,
+                'proyek' => $proyekData
             ]);
             
         } catch (\Exception $e) {
@@ -1412,5 +1659,4 @@ class DataProgresProyekDosenController extends Controller
             ], 500);
         }
     }
-
 }

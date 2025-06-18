@@ -21,7 +21,9 @@ return new class extends Migration
             $table->string('assigned_to', 36)->nullable();
             $table->string('nama_progres');
             $table->text('deskripsi_progres')->nullable();
-            $table->enum('status_progres', ['Inisiasi', 'In Progress', 'Done']);
+            $table->enum('status_progres', ['To Do', 'In Progress', 'Done']);
+            $table->date('tanggal_mulai_progres')->nullable();
+            $table->date('tanggal_selesai_progres')->nullable();
             $table->integer('persentase_progres');
 
             $table->dateTime('created_at')->nullable();
