@@ -47,7 +47,7 @@
                 <div class="container">
                     <div class="row align-items-center">
                         <div class="col-12 col-md-4 {{ $loop->even ? 'order-1 order-md-2' : 'order-1 order-md-1' }} text-center mb-3 mb-md-0">
-                            <img src="{{ asset('storage/jenis_proyek/' . $layanan->img_jenis_proyek) }}" class="img-fluid rounded img-layanan" alt="{{ $layanan->nama_jenis_proyek }}">
+                            <img src="{{ asset('images/landingpage/' . $layanan->img_jenis_proyek) }}" class="img-fluid rounded img-layanan" alt="{{ $layanan->nama_jenis_proyek }}">
                         </div>
                         <div class="col-12 col-md-8 {{ $loop->even ? 'order-2 order-md-1' : 'order-2 order-md-2' }}">
                             <div class="title-layanan text-center text-md-start">{{ $layanan->nama_jenis_proyek }}</div>

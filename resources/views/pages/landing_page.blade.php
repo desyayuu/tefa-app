@@ -138,7 +138,7 @@
         @foreach ($jenisProyek as $layanan)
             <div class="col-md-4 mb-4">
                 <div class="card shadow-sm p-4 h-100 d-flex flex-column justify-content-center align-items-center text-center">
-                    <img src="{{ asset('storage/jenis_proyek/' . $layanan->img_jenis_proyek) }}" alt="{{ $layanan->nama_jenis_proyek }}" class="img-section4 mb-3">
+                    <img src="{{ asset('images/landingpage/' . $layanan->img_jenis_proyek) }}" alt="{{ $layanan->nama_jenis_proyek }}" class="img-section4 mb-3">
                     <h3 class="h5">{{ $layanan->nama_jenis_proyek }}</h3>
                     <p class="description-text">{{ $layanan->deskripsi_jenis_proyek }}</p>
 
