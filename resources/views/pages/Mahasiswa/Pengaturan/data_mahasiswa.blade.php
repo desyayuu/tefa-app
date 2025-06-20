@@ -187,24 +187,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Status Akun -->
-                                <div class="mb-3">
-                                    <label for="status_akun_mahasiswa" class="form-label">Status Akun <span class="text-danger">*</span></label>
-                                    <select class="form-select @error('status_akun_mahasiswa') is-invalid @enderror" 
-                                            id="status_akun_mahasiswa" 
-                                            name="status_akun_mahasiswa"
-                                            data-original-value="{{ $mahasiswa->status }}"
-                                            required>
-                                        <option value="Active" {{ old('status_akun_mahasiswa', $mahasiswa->status) == 'Active' ? 'selected' : '' }}>Active</option>
-                                        <option value="Pending" {{ old('status_akun_mahasiswa', $mahasiswa->status) == 'Pending' ? 'selected' : '' }}>Pending</option>
-                                        <option value="Rejected" {{ old('status_akun_mahasiswa', $mahasiswa->status) == 'Rejected' ? 'selected' : '' }}>Rejected</option>
-                                        <option value="Disabled" {{ old('status_akun_mahasiswa', $mahasiswa->status) == 'Disabled' ? 'selected' : '' }}>Disabled</option>
-                                    </select>
-                                    <div class="invalid-feedback" id="status_akun_mahasiswa_error">
-                                        @error('status_akun_mahasiswa'){{ $message }}@enderror
-                                    </div>
-                                </div>
-
                                 <!-- Password -->
                                 <div class="mb-3">
                                     <label for="password_mahasiswa" class="form-label">
@@ -239,32 +221,34 @@
                                     <textarea class="form-control ckeditor @error('deskripsi_diri') is-invalid @enderror" 
                                               id="deskripsi_diri" 
                                               name="deskripsi_diri" 
+                                              placeholder="Ceritakan tentang diri Anda, latar belakang, minat, dan tujuan karir Anda."
                                               rows="6">{{ old('deskripsi_diri', $mahasiswa->deskripsi_diri ?? '') }}</textarea>
+                                    </textarea>
                                     <div class="invalid-feedback" id="deskripsi_diri_error">
                                         @error('deskripsi_diri'){{ $message }}@enderror
                                     </div>
-                                    <small class="text-muted">Jelaskan tentang kepribadian, motivasi, dan tujuan Anda dengan formatting yang menarik</small>
                                 </div>
 
                                 <!-- Kelebihan -->
                                 <div class="mb-3">
-                                    <label for="kelebihan_diri" class="form-label">Kelebihan & Keahlian</label>
+                                    <label for="kelebihan_diri" class="form-label">Kelebihan</label>
                                     <textarea class="form-control ckeditor @error('kelebihan_diri') is-invalid @enderror" 
                                               id="kelebihan_diri" 
                                               name="kelebihan_diri" 
+                                              placeholder="Sebutkan kelebihan Anda, baik dalam keterampilan teknis maupun soft skills."
                                               rows="5">{{ old('kelebihan_diri', $mahasiswa->kelebihan_diri ?? '') }}</textarea>
                                     <div class="invalid-feedback" id="kelebihan_error">
                                         @error('kelebihan_diri'){{ $message }}@enderror
                                     </div>
-                                    <small class="text-muted">Sebutkan 3 kelebihan</small>
                                 </div>
 
                                 <!-- Kekurangan -->
                                 <div class="mb-3">
-                                    <label for="kekurangan_diri" class="form-label">Area yang Ingin Dikembangkan</label>
+                                    <label for="kekurangan_diri" class="form-label">Kekurangan</label>
                                     <textarea class="form-control ckeditor @error('kekurangan_diri') is-invalid @enderror" 
                                               id="kekurangan_diri" 
                                               name="kekurangan_diri" 
+                                              placeholder="Sebutkan kekurangan Anda, baik dalam keterampilan teknis maupun soft skills"
                                               rows="5">{{ old('kekurangan_diri', $mahasiswa->kekurangan_diri ?? '') }}</textarea>
                                     <div class="invalid-feedback" id="kekurangan_error">
                                         @error('kekurangan_diri'){{ $message }}@enderror

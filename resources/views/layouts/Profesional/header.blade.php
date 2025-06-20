@@ -10,7 +10,7 @@
                 <div class="d-flex align-items-center justify-content-end">
                     <div class="me-2">
                         @if(session('profile_img'))
-                            <img src="{{ asset('storage/' . session('profile_img')) }}" alt="Profile Image" class="rounded-circle" width="35" height="35">
+                            <img src="{{ asset(session('profile_img')) }}" alt="Profile Image" class="rounded-circle" width="35" height="35">
                         @else
                             <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center" style="width: 35px; height: 35px;">
                                 <span>{{ substr(session('nama') ?? 'K', 0, 1) }}</span>
