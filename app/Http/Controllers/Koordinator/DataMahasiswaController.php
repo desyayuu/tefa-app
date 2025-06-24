@@ -279,8 +279,136 @@ class DataMahasiswaController extends Controller
                     return redirect()->route('koordinator.dataMahasiswa')->with('error', 'Gagal menambahkan data: ' . $e->getMessage());
                 }
             } else {
-                // Multiple mode implementation remains the same
-                // ... existing multiple mode code
+                $mahasiswaData = json_decode($request->input('mahasiswa_data'), true);
+                if (empty($mahasiswaData)) {
+                    return redirect()->route('koordinator.dataMahasiswa')->with('error', 'Tidak ada data mahasiswa untuk ditambahkan.');
+                }
+                
+                DB::beginTransaction();
+                try {
+                    $insertedCount = 0;
+                    $errors = [];
+                    
+                    foreach ($mahasiswaData as $index => $mahasiswa) {
+                        if (empty($mahasiswa['nama_mahasiswa']) || empty($mahasiswa['nim_mahasiswa']) || empty($mahasiswa['email_mahasiswa'])) {
+                            array_push($errors, 'Data mahasiswa tidak lengkap: ' . ($mahasiswa['nama_mahasiswa'] ?? 'Unnamed'));
+                            continue;
+                        }
+                        
+                        $nimExists = DB::table('d_mahasiswa')->where('nim_mahasiswa', $mahasiswa['nim_mahasiswa'])->exists();
+                        $emailExists = DB::table('d_user')->where('email', $mahasiswa['email_mahasiswa'])->exists();
+                        
+                        if ($nimExists) {
+                            array_push($errors, 'NIDN ' . $mahasiswa['nim_mahasiswa'] . ' sudah terdaftar.');
+                            continue;
+                        }
+                        
+                        if ($emailExists) {
+                            array_push($errors, 'Email ' . $mahasiswa['email_mahasiswa'] . ' sudah terdaftar.');
+                            continue;
+                        }
+                        
+                        $userId = Str::uuid();
+                        $mahasiswaId = Str::uuid();
+                        
+                        DB::table('d_user')->insert([
+                            'user_id' => $userId,
+                            'email' => $mahasiswa['email_mahasiswa'],
+                            'password' => bcrypt($mahasiswa['password_mahasiswa'] ?: $request->input('nim_mahasiswa')), 
+                            'role' => 'Mahasiswa',
+                            'status' => $mahasiswa['status_akun_mahasiswa'] ?? 'Active', 
+                            'created_at' => now(),
+                            'created_by' => session('user_id'),
+                        ]);
+
+                        $tanggalLahir = null;
+                        if (!empty($mahasiswa['tanggal_lahir_mahasiswa'])) {
+                            $tanggalLahir = date('Y-m-d', strtotime($mahasiswa['tanggal_lahir_mahasiswa']));
+                        }
+                        
+                        $mahasiswaRecord = [
+                            'mahasiswa_id' => $mahasiswaId,
+                            'user_id' => $userId,
+                            'nama_mahasiswa' => $mahasiswa['nama_mahasiswa'],
+                            'nim_mahasiswa' => $mahasiswa['nim_mahasiswa'],
+                            'tanggal_lahir_mahasiswa' => $tanggalLahir,
+                            'jenis_kelamin_mahasiswa' => $mahasiswa['jenis_kelamin_mahasiswa'] ?? null,
+                            'telepon_mahasiswa' => $mahasiswa['telepon_mahasiswa'] ?? null,
+                            'created_at' => now(),
+                            'created_by' => session('user_id'),
+                        ];
+                        
+                        $fileKey = "profile_img_mahasiswa_{$index}";
+                        \Log::info("Checking for file {$fileKey}", [
+                            'has_file' => $request->hasFile($fileKey),
+                            'all_files' => array_keys($request->files->all())
+                        ]);
+                        
+                        if ($request->hasFile($fileKey)) {
+                            $file = $request->file($fileKey);
+                            
+                            \Log::info("Processing file for index {$index}", [
+                                'file_key' => $fileKey,
+                                'file_name' => $file->getClientOriginalName(),
+                                'file_size' => $file->getSize()
+                            ]);
+                            
+                            if ($file->isValid()) {
+                                $uploadPath = public_path('uploads/profile_mahasiswa');
+                                if (!is_dir($uploadPath)) {
+                                    mkdir($uploadPath, 0777, true);
+                                }
+                                
+                                $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                                
+                                if ($file->move($uploadPath, $filename)) {
+                                    $mahasiswaRecord['profile_img_mahasiswa'] = 'uploads/profile_mahasiswa/' . $filename;
+                                    
+                                    \Log::info('File upload success for multiple mode', [
+                                        'index' => $index,
+                                        'path' => $mahasiswaRecord['profile_img_mahasiswa']
+                                    ]);
+                                } else {
+                                    \Log::error('Failed to move file for multiple mode', [
+                                        'index' => $index,
+                                        'file' => $file->getClientOriginalName()
+                                    ]);
+                                }
+                            } else {
+                                \Log::error('Invalid file for multiple mode', [
+                                    'index' => $index,
+                                    'error' => $file->getError()
+                                ]);
+                            }
+                        } else if (isset($mahasiswa['has_profile_img']) && $mahasiswa['has_profile_img']) {
+                            \Log::warning("File flag set but no file found for index {$index}", [
+                                'file_key' => $fileKey
+                            ]);
+                        }
+
+                        DB::table('d_mahasiswa')->insert($mahasiswaRecord);       
+                        $insertedCount++;
+                    }
+                    
+                    DB::commit();
+                    
+                    if (count($errors) > 0) {
+                        $errorMessage = implode('<br>', $errors);
+                        return redirect()->route('koordinator.dataMahasiswa')
+                            ->with('warning', "$insertedCount data mahasiswa berhasil ditambahkan.<br>Beberapa error terjadi:<br>$errorMessage");
+                    }
+                    
+                    return redirect()->route('koordinator.dataMahasiswa')
+                        ->with('success', "$insertedCount data mahasiswa berhasil ditambahkan.");
+                } catch (\Exception $e) {
+                    DB::rollBack();
+                    \Log::error('Error adding multiple mahasiswa data', [
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString()
+                    ]);
+                    return redirect()->route('koordinator.dataMahasiswa')
+                        ->with('error', 'Gagal menambahkan data mahasiswa: ' . $e->getMessage());
+                }
             }
         } catch (\Exception $e) {
             \Log::error('Exception in tambahDataMahasiswa', [
