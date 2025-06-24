@@ -791,6 +791,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 <tr data-id="${progresProyekId}">
                     <td>${namaProgresProyek}</td>
                     <td>${statusHtml}</td>
+                    <td>${progresProyek.persentase_progres}%</td>
                     <td>${assignedTo}</td>
                     <td>${tanggalMulai}</td>
                     <td>${tanggalSelesai}</td>

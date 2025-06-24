@@ -27,6 +27,7 @@
                         <tr>
                             <th>Nama Progres</th>
                             <th>Status</th>
+                            <th>Persentase</th>
                             <th>Ditugaskan Ke</th>
                             <th>Tanggal Mulai</th>
                             <th>Tanggal Selesai</th>

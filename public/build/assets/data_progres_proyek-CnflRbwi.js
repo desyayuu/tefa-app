@@ -46,6 +46,7 @@ import{s as v}from"./components-C-5l6dZl.js";document.addEventListener("DOMConte
                 <tr data-id="${n}">
                     <td>${g}</td>
                     <td>${u}</td>
+                    <td>${e.persentase_progres}%</td>
                     <td>${i}</td>
                     <td>${d}</td>
                     <td>${h}</td>

@@ -324,9 +324,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
                 
                 if (response.success && response.data) {
-                    // ✅ Update nama profesional di modal jika ada
-                    if (response.dosenInfo && response.dosenInfo.nama_dosen) {
-                        $('#my_assignment_display').val(response.dosenInfo.nama_dosen);
+                    if (response.dosenInfo && response.dosenInfo.dosen) {
+                        $('#my_assignment_display').val(response.dosenInfo.dosen);
                     }
                     
                     if (Array.isArray(response.data) && response.data.length > 0) {
@@ -1968,7 +1967,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Regular modal event handlers
-    $('#modalTambahProgresFromProf').on('shown.bs.modal', function () {
+    $('#modalTambahProgresFromDosen').on('shown.bs.modal', function () {
         loadTeamMembers(proyekId);
         
         // ✅ FIX: Load project data when modal opens
@@ -2201,7 +2200,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    $('#modalTambahProgresFromProf').on('hidden.bs.modal', function () {
+    $('#modalTambahProgresFromDosen').on('hidden.bs.modal', function () {
         $('#formTambahDataProgres')[0].reset();
         $('.invalid-feedback').text('');
         $('#form_progres_error').addClass('d-none').text('');
@@ -2322,28 +2321,28 @@ document.addEventListener('DOMContentLoaded', function () {
             try {
                 $('.select2-assign-leader').select2({
                     theme: 'bootstrap-5',
-                    dropdownParent: $('#modalTambahProgresFromProf'),
+                    dropdownParent: $('#modalTambahProgresFromDosen'),
                     placeholder: 'Pilih Project Leader',
                     width: '100%'
                 });
                 
                 $('.select2-assign-dosen').select2({
                     theme: 'bootstrap-5',
-                    dropdownParent: $('#modalTambahProgresFromProf'),
+                    dropdownParent: $('#modalTambahProgresFromDosen'),
                     placeholder: 'Pilih Dosen',
                     width: '100%'
                 });
                 
                 $('.select2-assign-profesional').select2({
                     theme: 'bootstrap-5',
-                    dropdownParent: $('#modalTambahProgresFromProf'),
+                    dropdownParent: $('#modalTambahProgresFromDosen'),
                     placeholder: 'Pilih Profesional',
                     width: '100%'
                 });
                 
                 $('.select2-assign-mahasiswa').select2({
                     theme: 'bootstrap-5',
-                    dropdownParent: $('#modalTambahProgresFromProf'),
+                    dropdownParent: $('#modalTambahProgresFromDosen'),
                     placeholder: 'Pilih Mahasiswa',
                     width: '100%'
                 });

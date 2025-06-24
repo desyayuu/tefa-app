@@ -1527,8 +1527,8 @@ class DataProgresProyekDosenController extends Controller
             
             // Determine progress creation status
             $isCreatedByCurrentUser = ($progres->created_by == $dosenId);
-            $isAssignedAsLeader = ($progres->project_leader_id === $currentLeaderId);
-            $isAssignedAsMember = ($progres->project_member_dosen_id === $currentDosenMemberId);
+            $isAssignedAsLeader = (!empty($progres->project_leader_id) && $progres->project_leader_id === $currentLeaderId);
+            $isAssignedAsMember = (!empty($progres->project_member_dosen_id) && $progres->project_member_dosen_id === $currentDosenMemberId);
             $isAssigned = $isAssignedAsLeader || $isAssignedAsMember;
             
             // DETEKSI MY PROGRES - Multiple criteria untuk menentukan apakah ini My Progres
@@ -1574,18 +1574,23 @@ class DataProgresProyekDosenController extends Controller
                 $progressType = 'assigned';
             }
             
-            // Tentukan field yang bisa diedit berdasarkan assignment dan creation status
-            $canEditThisProgress = $roleCheck['isLeader'] || 
-                                ($progres->project_member_dosen_id === $currentDosenMemberId) ||
-                                ($progres->project_leader_id === $currentLeaderId);
+            $canEditThisProgress = false;
             
-            // MODIFIKASI DELETE PERMISSION - Konsisten dengan My Progres logic
+            if ($roleCheck['isLeader']) {
+                $canEditThisProgress = true;
+            } else {
+                if (!empty($progres->project_member_dosen_id) && $progres->project_member_dosen_id === $currentDosenMemberId) {
+                    $canEditThisProgress = true;
+                } elseif (!empty($progres->project_leader_id) && !empty($currentLeaderId) && $progres->project_leader_id === $currentLeaderId) {
+                    $canEditThisProgress = true;
+                }
+            }
+
             $canDeleteThisProgress = false;
             $deleteReason = '';
             
             if ($roleCheck['isLeader']) {
                 if ($isMyProgres) {
-                    // SPECIAL CASE: My Progres untuk Leader
                     if ($isCreatedByCurrentUser) {
                         $canDeleteThisProgress = true;
                         $deleteReason = 'created_by_leader_in_my_progres';
@@ -1594,16 +1599,17 @@ class DataProgresProyekDosenController extends Controller
                         $deleteReason = 'assigned_from_coordinator_in_my_progres';
                     }
                 } else {
-                    // Regular Progres untuk Leader - bisa delete semua
                     $canDeleteThisProgress = true;
                     $deleteReason = 'leader_full_access';
                 }
             } else {
-                // Member logic - hanya bisa delete yang dia buat sendiri
-                $canDeleteThisProgress = (($progres->project_member_dosen_id === $currentDosenMemberId) || 
-                                    ($progres->project_leader_id === $currentLeaderId)) && 
-                                    ($progres->created_by == $dosenId);
-                $deleteReason = $canDeleteThisProgress ? 'created_by_member' : 'not_creator_member';
+                if ($canEditThisProgress && ($progres->created_by == $dosenId)) {
+                    $canDeleteThisProgress = true;
+                    $deleteReason = 'created_by_member';
+                } else {
+                    $canDeleteThisProgress = false;
+                    $deleteReason = 'not_creator_member_or_not_assigned';
+                }
             }
             
             $editableFields = [];
@@ -1635,7 +1641,23 @@ class DataProgresProyekDosenController extends Controller
                 ->where('proyek_id', $progres->proyek_id)
                 ->select('proyek_id', 'nama_proyek', 'tanggal_mulai', 'tanggal_selesai')
                 ->first();
-
+                        
+            $responseData = [
+                'progres_proyek_id' => $progres->progres_proyek_id,
+                'proyek_id' => $progres->proyek_id,
+                'nama_progres' => $progres->nama_progres ?? '',
+                'deskripsi_progres' => $progres->deskripsi_progres ?? '', 
+                'status_progres' => $progres->status_progres ?? 'To Do',
+                'persentase_progres' => $progres->persentase_progres ?? 0,
+                'tanggal_mulai_progres' => $progres->tanggal_mulai_progres,
+                'tanggal_selesai_progres' => $progres->tanggal_selesai_progres,
+                'assigned_to' => $progres->assigned_to,
+                'assigned_name' => $assignedName,
+                'assigned_type' => $assignedType,
+                'created_by' => $progres->created_by,
+                'created_at' => $progres->created_at,
+                'updated_at' => $progres->updated_at
+            ];
             
             return response()->json([
                 'success' => true,
@@ -1649,7 +1671,8 @@ class DataProgresProyekDosenController extends Controller
                 'isMyProgres' => $isMyProgres,
                 'progressType' => $progressType,
                 'isAssignedFromCoordinator' => !$isCreatedByCurrentUser && $isAssigned,
-                'proyek' => $proyekData
+                'proyek' => $proyekData, 
+                'data'=> $responseData
             ]);
             
         } catch (\Exception $e) {

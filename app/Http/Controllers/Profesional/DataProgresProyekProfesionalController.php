@@ -1485,10 +1485,11 @@ class DataProgresProyekProfesionalController extends Controller
                 $assignedName = $mahasiswa ? $mahasiswa->nama_mahasiswa : 'Unknown Mahasiswa';
                 $assignedType = 'mahasiswa';
             }
+            
             // Determine progress creation status
             $isCreatedByCurrentUser = ($progres->created_by == $profesionalId);
-            $isAssignedAsLeader = ($progres->project_leader_id === $currentLeaderId);
-            $isAssignedAsMember = ($progres->project_member_profesional_id === $currentProfesionalMemberId);
+            $isAssignedAsLeader = (!empty($progres->project_leader_id) && $progres->project_leader_id === $currentLeaderId);
+            $isAssignedAsMember = (!empty($progres->project_member_profesional_id) && $progres->project_member_profesional_id === $currentProfesionalMemberId);
             $isAssigned = $isAssignedAsLeader || $isAssignedAsMember;
             
             // DETEKSI MY PROGRES - Multiple criteria untuk menentukan apakah ini My Progres
@@ -1534,10 +1535,21 @@ class DataProgresProyekProfesionalController extends Controller
                 $progressType = 'assigned';
             }
             
-            // Tentukan field yang bisa diedit berdasarkan assignment dan creation status
-            $canEditThisProgress = $roleCheck['isLeader'] || 
-                                ($progres->project_member_profesional_id === $currentProfesionalMemberId) ||
-                                ($progres->project_leader_id === $currentLeaderId);
+            // 🔧 FIX: Tentukan permission dengan logic yang benar untuk PROFESIONAL
+            $canEditThisProgress = false;
+            
+            if ($roleCheck['isLeader']) {
+                // Leader bisa edit semua progres
+                $canEditThisProgress = true;
+            } else {
+                // Member hanya bisa edit progres yang BENAR-BENAR di-assign ke dia
+                if (!empty($progres->project_member_profesional_id) && $progres->project_member_profesional_id === $currentProfesionalMemberId) {
+                    $canEditThisProgress = true;
+                } elseif (!empty($progres->project_leader_id) && !empty($currentLeaderId) && $progres->project_leader_id === $currentLeaderId) {
+                    $canEditThisProgress = true;
+                }
+                // Progres yang di-assign ke dosen/mahasiswa TIDAK bisa diedit oleh profesional member
+            }
             
             // MODIFIKASI DELETE PERMISSION - Konsisten dengan My Progres logic
             $canDeleteThisProgress = false;
@@ -1559,11 +1571,14 @@ class DataProgresProyekProfesionalController extends Controller
                     $deleteReason = 'leader_full_access';
                 }
             } else {
-                // Member logic - hanya bisa delete yang dia buat sendiri
-                $canDeleteThisProgress = (($progres->project_member_profesional_id === $currentProfesionalMemberId) || 
-                                    ($progres->project_leader_id === $currentLeaderId)) && 
-                                    ($progres->created_by == $profesionalId);
-                $deleteReason = $canDeleteThisProgress ? 'created_by_member' : 'not_creator_member';
+                // Member logic - hanya bisa delete yang dia buat sendiri DAN di-assign ke dia
+                if ($canEditThisProgress && ($progres->created_by == $profesionalId)) {
+                    $canDeleteThisProgress = true;
+                    $deleteReason = 'created_by_member';
+                } else {
+                    $canDeleteThisProgress = false;
+                    $deleteReason = 'not_creator_member_or_not_assigned';
+                }
             }
             
             $editableFields = [];
@@ -1613,7 +1628,6 @@ class DataProgresProyekProfesionalController extends Controller
                 'created_at' => $progres->created_at,
                 'updated_at' => $progres->updated_at
             ];
-            
             
             return response()->json([
                 'success' => true,
