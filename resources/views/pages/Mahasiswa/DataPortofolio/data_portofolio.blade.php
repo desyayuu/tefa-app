@@ -87,14 +87,7 @@
                                 @endphp
                                 <span class="badge bg-{{ $color }}">{{ $portofolio->jenis_kegiatan }}</span>
                             </td>
-                            <td>
-                                <div>{{ $portofolio->penyelenggara ?: '-' }}</div>
-                                @if($portofolio->deskripsi_kegiatan)
-                                    <small class="text-muted">
-                                        {{ Str::limit($portofolio->deskripsi_kegiatan, 50) }}
-                                    </small>
-                                @endif
-                            </td>
+                            <td><div>{{ $portofolio->penyelenggara ?: '-' }}</div></td>
                             <td>{{ $portofolio->peran_dalam_kegiatan ?: '-' }}</td>
                             <td class="text-center">
                                 <div class="d-flex gap-1 justify-content-center">
@@ -227,7 +220,7 @@
                     </div>
                     <div class="mb-3">
                         <label for="deskripsi_kegiatan" class="form-label fw-bold">Deskripsi Kegiatan</label>
-                        <textarea class="form-control" id="deskripsi_kegiatan" name="deskripsi_kegiatan" rows="3" placeholder="Jelaskan secara singkat tentang kegiatan ini..."></textarea>
+                        <textarea class="form-control" id="deskripsi_kegiatan" name="deskripsi_kegiatan" rows="3" placeholder="Jelaskan secara singkat tentang kegiatan ini"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
