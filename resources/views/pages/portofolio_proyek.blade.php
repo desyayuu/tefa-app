@@ -158,7 +158,7 @@
                 </div>
 
                 {{-- Pagination Section --}}
-                <div class="d-flex justify-content-between align-items-center mt-4">
+                <div class="d-flex justify-content-between align-items-center mt-4 mb-4">
                     <div class="showing-info">
                         @if($proyekList->total() > 0)
                             <span class="text-muted">
