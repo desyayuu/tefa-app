@@ -854,8 +854,8 @@
                             </form>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                            <button type="button" class="btn btn-primary" onclick="addCustomTool()">Tambahkan</button>
+                            <button type="button" class="btn btn-tutup" data-bs-dismiss="modal">Batal</button>
+                            <button type="button" class="btn btn-add" onclick="addCustomTool()">Tambahkan</button>
                         </div>
                     </div>
                 </div>
