@@ -237,6 +237,12 @@
       "resources/js/components.js"
     ]
   },
+  "resources/js/Profesional/data_luaran.js": {
+    "file": "assets/data_luaran-CxarYKzR.js",
+    "name": "data_luaran",
+    "src": "resources/js/Profesional/data_luaran.js",
+    "isEntry": true
+  },
   "resources/js/Profesional/data_profesional.js": {
     "file": "assets/data_profesional-lpio7ruZ.js",
     "name": "data_profesional",

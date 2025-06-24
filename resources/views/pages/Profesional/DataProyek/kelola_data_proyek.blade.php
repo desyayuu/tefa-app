@@ -47,6 +47,9 @@
         <div>
             @include('pages.Profesional.DataProyek.data_progres_proyek')
         </div>
+                <div class="section-luaran-proyek">
+            @include('pages.Profesional.DataProyek.data_luaran_proyek')
+        </div>
 
     </div>
 </div>

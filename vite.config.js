@@ -40,7 +40,8 @@ export default defineConfig({
                 'resources/js/Profesional/data_progres_proyek.js',
                 'resources/js/Profesional/data_proyek.js',
                 'resources/js/Profesional/data_timeline.js',
-                'resources/js/Profesional/detail_data_proyek.js'
+                'resources/js/Profesional/detail_data_proyek.js', 
+                'resources/js/Profesional/data_luaran.js',
             ],
             refresh: true,
         }),

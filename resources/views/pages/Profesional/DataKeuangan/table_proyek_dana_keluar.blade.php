@@ -30,7 +30,7 @@
             <!-- Handling Error and Success -->
             @include('components.handling_error')
 
-            <div class="alert alert-warning alert-dismissible fade show mb-3" role="alert">
+            <div class="alert alert-info alert-dismissible fade show mb-3" role="alert">
                 Anda hanya dapat mengelola keuangan proyek yang Anda pimpin sebagai Project Leader.
             </div>
             

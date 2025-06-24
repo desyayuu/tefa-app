@@ -11,6 +11,7 @@ use App\Http\Controllers\Profesional\DataTimelineProfesionalController;
 use App\Http\Controllers\Profesional\DataProgresProyekProfesionalController;
 use App\Http\Controllers\Profesional\DataKeluarKeuanganProyekProfesionalController;
 use App\Http\Controllers\Profesional\DataProfesionalController;
+use App\Http\Controllers\Profesional\DataLuaranProfesionalController;
 
 Route::middleware([ProfesionalMiddleware::class])->prefix('profesional')->group(function () {
     
@@ -60,6 +61,12 @@ Route::middleware([ProfesionalMiddleware::class])->prefix('profesional')->group(
         Route::get('/{id}/my-progres/get', [DataProgresProyekProfesionalController::class, 'getMyProgresByProyek'])->name('profesional.getMyProgresByProyek');
         Route::post('/my-progres/store', [DataProgresProyekProfesionalController::class, 'storeMyProgres'])->name('profesional.storeMyProgres');
     });
+
+    // Data Luaran Proyek 
+    Route::get('/proyek/{id}/luaran', [DataLuaranProfesionalController::class, 'getDataLuaranDokumentasi'])->name('profesional.getDataLuaranDokumentasi');
+    Route::post('/proyek/luaran', [DataLuaranProfesionalController::class, 'saveLuaranProyek'])->name('profesional.updateDataLuaran');
+    Route::post('/proyek/dokumentasi', [DataLuaranProfesionalController::class, 'uploadDokumentasi'])->name('profesional.addDokumentasi');
+    Route::delete('/proyek/dokumentasi/{id}', [DataLuaranProfesionalController::class, 'deleteDokumentasi'])->name('profesional.deleteDokumentasi');
 
     Route::prefix('data-keluar-keuangan-proyek')->group(function () {
         Route::get('/', [DataKeluarKeuanganProyekProfesionalController::class, 'getDataProyek'])->name('profesional.dataKeluarKeuanganProyek');
