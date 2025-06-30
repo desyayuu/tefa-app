@@ -61,12 +61,6 @@ class DataKeuanganTefaController extends Controller
     public function storeWithFiles(Request $request)
     {
         try {
-            // Log the request for debugging
-            \Log::info('Store with files request received', [
-                'has_file_main' => $request->hasFile('file_keuangan_tefa'),
-                'data_length' => $request->input('keuangan_tefa_data') ? strlen($request->input('keuangan_tefa_data')) : 0,
-                'request_keys' => array_keys($request->all())
-            ]);
             
             // Decode JSON data from input
             $jsonData = $request->input('keuangan_tefa_data');
@@ -76,10 +70,7 @@ class DataKeuanganTefaController extends Controller
                 throw new \Exception('Tidak ada data keuangan tefa untuk disimpan');
             }
             
-            // Log data to be processed
-            \Log::info('Multiple keuangan data to process:', ['count' => count($keuanganTefaData)]);
-            
-            // IMPORTANT: Sort the items by sequence to maintain the order they were added in the form
+            // Sort the items by sequence to maintain the order they were added in the form
             usort($keuanganTefaData, function($a, $b) {
                 return $a['sequence'] - $b['sequence'];
             });

@@ -58,21 +58,28 @@ class LandingPageController extends Controller
             
         $allDosen = $dosenAsLeader->merge($dosenAsMember)->unique();
         $summaryData['total_dosen'] = $allDosen->count();
+
+        $profesionalAsLeader = DB::table('t_project_leader')
+            ->join('m_proyek', 't_project_leader.proyek_id', '=', 'm_proyek.proyek_id')
+            ->where('t_project_leader.leader_type', 'Profesional')
+            ->whereNull('t_project_leader.deleted_at')
+            ->whereNull('m_proyek.deleted_at')
+            ->pluck('t_project_leader.leader_id');
         
-        // Total Mitra Industri/Perusahaan (distinct mitra yang terlibat dalam proyek)
+        $profesionalAsMember = DB::table('t_project_member_profesional')
+            ->join('m_proyek', 't_project_member_profesional.proyek_id', '=', 'm_proyek.proyek_id')
+            ->whereNull('t_project_member_profesional.deleted_at')
+            ->whereNull('m_proyek.deleted_at')
+            ->pluck('t_project_member_profesional.profesional_id');
+        $allProfesional = $profesionalAsLeader->merge($profesionalAsMember)->unique();
+        $summaryData['total_profesional'] = $allProfesional->count();
+        
+        // Total Mitra Industri/Perusahaan
         $summaryData['total_mitra'] = DB::table('m_proyek')
             ->whereNull('deleted_at')
             ->distinct()
             ->count('mitra_proyek_id');
             
-        // Total Profesional yang terlibat (sebagai leader)
-        $summaryData['total_profesional'] = DB::table('t_project_leader')
-            ->join('m_proyek', 't_project_leader.proyek_id', '=', 'm_proyek.proyek_id')
-            ->where('t_project_leader.leader_type', 'Profesional')
-            ->whereNull('t_project_leader.deleted_at')
-            ->whereNull('m_proyek.deleted_at')
-            ->distinct()
-            ->count('t_project_leader.leader_id');
             
         return $summaryData;
     }
@@ -352,9 +359,7 @@ class LandingPageController extends Controller
         ));
     }
 
-    /**
-     * Keep original method as fallback
-     */
+
     public function getAllProyekAlternative(Request $request)
     {
         $search = $request->get('search');
@@ -477,7 +482,6 @@ class LandingPageController extends Controller
 
     public function getProyekDetail($proyekId)
     {
-        // Get project details with eager loading
         $proyek = DB::table('m_proyek')
             ->leftJoin('d_luaran_proyek', 'm_proyek.proyek_id', '=', 'd_luaran_proyek.proyek_id')
             ->leftJoin('m_jenis_proyek', 'm_proyek.jenis_proyek_id', '=', 'm_jenis_proyek.jenis_proyek_id')

@@ -765,7 +765,7 @@ class DataKeluarKeuanganProyekController extends Controller
         }
     }
 
-    // ✅ KOREKSI: Update method dengan logic conditional required yang benar
+
     public function updateTransaksiPengeluaran(Request $request, $transaksiId)
     {
         try {
@@ -960,7 +960,6 @@ class DataKeluarKeuanganProyekController extends Controller
         }
     }
 
-    // ✅ KOREKSI: Method untuk mengecek apakah subkategori wajib - kembali ke logic asli
     private function isSubkategoriRequiredForPengeluaran()
     {
         try {
@@ -1000,7 +999,7 @@ class DataKeluarKeuanganProyekController extends Controller
         $page = $request->get('page', 1);
         $perPage = $request->get('per_page', 5);
         
-        // ✅ TAMBAHAN: Ambil parameter filter
+        // Ambil parameter filter
         $filters = [
             'tanggal_mulai' => $request->get('tanggal_mulai'),
             'tanggal_akhir' => $request->get('tanggal_akhir'),
@@ -1032,7 +1031,7 @@ class DataKeluarKeuanganProyekController extends Controller
             ->where('m_jenis_transaksi.nama_jenis_transaksi', 'Pengeluaran')
             ->whereNull('t_keuangan_tefa.deleted_at');
         
-        // ✅ TAMBAHAN: Apply filters
+        // Apply filters
         if (!empty($filters['tanggal_mulai'])) {
             $query->whereDate('t_keuangan_tefa.tanggal_transaksi', '>=', $filters['tanggal_mulai']);
         }

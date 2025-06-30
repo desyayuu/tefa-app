@@ -191,32 +191,122 @@ class DataMitraController extends Controller
         }
     }
 
-    public function deleteDataMitra($id){
+    private function validateMitraDeletion($mitraId)
+    {
+        $errorMessages = [];
+        
+        // 1. Cek apakah mitra sedang digunakan di proyek aktif
+        $activeProjects = DB::table('m_proyek')
+            ->where('mitra_proyek_id', $mitraId)
+            ->whereNull('deleted_at')
+            ->get(['proyek_id', 'nama_proyek', 'status_proyek']);
+        
+        if ($activeProjects->count() > 0) {
+            $projectNames = $activeProjects->pluck('nama_proyek')->take(3)->implode(', ');
+            $totalProjects = $activeProjects->count();
+            
+            if ($totalProjects > 3) {
+                $projectNames .= " dan " . ($totalProjects - 3) . " proyek lainnya";
+            }
+            
+            $errorMessages[] = "masih digunakan di {$totalProjects} proyek aktif: {$projectNames}";
+            
+            // Detail status proyek untuk informasi lebih lanjut
+            $statusBreakdown = $activeProjects->groupBy('status_proyek')->map(function($group) {
+                return $group->count();
+            });
+            
+            $statusInfo = [];
+            foreach ($statusBreakdown as $status => $count) {
+                $statusInfo[] = "{$count} proyek '{$status}'";
+            }
+            
+            if (!empty($statusInfo)) {
+                $errorMessages[] = "terdiri dari: " . implode(', ', $statusInfo);
+            }
+        }
+        
+        
+        if (!empty($errorMessages)) {
+            return [
+                'can_delete' => false,
+                'message' => 'Mitra tidak dapat dihapus karena masih terkait dengan proyek aktif: ',
+                'affected_projects' => $activeProjects
+            ];
+        }
+        
+        return [
+            'can_delete' => true,
+            'message' => 'Mitra dapat dihapus'
+        ];
+    }
+
+
+    public function deleteDataMitra($id)
+    {
         try {
-            // Cek apakah data ada
+            DB::beginTransaction();
+            
             $mitra = DB::table('d_mitra_proyek')
                 ->where('mitra_proyek_id', $id)
-                ->whereNull('deleted_at') // pastikan data belum dihapus
+                ->whereNull('deleted_at')
                 ->first();
-    
+
             if (!$mitra) {
-                return redirect()->route('koordinator.dataMitra')->with('error', 'Data mitra tidak ditemukan.');
+                return redirect()->route('koordinator.dataMitra')
+                    ->with('error', 'Data mitra tidak ditemukan atau sudah dihapus.');
             }
-    
+
+            // Cek apakah mitra masih digunakan di proyek
+            $validationResult = $this->validateMitraDeletion($id);
+            if (!$validationResult['can_delete']) {
+                DB::rollback();
+                return redirect()->route('koordinator.dataMitra')
+                    ->with('error', $validationResult['message']);
+            }
+
             // Soft delete: update kolom deleted_at dan deleted_by
             DB::table('d_mitra_proyek')
                 ->where('mitra_proyek_id', $id)
                 ->update([
                     'deleted_at' => now(),
-                    'deleted_by' => session('user_id')
+                    'deleted_by' => session('user_id'),
+                    'updated_at' => now(),
+                    'updated_by' => session('user_id')
                 ]);
-    
+
+            DB::commit();
+
             return redirect()->route('koordinator.dataMitra')
                 ->with('success', 'Data mitra "' . $mitra->nama_mitra . '" berhasil dihapus.');
+                
         } catch (\Exception $e) {
+            DB::rollback();
             return redirect()->route('koordinator.dataMitra')
                 ->with('error', 'Gagal menghapus data mitra: ' . $e->getMessage());
         }
+    }
+
+    public function getProjectsByMitra($mitraId)
+    {
+        return DB::table('m_proyek')
+            ->where('mitra_proyek_id', $mitraId)
+            ->whereNull('deleted_at')
+            ->select('proyek_id', 'nama_proyek', 'status_proyek', 'tanggal_mulai', 'tanggal_selesai')
+            ->orderBy('tanggal_mulai', 'desc')
+            ->get();
+    }
+
+
+    public function checkMitraUsage($id)
+    {
+        $validationResult = $this->validateMitraDeletion($id);
+        
+        return response()->json([
+            'can_delete' => $validationResult['can_delete'],
+            'message' => $validationResult['message'],
+            'affected_projects' => $validationResult['affected_projects'] ?? []
+        ]);
     }
     
 

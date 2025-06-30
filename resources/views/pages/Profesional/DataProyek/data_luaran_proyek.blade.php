@@ -70,7 +70,6 @@
                             <!-- Hidden file input -->
                             <input type="file" class="d-none" id="dokumentasi" name="dokumentasi[]" accept=".jpg,.jpeg,.png" multiple>
                             <button type="button" class="btn btn-upload" id="btnUploadDokumentasi">Upload</button>
-                            <small class="text-muted ms-2">Anda dapat memilih beberapa file sekaligus (jpg, png)</small>
                         </div>
                         
                         <!-- Container untuk dokumentasi yang sudah ada di database -->

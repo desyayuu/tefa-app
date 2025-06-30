@@ -205,6 +205,14 @@ class DataProyekController extends Controller
                 ], 404);
             }
             
+            // Cek apakah proyek masih memiliki anggota
+            $validationResult = $this->validateProjectDeletion($id);
+            if (!$validationResult['can_delete']) {
+                DB::rollback();
+                return redirect()->route('koordinator.dataProyek')
+                    ->with('error', $validationResult['message']);
+            }
+            
             $deletedAt = Carbon::now();
             $deletedBy = auth()->user()->id ?? session('user_id');
             
@@ -236,7 +244,7 @@ class DataProyekController extends Controller
             // 8. Soft delete keuangan TEFA
             $this->softDeleteKeuanganTefa($id, $deletedAt, $deletedBy);
 
-            // 8. Soft delete proyek utama terakhir
+            // 9. Soft delete proyek utama terakhir
             $result = DB::table('m_proyek')
                 ->where('proyek_id', $id)
                 ->update([
@@ -264,6 +272,57 @@ class DataProyekController extends Controller
                 'message' => 'Terjadi kesalahan saat menghapus proyek: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    private function validateProjectDeletion($proyekId)
+    {
+        $errorMessages = [];
+        
+        // 1. Cek project leader
+        $projectLeaderCount = DB::table('t_project_leader')
+            ->where('proyek_id', $proyekId)
+            ->whereNull('deleted_at')
+            ->count();
+            
+        if ($projectLeaderCount > 0) {
+            $errorMessages[] = 'project leader';
+        }
+        
+        // 2. Cek anggota dosen
+        $dosenMemberCount = DB::table('t_project_member_dosen')
+            ->where('proyek_id', $proyekId)
+            ->whereNull('deleted_at')
+            ->count();
+            
+        
+        // 3. Cek anggota mahasiswa
+        $mahasiswaMemberCount = DB::table('t_project_member_mahasiswa')
+            ->where('proyek_id', $proyekId)
+            ->whereNull('deleted_at')
+            ->count();
+            
+        
+        // 4. Cek anggota profesional
+        $profesionalMemberCount = DB::table('t_project_member_profesional')
+            ->where('proyek_id', $proyekId)
+            ->whereNull('deleted_at')
+            ->count();
+            
+        
+        // Jika ada anggota yang masih aktif
+        if (!empty($errorMessages)) {
+            $message = 'Proyek tidak dapat dihapus karena masih memiliki anggota';
+            
+            return [
+                'can_delete' => false,
+                'message' => $message
+            ];
+        }
+        
+        return [
+            'can_delete' => true,
+            'message' => 'Proyek dapat dihapus'
+        ];
     }
     
     private function softDeleteDokumenPenunjang($proyekId, $deletedAt, $deletedBy)
